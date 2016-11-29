@@ -14,7 +14,9 @@ public class Map {
 	private String mapName = "";
 	private int goldRequired = 0;
 	private char[][] map;
+	private int[][][] posMap;
 	private int[] playerPos = {0,0};
+	private int[] botPos = {0,0};
 	
 	
 	public Map(){
@@ -34,6 +36,10 @@ public class Map {
      */
     protected char[][] getMap() {
         return map;
+    }
+    
+    protected int[][][] getPosMap(){
+    	return posMap;
     }
 
     /**
@@ -63,6 +69,13 @@ public class Map {
     protected int[] getPlayersPosition() {
     	return playerPos.clone();
     }
+    
+    /**
+     * @return : The position of the bot.
+     */
+    protected int[] getBotsPosition() {
+    	return botPos.clone();
+    }
 
     /**
      * Reads the map from file.
@@ -84,9 +97,16 @@ public class Map {
 				buffer.add(reader.nextLine().toCharArray());
 			}
 			map = new char[buffer.size()][];
-			for(int i =0;i<buffer.size();i++){//transform buffer to char array.
+			for(int i =0;i<buffer.size();++i){//transform buffer to char array.
 				map[i] = buffer.get(i);
-			}	
+			}
+			posMap = new int[map.length][map[0].length][2];
+			for(int x = 0;x < map.length;++x){
+				for(int y = 0; y< map[0].length;++y){
+					posMap[x][y][0] = x;
+					posMap[x][y][1] = y;
+				}
+			}
     	}catch(FileNotFoundException|NoSuchElementException e){
     		e.printStackTrace();
     		System.exit(1);
@@ -130,5 +150,14 @@ public class Map {
      */
     protected void updatePlayerPosition(int[] location) {
     	playerPos = location;
+    }
+    
+    /**
+     * Updates the stored in memory location of the bot.
+     *
+     * @param location : New location of the bot.
+     */
+    protected void updateBotsPosition(int[] location) {
+    	botPos = location;
     }
 }
