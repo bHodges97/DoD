@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -15,7 +14,6 @@ import java.util.Set;
 public class BotPlayer {
 	
 	GameLogic gameLogic = null;
-	
 	
 	public BotPlayer(GameLogic logic){
 		this.gameLogic = logic;
@@ -173,6 +171,7 @@ public class BotPlayer {
     }
 
     public static void main(String[] args) {
+    	GameLogic main = new GameLogic();
         // RUN FOREST RUN!
     }
 }
