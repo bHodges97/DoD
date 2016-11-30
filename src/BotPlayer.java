@@ -30,7 +30,7 @@ public class BotPlayer {
     	//command = command.split("MOVE")[1];
     	Map map = gameLogic.getMap();
     	int[] botPos = map.getBotsPosition();
-    	switch(command.charAt(4)){
+    	switch(command.charAt(5)){
 		case 'N':
 			--botPos[1];
 			break;
@@ -55,12 +55,12 @@ public class BotPlayer {
     }
 
     /**
-     * Selects the next action the bot will perform. Outputs in console the final result.
+     * Selects the next action the bot will perform. Outputs in gameLogic.getConsole() the final result.
      */
     public void selectNextAction() {
-    	String command = "MOVE"+selectMoveDirection(gameLogic.getMap().getMap());
-    	Console.println("Bot: "+command);
-    	Console.println(processCommand(command));//TODO: can bots fail?
+    	String command = "MOVE "+selectMoveDirection(gameLogic.getMap().getMap());
+    	gameLogic.getConsole().println("Bot: "+command);
+    	gameLogic.getConsole().println(processCommand(command));//TODO: can bots fail?
     }	
 
     /**
@@ -71,51 +71,53 @@ public class BotPlayer {
      	int[] start = gameLogic.getMap().getBotsPosition();
     	int[] goal = gameLogic.getMap().getPlayersPosition();
     	
-    	start = posMap[start[0]][start[1]];
-    	goal = posMap[goal[0]][goal[1]];
-    	
-    	Set<int[]> closedSet = new HashSet<int[]>();
-    	Set<int[]> openSet = new HashSet<int[]>();
-    	openSet.add(start);
-    	java.util.Map<int[],int[]> cameFrom = new LinkedHashMap<int[],int[]> ();
-    	java.util.Map<int[],Integer> gScore = new HashMap<int[],Integer>();
-    	java.util.Map<int[],Integer> fScore = new HashMap<int[],Integer>();
-    	gScore.put(start, 0);
-    	fScore.put(start,estimateDistance(start,goal));
-    	while(!openSet.isEmpty()){ 
-    		int[] current = {0,0};
-    		int score = Integer.MAX_VALUE;
-    		for(int[] node:openSet){
-    			int newScore = fScore.get(node);
-    			if( newScore < score){
-    				score = newScore;
-    				current = node;
-    			}
-    		}
-    		if(current == goal){
-    			while(true){
-    				if(cameFrom.get(current)==start){
-    					return getDirectionTo(start,current);
-    				}
-    				current=cameFrom.get(current);
-    			}
-    		}
-    		openSet.remove(current);
-    		closedSet.add(current);
-    		for(int[] neighbor:getNeighbors(current,map,posMap)){
-    			if(closedSet.contains(neighbor)){
-    				continue;
-    			}
-    			int tentative_gScore = gScore.get(current)+estimateDistance(current,neighbor);
-    			if(!openSet.contains(neighbor)){
-    				openSet.add(neighbor);
-    			}else if(tentative_gScore >= gScore.get(neighbor)){
-    				continue;
-    			}
-    			cameFrom.put(neighbor,current);
-    			gScore.put(neighbor,tentative_gScore);
-    			fScore.put(neighbor,gScore.get(neighbor)+estimateDistance(neighbor, goal));
-    		}
+    	if( Math.abs(start[0]-goal[0]) <= 2 && Math.abs(start[1] - goal[1]) >= 2){
+	    	start = posMap[start[0]][start[1]];
+	    	goal = posMap[goal[0]][goal[1]];
+	    	
+	    	Set<int[]> closedSet = new HashSet<int[]>();
+	    	Set<int[]> openSet = new HashSet<int[]>();
+	    	openSet.add(start);
+	    	java.util.Map<int[],int[]> cameFrom = new LinkedHashMap<int[],int[]> ();
+	    	java.util.Map<int[],Integer> gScore = new HashMap<int[],Integer>();
+	    	java.util.Map<int[],Integer> fScore = new HashMap<int[],Integer>();
+	    	gScore.put(start, 0);
+	    	fScore.put(start,estimateDistance(start,goal));
+	    	while(!openSet.isEmpty()){ 
+	    		int[] current = {0,0};
+	    		int score = Integer.MAX_VALUE;
+	    		for(int[] node:openSet){
+	    			int newScore = fScore.get(node);
+	    			if( newScore < score){
+	    				score = newScore;
+	    				current = node;
+	    			}
+	    		}
+	    		if(current == goal){
+	    			while(true){
+	    				if(cameFrom.get(current)==start){
+	    					return getDirectionTo(start,current);
+	    				}
+	    				current=cameFrom.get(current);
+	    			}
+	    		}
+	    		openSet.remove(current);
+	    		closedSet.add(current);
+	    		for(int[] neighbor:getNeighbors(current,map,posMap)){
+	    			if(closedSet.contains(neighbor)){
+	    				continue;
+	    			}
+	    			int tentative_gScore = gScore.get(current)+estimateDistance(current,neighbor);
+	    			if(!openSet.contains(neighbor)){
+	    				openSet.add(neighbor);
+	    			}else if(tentative_gScore >= gScore.get(neighbor)){
+	    				continue;
+	    			}
+	    			cameFrom.put(neighbor,current);
+	    			gScore.put(neighbor,tentative_gScore);
+	    			fScore.put(neighbor,gScore.get(neighbor)+estimateDistance(neighbor, goal));
+	    		}
+	    	}
     	}
     	System.out.println("Where are you?");
     	//at this point the path finding has failed ;(
@@ -171,7 +173,7 @@ public class BotPlayer {
     }
 
     public static void main(String[] args) {
-    	GameLogic main = new GameLogic();
+    	//GameLogic main = new GameLogic();
         // RUN FOREST RUN!
     }
 }

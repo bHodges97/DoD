@@ -11,8 +11,10 @@ public class GameLogic {
 	private Map map;
 	private HumanPlayer player;
 	private BotPlayer bot;
+	private Console console;
 	
-	public GameLogic(){
+	public GameLogic(Console console){
+		this.console = console;
 		map = new Map();
 		map.readMap("example_map.txt");
 		player = new HumanPlayer(this);
@@ -32,7 +34,7 @@ public class GameLogic {
 		map.updateBotsPosition(botPos);
 		while(true){
 			if(running){
-				Console.println("New turn");
+				console.println("New turn");
 				
 				
 				//DEBUG_MAP
@@ -59,17 +61,21 @@ public class GameLogic {
 				botPos = map.getBotsPosition();
 				if(map.getTile(playerPos) =='E' && player.getGoldCount() >= map.getGoldRequired()){
 					//TODO: WIN;
-					Console.println("----****YOU_WIN****----");
+					console.println("----****YOU_WIN****----");
 					running = false;
 				}else{					
 					bot.selectNextAction();
 					if(botPos[0]==playerPos[0]&&botPos[1]==playerPos[1]){
-						Console.println("----****YOU_DEAD****----");
+						console.println("----****YOU_DEAD****----");
 						running = false;
 					}
 				}			
 			}
 		}
+	}
+	
+	protected Console getConsole(){
+		return console;
 	}
 	
 	protected Map getMap(){

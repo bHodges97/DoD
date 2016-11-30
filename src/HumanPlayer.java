@@ -22,15 +22,7 @@ public class HumanPlayer {
     */
     protected String getInputFromConsole() {
 		//TODO: swap with console;
-		String input = "";
-		while(true){
-			if(scanner.hasNextLine()){
-				input = scanner.nextLine();
-				if(!input.isEmpty()){
-					return input;
-				}
-			}
-		}
+		return gameLogic.getConsole().readln();
     }
 
     /**
@@ -50,8 +42,8 @@ public class HumanPlayer {
 			output = gameLogic.look();
 		}else if(command.equals("QUIT")){
 			gameLogic.quitGame();
-		}else if(command.length() == 5 && command.substring(0,4).equals("MOVE")){
-			output = gameLogic.move(command.charAt(4));
+		}else if(command.length() == 6 && command.substring(0,5).equals("MOVE ")){
+			output = gameLogic.move(command.charAt(5));
 	    }else{
 	    	output = "Invalid";
 	    }
@@ -64,10 +56,10 @@ public class HumanPlayer {
     protected void selectNextAction() {
     	String output = processCommand(getInputFromConsole());
     	while(output.equals("Invalid") || output.equals("Fail")){
-    		Console.println(output);
+    		gameLogic.getConsole().println(output);
     		output = processCommand(getInputFromConsole());
     	}
-    	Console.println(output);
+    	gameLogic.getConsole().println(output);
     }
     
     protected int getGoldCount(){
@@ -75,7 +67,8 @@ public class HumanPlayer {
     }
 
     public static void main(String[] args) {
-    	GameLogic main = new GameLogic();
+    	Console console = new Console();
+    	GameLogic main = new GameLogic(console);    	
         // RUN FOREST RUN!
     }
 }
