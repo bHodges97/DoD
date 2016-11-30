@@ -96,13 +96,21 @@ public class Map {
 			while(reader.hasNextLine()){//store map contents into a buffer.
 				buffer.add(reader.nextLine().toCharArray());
 			}
-			map = new char[buffer.size()][];
+			char[][] bufferMap = new char[buffer.size()][];
 			for(int i =0;i<buffer.size();++i){//transform buffer to char array.
-				map[i] = buffer.get(i);
+				bufferMap[i] = buffer.get(i);
 			}
+			
+			map = new char[bufferMap[0].length][bufferMap.length];
+			for(int i = 0;i < bufferMap.length;++i){
+				for(int j = 0; j< bufferMap[0].length;++j){
+					map[j][i] = bufferMap[i][j];
+				}
+			}			
+			
 			posMap = new int[map.length][map[0].length][2];
-			for(int x = 0;x < map.length;++x){
-				for(int y = 0; y< map[0].length;++y){
+			for(int y = 0;y < getMapHeight();++y){
+				for(int x = 0; x< getMapWidth();++x){
 					posMap[x][y][0] = x;
 					posMap[x][y][1] = y;
 				}

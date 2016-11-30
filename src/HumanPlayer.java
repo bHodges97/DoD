@@ -9,7 +9,7 @@ public class HumanPlayer {
 	
 	private int goldCount = 0;
 	private GameLogic gameLogic;
-	Scanner scanner = new Scanner(System.in);
+	private Scanner scanner = new Scanner(System.in);
 	
 	public HumanPlayer(GameLogic gameLogic){
 		this.gameLogic = gameLogic;
@@ -62,10 +62,15 @@ public class HumanPlayer {
      * and then displays in console the final answer.
      */
     protected void selectNextAction() {
-    	Console.println(processCommand(getInputFromConsole()));
+    	String output = processCommand(getInputFromConsole());
+    	while(output.equals("Invalid") || output.equals("Fail")){
+    		Console.println(output);
+    		output = processCommand(getInputFromConsole());
+    	}
+    	Console.println(output);
     }
     
-    public int getGoldCount(){
+    protected int getGoldCount(){
     	return goldCount;
     }
 

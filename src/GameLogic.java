@@ -25,8 +25,8 @@ public class GameLogic {
 			playerPos[1] = rand.nextInt(map.getMapHeight());
 		}
 		while(map.getTile(botPos) == '#' || (botPos[0]==playerPos[0]&&botPos[1]==playerPos[1])){
-			playerPos[0] = rand.nextInt(map.getMapWidth());
-			playerPos[1] = rand.nextInt(map.getMapHeight());
+			botPos[0] = rand.nextInt(map.getMapWidth());
+			botPos[1] = rand.nextInt(map.getMapHeight());
 		}
 		map.updatePlayerPosition(playerPos);
 		map.updateBotsPosition(botPos);
@@ -36,8 +36,8 @@ public class GameLogic {
 				
 				
 				//DEBUG_MAP
-				for(int x = 0; x < map.getMapWidth();++x){
-					for(int y = 0; y < map.getMapHeight();++y){
+				for(int y = 0; y < map.getMapHeight();++y){
+					for(int x = 0; x < map.getMapWidth();++x){
 						if(x == map.getPlayersPosition()[0] && y == map.getPlayersPosition()[1]){
 							System.out.print('P');
 							continue;
@@ -61,7 +61,7 @@ public class GameLogic {
 					//TODO: WIN;
 					Console.println("----****YOU_WIN****----");
 					running = false;
-				}else{//TODO:botmove
+				}else{					
 					bot.selectNextAction();
 					if(botPos[0]==playerPos[0]&&botPos[1]==playerPos[1]){
 						Console.println("----****YOU_DEAD****----");
@@ -72,7 +72,7 @@ public class GameLogic {
 		}
 	}
 	
-	public Map getMap(){
+	protected Map getMap(){
 		return map;
 	}
 	
@@ -112,13 +112,13 @@ public class GameLogic {
 				++playerPos[0];
 				break;
 			default:
-				return "fail";
+				return "Fail";
 		}
 		if(map.getTile(playerPos) != 'X' || map.getTile(playerPos) !='#'){
 			map.updatePlayerPosition(playerPos);
-			return "success";
+			return "Success";
 		}else{
-			return "fail";
+			return "Fail";
 		}
        
     }
@@ -159,8 +159,7 @@ public class GameLogic {
 		if(map.getTile(playerPos) == 'G'){
 			map.updateMapLocation(playerPos,'.');
 		}
-		Console.println("You have "+player.getGoldCount()+" gold!");    	
-        return null;
+		return ("You have "+player.getGoldCount()+" gold!");    	
     }
 
     /**

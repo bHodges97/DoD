@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public class BotPlayer {
 	
-	GameLogic gameLogic = null;
+	private GameLogic gameLogic = null;
 	
 	public BotPlayer(GameLogic logic){
 		this.gameLogic = logic;
@@ -44,13 +44,13 @@ public class BotPlayer {
 			++botPos[0];
 			break;
 		default:
-			return "fail";
+			return "Fail";
     	}
     	if(map.getTile(botPos) != 'X' || map.getTile(botPos) !='#'){
 			map.updateBotsPosition(botPos);
-			return "success";
+			return "Success";
 		}else{
-			return "fail";
+			return "Fail";
 		}
     }
 
@@ -60,7 +60,7 @@ public class BotPlayer {
     public void selectNextAction() {
     	String command = "MOVE"+selectMoveDirection(gameLogic.getMap().getMap());
     	Console.println("Bot: "+command);
-    	Console.println(processCommand(command));
+    	Console.println(processCommand(command));//TODO: can bots fail?
     }	
 
     /**
@@ -130,13 +130,13 @@ public class BotPlayer {
     }
     
     private char getDirectionTo(int[] start,int[] end){
-		if(end[0]>start[0]){
+		if(end[1]>start[1]){
     		return 'S';
-    	}else if(end[0]<start[0]){
+    	}else if(end[1]<start[1]){
     		return 'N';
-    	}else if(end[1]>start[1]){
+    	}else if(end[0]>start[0]){
     		return 'E';
-    	}else if(end[1]<start[0]){
+    	}else if(end[0]<start[0]){
     		return 'W';
     	}else{
     		throw new IllegalArgumentException("start is same as end");
