@@ -71,7 +71,7 @@ public class BotPlayer {
      	int[] start = gameLogic.getMap().getBotsPosition();
     	int[] goal = gameLogic.getMap().getPlayersPosition();
     	
-    	if( Math.abs(start[0]-goal[0]) <= 2 && Math.abs(start[1] - goal[1]) >= 2){
+    	if( Math.abs(start[0]-goal[0]) <= 2 && Math.abs(start[1] - goal[1]) <= 2){
 	    	start = posMap[start[0]][start[1]];
 	    	goal = posMap[goal[0]][goal[1]];
 	    	

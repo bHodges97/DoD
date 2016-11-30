@@ -21,7 +21,6 @@ public class HumanPlayer {
     * @return : A string containing the input the player entered.
     */
     protected String getInputFromConsole() {
-		//TODO: swap with console;
 		return gameLogic.getConsole().readln();
     }
 

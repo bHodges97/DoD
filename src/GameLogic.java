@@ -51,10 +51,7 @@ public class GameLogic {
 						System.out.print(map.getTile(new int[]{x,y}));
 					}
 					System.out.println();
-				}
-				
-				
-				
+				}				
 				
 				player.selectNextAction();
 				playerPos = map.getPlayersPosition();
@@ -65,11 +62,16 @@ public class GameLogic {
 					running = false;
 				}else{					
 					bot.selectNextAction();
+					botPos = map.getBotsPosition();
 					if(botPos[0]==playerPos[0]&&botPos[1]==playerPos[1]){
 						console.println("----****YOU_DEAD****----");
 						running = false;
 					}
 				}			
+			}else{
+				if(console.readln().equals("QUIT")){
+					quitGame();
+				}
 			}
 		}
 	}
