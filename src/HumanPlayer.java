@@ -53,8 +53,9 @@ public class HumanPlayer {
      * and then displays in console the final answer.
      */
     protected void selectNextAction() {
-    	String output = processCommand(getInputFromConsole());
-    	while(output.equals("Invalid") || output.equals("Fail")){
+    	String input = getInputFromConsole();
+    	String output = processCommand(input);
+    	while((output.equals("Invalid") || output.equals("Fail"))||(input.equals("LOOK"))){
     		gameLogic.getConsole().println(output);
     		output = processCommand(getInputFromConsole());
     	}

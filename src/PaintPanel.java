@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -18,6 +19,8 @@ public class PaintPanel extends JPanel{
 	
 	public PaintPanel() {
 		super.repaint();
+		setPreferredSize(new Dimension(350,350));
+		
 		try {
 			bot = ImageIO.read(getClass().getResource("bot.png"));
 			player = ImageIO.read(getClass().getResourceAsStream("player.png"));
@@ -69,7 +72,11 @@ public class PaintPanel extends JPanel{
 		}
 		String title = map.getMapName();		
 		g2d.setFont(new Font("monospaced", Font.BOLD, 20));
-		g2d.drawString(title, width/2-title.length()*5, 20);
+		int titleWidth = g2d.getFontMetrics().stringWidth(title);
+		int titleHeight = g2d.getFontMetrics().getHeight();
+		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
+		height+=titleHeight;
+		
 		
 		int centerX = width/2-32;
 		int centerY = height/2-32;

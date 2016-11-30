@@ -58,6 +58,8 @@ public class GameLogic {
 			}else{
 				if(console.readln().equals("QUIT")){
 					quitGame();
+				}else{
+					console.println("GAME OVER(type QUIT to exit)");
 				}
 			}
 		}
@@ -109,7 +111,7 @@ public class GameLogic {
 			default:
 				return "Fail";
 		}
-		if(map.getTile(playerPos) != 'X' || map.getTile(playerPos) !='#'){
+		if(map.getTile(playerPos) != 'X' && map.getTile(playerPos) !='#'){
 			map.updatePlayerPosition(playerPos);
 			return "Success";
 		}else{

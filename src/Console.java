@@ -69,7 +69,9 @@ public class Console {
 				}
 			}
 		}
+		
 		frame.setVisible(true);
+		frame.pack();
 	}
 	
 	protected  String readln(){
@@ -187,7 +189,7 @@ public class Console {
 
 
 		textArea.setFont(new Font("monospaced", Font.PLAIN, 12));
-		frame.setMinimumSize(new Dimension(800, 600));
+		frame.setMinimumSize(new Dimension(500, 600));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
@@ -222,7 +224,7 @@ public class Console {
 				}else if(e.getSource()==buttonEast){
 					guiInput = "MOVE E";
 				}
-				
+				println(guiInput);
 			}			
 		};
 		return listener;
