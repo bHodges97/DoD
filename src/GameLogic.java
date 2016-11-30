@@ -18,7 +18,8 @@ public class GameLogic {
 		map = new Map();
 		map.readMap("example_map.txt");
 		player = new HumanPlayer(this);
-		bot = new BotPlayer(this);
+		bot = new BotPlayer(this);		
+		
 		Random rand = new Random(System.currentTimeMillis());
 		int[] playerPos = {rand.nextInt(map.getMapWidth()),rand.nextInt(map.getMapHeight())};
 		int[] botPos = {rand.nextInt(map.getMapWidth()),rand.nextInt(map.getMapHeight())};
@@ -32,26 +33,12 @@ public class GameLogic {
 		}
 		map.updatePlayerPosition(playerPos);
 		map.updateBotsPosition(botPos);
+		
+		console.drawMap(map);
+		
 		while(true){
 			if(running){
 				console.println("New turn");
-				
-				
-				//DEBUG_MAP
-				for(int y = 0; y < map.getMapHeight();++y){
-					for(int x = 0; x < map.getMapWidth();++x){
-						if(x == map.getPlayersPosition()[0] && y == map.getPlayersPosition()[1]){
-							System.out.print('P');
-							continue;
-						}
-						if(x == map.getBotsPosition()[0] && y == map.getBotsPosition()[1]){
-							System.out.print('B');
-							continue;
-						}
-						System.out.print(map.getTile(new int[]{x,y}));
-					}
-					System.out.println();
-				}				
 				
 				player.selectNextAction();
 				playerPos = map.getPlayersPosition();
@@ -166,6 +153,7 @@ public class GameLogic {
     	int[] playerPos = map.getPlayersPosition();
 		if(map.getTile(playerPos) == 'G'){
 			map.updateMapLocation(playerPos,'.');
+			player.addGold(1);
 		}
 		return ("You have "+player.getGoldCount()+" gold!");    	
     }

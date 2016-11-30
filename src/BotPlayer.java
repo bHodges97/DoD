@@ -119,7 +119,7 @@ public class BotPlayer {
 	    		}
 	    	}
     	}
-    	System.out.println("Where are you?");
+    	//System.out.println("Where are you?");
     	//at this point the path finding has failed ;(
     	//generating random direction to try
     	List<int[]> neighbours= getNeighbors(start,map,posMap);

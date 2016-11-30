@@ -64,6 +64,10 @@ public class HumanPlayer {
     protected int getGoldCount(){
     	return goldCount;
     }
+    
+    protected void addGold(int count){
+    	goldCount+=count;
+    }
 
     public static void main(String[] args) {
     	Console console = new Console();

@@ -109,12 +109,16 @@ public class Console {
 		textArea.append(chars);
 		textArea.setCaretPosition(textArea.getText().length());
 	}
+	protected void drawMap(Map map){
+		paintPanel.setMap(map);
+	}
+	
 	private void loadIcons(){
 		Image imgLOOK,imgPICKUP,imgEXIT,imgHELLO,imgArrowN,imgArrowE,imgArrowS,imgArrowW;
 		try{
 			imgLOOK = ImageIO.read(getClass().getResource("look.png"));
 			imgPICKUP = ImageIO.read(getClass().getResource("pickup.png"));
-			imgEXIT = ImageIO.read(getClass().getResource("exit.png"));
+			imgEXIT = ImageIO.read(getClass().getResource("quit.png"));
 			imgHELLO = ImageIO.read(getClass().getResource("hello.png"));
 			imgArrowN = ImageIO.read(getClass().getResource("arrowN.png"));
 			imgArrowS = ImageIO.read(getClass().getResource("arrowS.png"));
@@ -180,7 +184,8 @@ public class Console {
 		c.gridx = 3;
 		c.gridy = 1;
 		buttonsPanel.add(buttonEast, c);
-		
+
+
 		textArea.setFont(new Font("monospaced", Font.PLAIN, 12));
 		frame.setMinimumSize(new Dimension(800, 600));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -209,13 +214,13 @@ public class Console {
 				}else if(e.getSource()==buttonHello){
 					guiInput = "HELLO";
 				}else if(e.getSource()==buttonNorth){
-					guiInput = "MOVEN";
+					guiInput = "MOVE N";
 				}else if(e.getSource()==buttonSouth){
-					guiInput = "MOVES";
+					guiInput = "MOVE S";
 				}else if(e.getSource()==buttonWest){
-					guiInput = "MOVEW";
+					guiInput = "MOVE W";
 				}else if(e.getSource()==buttonEast){
-					guiInput = "MOVEE";
+					guiInput = "MOVE E";
 				}
 				
 			}			
