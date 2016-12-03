@@ -3,10 +3,7 @@
  *
  * @author : The underwhelmed tutor.
  */
-public class HumanPlayer extends Player{
-	
-	private int goldCount = 0;
-	private GameLogic gameLogic;
+public class HumanPlayer extends Player{	
 	
 	public HumanPlayer(GameLogic gameLogic){
 		this.gameLogic = gameLogic;
@@ -57,19 +54,7 @@ public class HumanPlayer extends Player{
     		output = processCommand(getInputFromConsole());
     	}
     	gameLogic.getConsole().println(output);
-    }
-    
-    protected int getGoldCount(){
-    	return goldCount;
-    }
-    
-    protected void addGold(int count){
-    	goldCount+=count;
-    }
-    
-    protected void setGameLogic(GameLogic logic){
-    	this.gameLogic = logic;
-    }
+    }    
 
     public static void main(String[] args) {
     	Console console = new Console();

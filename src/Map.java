@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -20,7 +21,6 @@ public class Map {
 	
 	
 	public Map(){
-		
 	}
 	
 
@@ -167,5 +167,34 @@ public class Map {
      */
     protected void updateBotsPosition(int[] location) {
     	botPos = location;
+    }
+    protected List<int[]> getAdjacentClearTiles(int[] current){
+    	List<int[]> neighbors = new ArrayList<int[]>();
+    	if(map[current[0]-1][current[1]] != '#'){
+    		neighbors.add(posMap[current[0]-1][current[1]]);
+    	}
+    	if(map[current[0]+1][current[1]] != '#'){
+    		neighbors.add(posMap[current[0]+1][current[1]]);
+    	}
+    	if(map[current[0]][current[1]-1] != '#'){
+    		neighbors.add(posMap[current[0]][current[1]-1]);
+    	}
+    	if(map[current[0]][current[1]+1] != '#'){
+    		neighbors.add(posMap[current[0]][current[1]+1]);
+    	}
+    	return neighbors;
+    }
+    
+    
+    protected char getPlayerOrTile(int[] coords){
+    	int x = coords[0];
+    	int y = coords[1];
+    	if(playerPos[0] == x && playerPos[1] == y){
+    		return 'P';
+    	}else if(botPos[0] == x && botPos[1] == y){
+    		return 'B';
+    	}else{
+    		return getTile(coords);
+    	}
     }
 }

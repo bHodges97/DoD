@@ -1,6 +1,8 @@
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Contains the main logic part of the game, as it processes.
@@ -12,63 +14,57 @@ public class GameLogic {
 	private boolean running = true;
 	private Map map;
 	private List<Player> players = new ArrayList<Player>();
+	private Player humanPlayer; 
 	private Console console;
+	private int turnCounter;
 	
 	public GameLogic(Console console){
 		this.console = console;
 		map = new Map();
 		map.readMap("example_map.txt");
-		player = new HumanPlayer(this);
-		bot = new BotPlayer(this);		
+		addPlayer(new HumanPlayer(this));
+		addPlayer(new BotPlayer(this));
 		
-		Random rand = new Random(System.currentTimeMillis());
-		int[] playerPos = {rand.nextInt(map.getMapWidth()),rand.nextInt(map.getMapHeight())};
-		int[] botPos = {rand.nextInt(map.getMapWidth()),rand.nextInt(map.getMapHeight())};
-		while(map.getTile(playerPos) == '#'){
-			playerPos[0] = rand.nextInt(map.getMapWidth());
-			playerPos[1] = rand.nextInt(map.getMapHeight());
-		}
-		while(map.getTile(botPos) == '#' || (botPos[0]==playerPos[0]&&botPos[1]==playerPos[1])){
-			botPos[0] = rand.nextInt(map.getMapWidth());
-			botPos[1] = rand.nextInt(map.getMapHeight());
-		}
-		map.updatePlayerPosition(playerPos);
-		map.updateBotsPosition(botPos);
-		
+		turnCounter = 0;		
 		console.drawMap(map);
 		
-		while(true){
-			if(running){
-				console.println("New turn");
-				
+		while(running){
+			console.println("New turn");
+			for(Player player: players){
 				player.selectNextAction();
-				playerPos = map.getPlayersPosition();
-				botPos = map.getBotsPosition();
-				if(map.getTile(playerPos) =='E' && player.getGoldCount() >= map.getGoldRequired()){
-					//TODO: WIN;
-					console.println("----****YOU_WIN****----");
+				if(checkWin()){
+					console.showWinEvent();
 					running = false;
-				}else{					
-					bot.selectNextAction();
-					botPos = map.getBotsPosition();
-					if(botPos[0]==playerPos[0]&&botPos[1]==playerPos[1]){
-						console.println("----****YOU_DEAD****----");
-						running = false;
-					}
-				}			
-			}else{
-				if(console.readln().equals("QUIT")){
-					quitGame();
-				}else{
-					console.println("GAME OVER(type QUIT to exit)");
-				}
-			}
+				}else if(checkLost()){
+					console.showFailEvent();
+					running = false;
+				}					
+			}				
+			++turnCounter;
+		}
+		if(console.readln().equals("QUIT")){
+			quitGame();
+		}else{
+			console.println("GAME OVER(type QUIT to exit)");
 		}
 	}
 	
 	protected void addPlayer(Player player){
+    	Random rand = new Random(System.currentTimeMillis());    	
 		players.add(player);
 		player.setGameLogic(this);
+		int[] botPos = map.getBotsPosition();
+		int[] playerPos = {rand.nextInt(map.getMapWidth()),rand.nextInt(map.getMapHeight())};
+		while(map.getTile(playerPos) == '#' || map.getPlayerOrTile(playerPos) == 'P' || map.getPlayerOrTile(playerPos) == 'B'){
+			playerPos[0] = rand.nextInt(map.getMapWidth());
+			playerPos[1] = rand.nextInt(map.getMapHeight());
+		}
+		if(player instanceof HumanPlayer){
+			map.updatePlayerPosition(playerPos);
+			this.humanPlayer = player;
+		}else{
+			map.updateBotsPosition(playerPos);
+		}
 	}
 	
 	protected Console getConsole(){
@@ -161,9 +157,9 @@ public class GameLogic {
     	int[] playerPos = map.getPlayersPosition();
 		if(map.getTile(playerPos) == 'G'){
 			map.updateMapLocation(playerPos,'.');
-			player.addGold(1);
+			humanPlayer.addGold(1);
 		}
-		return ("You have "+player.getGoldCount()+" gold!");    	
+		return ("You have "+humanPlayer.getGoldCount()+" gold!");    	
     }
 
     /**
@@ -171,5 +167,23 @@ public class GameLogic {
      */
     protected void quitGame() {
     	System.exit(0);
+    }
+    
+    
+    private boolean checkWin(){
+    	int[] playerPos = map.getPlayersPosition();
+    	if(map.getTile(playerPos) =='E' && humanPlayer.getGoldCount() >= map.getGoldRequired()){
+			//TODO: WIN;
+			return true;
+		}
+    	return false;
+    }
+    private boolean checkLost(){
+    	int[] playerPos = map.getPlayersPosition();
+    	int[] botPos = map.getBotsPosition();
+    	if(botPos[0]==playerPos[0]&&botPos[1]==playerPos[1]){
+			return true;
+		}
+    	return false;
     }
 }

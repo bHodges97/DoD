@@ -12,12 +12,14 @@ import java.util.Set;
  * @author : The unhelmed tutor.
  */
 public class BotPlayer extends Player{
-	
-	private GameLogic gameLogic = null;
 	private boolean	seenPlayer = false;
+	private Map gameMap;
+	PathFinder finder;
 	
 	public BotPlayer(GameLogic logic){
 		this.gameLogic = logic;
+		gameMap = gameLogic.getMap();
+		finder = new PathFinder(gameMap);
 	}
 
     /**
@@ -67,74 +69,30 @@ public class BotPlayer extends Player{
     /**
      * @return :  The direction the agent will move.
      */
-    protected char selectMoveDirection(char[][] map) { 	
-    	int[][][] posMap = gameLogic.getMap().getPosMap();
-     	int[] start = gameLogic.getMap().getBotsPosition();
-    	int[] goal = gameLogic.getMap().getPlayersPosition();
+    protected char selectMoveDirection(char[][] map) {
+     	int[] start = gameMap.getBotsPosition();
+    	int[] goal = gameMap.getPlayersPosition();
+    	PathFinder finder = new PathFinder(gameMap);
     	if(canSeePlayer()){
     		seenPlayer = true;
     	}    	
-    	if(seenPlayer){
-	    	start = posMap[start[0]][start[1]];
-	    	goal = posMap[goal[0]][goal[1]];
-	    	
-	    	Set<int[]> closedSet = new HashSet<int[]>();
-	    	Set<int[]> openSet = new HashSet<int[]>();
-	    	openSet.add(start);
-	    	java.util.Map<int[],int[]> cameFrom = new LinkedHashMap<int[],int[]> ();
-	    	java.util.Map<int[],Integer> gScore = new HashMap<int[],Integer>();
-	    	java.util.Map<int[],Integer> fScore = new HashMap<int[],Integer>();
-	    	gScore.put(start, 0);
-	    	fScore.put(start,estimateDistance(start,goal));
-	    	while(!openSet.isEmpty()){ 
-	    		int[] current = {0,0};
-	    		int score = Integer.MAX_VALUE;
-	    		for(int[] node:openSet){
-	    			int newScore = fScore.get(node);
-	    			if( newScore < score){
-	    				score = newScore;
-	    				current = node;
-	    			}
-	    		}
-	    		if(current == goal){
-	    			while(true){
-	    				if(cameFrom.get(current)==start){
-	    					return getDirectionTo(start,current);
-	    				}
-	    				current=cameFrom.get(current);
-	    			}
-	    		}
-	    		openSet.remove(current);
-	    		closedSet.add(current);
-	    		for(int[] neighbor:getNeighbors(current,map,posMap)){
-	    			if(closedSet.contains(neighbor)){
-	    				continue;
-	    			}
-	    			int tentative_gScore = gScore.get(current)+estimateDistance(current,neighbor);
-	    			if(!openSet.contains(neighbor)){
-	    				openSet.add(neighbor);
-	    			}else if(tentative_gScore >= gScore.get(neighbor)){
-	    				continue;
-	    			}
-	    			cameFrom.put(neighbor,current);
-	    			gScore.put(neighbor,tentative_gScore);
-	    			fScore.put(neighbor,gScore.get(neighbor)+estimateDistance(neighbor, goal));
-	    		}
+    	if(seenPlayer && finder.pathFind(start, goal)){    		
+    		int[] next = finder.findNextStep();
+    		return getRelativeDirection(start,next);
+			
+    	}else{
+	    	System.out.println("Where are you?");
+	    	List<int[]> neighbours= gameMap.getAdjacentClearTiles(start);
+	    	if(neighbours.isEmpty()){
+	    		return 'N';
 	    	}
+	    	Random rand = new Random(System.currentTimeMillis());
+	    	int[] next = neighbours.get(rand.nextInt(neighbours.size()));
+	    	return getRelativeDirection(start, next);
     	}
-    	System.out.println("Where are you?");
-    	//at this point the path finding has failed ;(
-    	//generating random direction to try
-    	List<int[]> neighbours= getNeighbors(start,map,posMap);
-    	if(neighbours.isEmpty()){//can this even happen?
-    		return 'N';
-    	}
-    	Random rand = new Random(System.currentTimeMillis());
-    	int[] next = neighbours.get(rand.nextInt(neighbours.size()));
-    	return getDirectionTo(start, next);
     }
     
-    private char getDirectionTo(int[] start,int[] end){
+    private char getRelativeDirection(int[] start,int[] end){
 		if(end[1]>start[1]){
     		return 'S';
     	}else if(end[1]<start[1]){
@@ -148,22 +106,7 @@ public class BotPlayer extends Player{
     	}
     }
     
-    private List<int[]> getNeighbors(int[] current,char[][] map,int[][][] posmap){
-    	List<int[]> neighbors = new ArrayList<int[]>();
-    	if(map[current[0]-1][current[1]] != '#'){
-    		neighbors.add(posmap[current[0]-1][current[1]]);
-    	}
-    	if(map[current[0]+1][current[1]] != '#'){
-    		neighbors.add(posmap[current[0]+1][current[1]]);
-    	}
-    	if(map[current[0]][current[1]-1] != '#'){
-    		neighbors.add(posmap[current[0]][current[1]-1]);
-    	}
-    	if(map[current[0]][current[1]+1] != '#'){
-    		neighbors.add(posmap[current[0]][current[1]+1]);
-    	}
-    	return neighbors;
-    }
+  
     
     private boolean canSeePlayer(){
      	int[] start = gameLogic.getMap().getBotsPosition();
@@ -172,17 +115,9 @@ public class BotPlayer extends Player{
     		return true;
     	}
     	return false;	
-    }
+    }   
     
-    /**
-     * Manhattan block distance from a to b
-     * @param a Position a
-     * @param b Position b
-     * @return Distance from a to b
-     */
-    private int estimateDistance(int[] a,int[] b){
-    	return Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1]);
-    }
+    
 
     public static void main(String[] args) {
     	//GameLogic main = new GameLogic();

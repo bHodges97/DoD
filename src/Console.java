@@ -51,27 +51,20 @@ public class Console {
 	
 	
 	public Console(){
-		initialiseLayout();		
-		initialiseArrowKeys();
 		loadIcons();
-		ActionListener actionListener = getButtonListener();
-		textArea.addKeyListener(getTextAreaKeyListener());
-		for(Component component : buttonsPanel.getComponents()){
-			if(component instanceof JButton){
-				JButton button = (JButton)component;
-				button.addActionListener(actionListener);
-				button.setPreferredSize(new Dimension(64,64));
-				button.setFont(button.getFont().deriveFont(8.4f));
-				button.setBorder(new EtchedBorder());
-				button.setHorizontalAlignment(JButton.CENTER);
-				if(button.getIcon()!=null){
-					button.setText("");
-				}
-			}
-		}
-		
+		initialiseLayout();		
+		initialiseArrowKeys();	
+		initialiseButtons();
+		textArea.addKeyListener(getTextAreaKeyListener());		
 		frame.setVisible(true);
 		frame.pack();
+	}
+	
+	protected void showWinEvent(){
+		println("----****YOU_WIN****----");
+	}
+	protected void showFailEvent(){
+		println("----****YOU_DEAD****----");
 	}
 	
 	protected  String readln(){
@@ -264,5 +257,22 @@ public class Console {
 			}
 		};
 		return textAreaListener;
+	}
+	
+	private void initialiseButtons(){
+		ActionListener actionListener = getButtonListener();
+		for(Component component : buttonsPanel.getComponents()){
+			if(component instanceof JButton){
+				JButton button = (JButton)component;
+				button.addActionListener(actionListener);
+				button.setPreferredSize(new Dimension(64,64));
+				button.setFont(button.getFont().deriveFont(8.4f));
+				button.setBorder(new EtchedBorder());
+				button.setHorizontalAlignment(JButton.CENTER);
+				if(button.getIcon()!=null){
+					button.setText("");
+				}
+			}
+		}
 	}
 }
