@@ -1,15 +1,12 @@
-import java.util.Scanner;
-
 /**
  * Runs the game with a human player and contains code needed to read inputs.
  *
  * @author : The underwhelmed tutor.
  */
-public class HumanPlayer {
+public class HumanPlayer extends Player{
 	
 	private int goldCount = 0;
 	private GameLogic gameLogic;
-	private Scanner scanner = new Scanner(System.in);
 	
 	public HumanPlayer(GameLogic gameLogic){
 		this.gameLogic = gameLogic;
@@ -31,7 +28,7 @@ public class HumanPlayer {
      * @param command : Input entered by the user.
      * @return : Processed output or Invalid if the @param command is wrong.
      */
-    protected String processCommand(String command) {
+	protected String processCommand(String command) {
 		String output = "";
 		if(command.equals("HELLO")){
 			output = gameLogic.hello();
@@ -68,6 +65,10 @@ public class HumanPlayer {
     
     protected void addGold(int count){
     	goldCount+=count;
+    }
+    
+    protected void setGameLogic(GameLogic logic){
+    	this.gameLogic = logic;
     }
 
     public static void main(String[] args) {

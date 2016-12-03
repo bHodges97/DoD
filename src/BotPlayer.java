@@ -11,9 +11,10 @@ import java.util.Set;
  *
  * @author : The unhelmed tutor.
  */
-public class BotPlayer {
+public class BotPlayer extends Player{
 	
 	private GameLogic gameLogic = null;
+	private boolean	seenPlayer = false;
 	
 	public BotPlayer(GameLogic logic){
 		this.gameLogic = logic;
@@ -70,8 +71,10 @@ public class BotPlayer {
     	int[][][] posMap = gameLogic.getMap().getPosMap();
      	int[] start = gameLogic.getMap().getBotsPosition();
     	int[] goal = gameLogic.getMap().getPlayersPosition();
-    	
-    	if( Math.abs(start[0]-goal[0]) <= 2 && Math.abs(start[1] - goal[1]) <= 2){
+    	if(canSeePlayer()){
+    		seenPlayer = true;
+    	}    	
+    	if(seenPlayer){
 	    	start = posMap[start[0]][start[1]];
 	    	goal = posMap[goal[0]][goal[1]];
 	    	
@@ -119,7 +122,7 @@ public class BotPlayer {
 	    		}
 	    	}
     	}
-    	//System.out.println("Where are you?");
+    	System.out.println("Where are you?");
     	//at this point the path finding has failed ;(
     	//generating random direction to try
     	List<int[]> neighbours= getNeighbors(start,map,posMap);
@@ -160,6 +163,15 @@ public class BotPlayer {
     		neighbors.add(posmap[current[0]][current[1]+1]);
     	}
     	return neighbors;
+    }
+    
+    private boolean canSeePlayer(){
+     	int[] start = gameLogic.getMap().getBotsPosition();
+    	int[] goal = gameLogic.getMap().getPlayersPosition();
+    	if(Math.abs(start[0]-goal[0]) <= 2 && Math.abs(start[1] - goal[1]) <= 2){
+    		return true;
+    	}
+    	return false;	
     }
     
     /**

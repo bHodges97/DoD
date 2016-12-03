@@ -10,34 +10,16 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-@SuppressWarnings("serial")
 public class PaintPanel extends JPanel{
 	
 	Map map = null;
 	Image bot,player,wall,floor,gold,exit;
 	
-	
 	public PaintPanel() {
 		super.repaint();
 		setPreferredSize(new Dimension(350,350));
+		loadSprites();
 		
-		try {
-			bot = ImageIO.read(getClass().getResource("bot.png"));
-			player = ImageIO.read(getClass().getResourceAsStream("player.png"));
-			floor = ImageIO.read(getClass().getResource("floor.png"));
-			wall =ImageIO.read(getClass().getResource("wall.png"));
-			exit = ImageIO.read(getClass().getResource("exit.png"));
-			gold = ImageIO.read(getClass().getResource("hello.png"));
-		} catch (IOException e) {
-			Image defaultImg = getDefaultImg();
-			bot = defaultImg;
-			player = defaultImg;
-			floor= defaultImg;
-			wall = defaultImg;
-			exit = defaultImg;
-			gold = defaultImg;
-			e.printStackTrace();
-		}
 		Runnable runner = new Runnable() {
 		      public void run() {
 		    	  while(true){
@@ -124,5 +106,25 @@ public class PaintPanel extends JPanel{
 			}
 		}
 		return defaultImg;
+	}
+
+	private void loadSprites(){
+	try {
+			bot = ImageIO.read(getClass().getResource("bot.png"));
+			player = ImageIO.read(getClass().getResourceAsStream("player.png"));
+			floor = ImageIO.read(getClass().getResource("floor.png"));
+			wall =ImageIO.read(getClass().getResource("wall.png"));
+			exit = ImageIO.read(getClass().getResource("exit.png"));
+			gold = ImageIO.read(getClass().getResource("hello.png"));
+		} catch (IOException e) {
+			Image defaultImg = getDefaultImg();
+			bot = defaultImg;
+			player = defaultImg;
+			floor= defaultImg;
+			wall = defaultImg;
+			exit = defaultImg;
+			gold = defaultImg;
+			e.printStackTrace();
+		}
 	}
 }

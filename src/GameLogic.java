@@ -1,3 +1,5 @@
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -9,8 +11,7 @@ public class GameLogic {
 
 	private boolean running = true;
 	private Map map;
-	private HumanPlayer player;
-	private BotPlayer bot;
+	private List<Player> players = new ArrayList<Player>();
 	private Console console;
 	
 	public GameLogic(Console console){
@@ -63,6 +64,11 @@ public class GameLogic {
 				}
 			}
 		}
+	}
+	
+	protected void addPlayer(Player player){
+		players.add(player);
+		player.setGameLogic(this);
 	}
 	
 	protected Console getConsole(){
