@@ -84,7 +84,11 @@ public class PaintPanel extends JPanel{
 		int centerX = width/2-tileSize/2;
 		int centerY = height/2-tileSize/2;
 		
-		if(backGround == null || (offSet[0] == 0 && offSet[1] == 0)){
+		if(current==null){
+			initialisePos();
+			return;
+		}
+		if((offSet[0] == 0 && offSet[1] == 0) || backGround == null){
 			backGround = drawMap();
 		}
 		int bgWidth = backGround.getWidth(null);
@@ -115,23 +119,20 @@ public class PaintPanel extends JPanel{
 		if(player instanceof BotPlayer){
 			updatePosMap();
 		}
-		System.out.println("HELLO");
 		current = player;
 		int[] pos = map.getPosition(player);
 		int[] oldPos = posMap.get(player);
 		int[] posDif = new int[]{pos[0]-oldPos[0],pos[1]-oldPos[1]};
 		if(frame < tileSize){
-			++frame;
-			offSet[0]+=posDif[0];
-			offSet[1]+=posDif[1];
-			System.out.println(offSet[0] + " " + offSet[1]);
+			frame+=2;
+			offSet[0]+=posDif[0]*2;
+			offSet[1]+=posDif[1]*2;
 		}else{
 			System.out.println("WORlD");
 			frame = 0;
 			offSet = new int[]{0,0};
 			posMap.remove(player);
 			posMap.put(player,pos);
-			backGround = drawMap();
 		}		
 		
 	}
@@ -161,9 +162,8 @@ public class PaintPanel extends JPanel{
 		int imageWidth = tileSize * tilesWide;
 		int imageHeight = tileSize * tilesWide;
 		BufferedImage image = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
-		
 		Graphics2D g2d = (Graphics2D)image.getGraphics();
-		int[] playerPos = map.getPlayersPosition();
+		int[] playerPos = posMap.get(current);
 		int offsety = playerPos[1]-(tilesWide-1)/2;
 		int offsetx = playerPos[0]-(tilesWide-1)/2;
 		for(int y = offsety;y < offsety + tilesWide;++y){
@@ -207,20 +207,26 @@ public class PaintPanel extends JPanel{
 	private Player checkChange(){
 		PlayerPosList mapList = map.getPlayerPosList();
 		if(posMap.size()!=mapList.size()){
-			for(Player player:mapList){
-				if(!posMap.containsKey(player)){
-					posMap.put(player,mapList.get(player).clone());
-				}
-			}
+			initialisePos();
 		}
 		
 		for(Player player:posMap.keySet()){
 			int[] stored = posMap.get(player);
 			int[] mapval = map.getPosition(player);
-			if(stored[0] != mapval[0] && stored[1] != mapval[1]){
+			if(stored[0] != mapval[0] || stored[1] != mapval[1]){
+				current = player;
 				return player;
 			}
 		}
 		return null;
+	}
+	private void initialisePos(){
+		PlayerPosList mapList = map.getPlayerPosList();
+		for(Player player:mapList){
+			if(!posMap.containsKey(player)){
+				posMap.put(player,mapList.get(player).clone());
+				current = player;
+			}
+		}
 	}
 }
