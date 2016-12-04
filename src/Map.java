@@ -18,7 +18,7 @@ public class Map {
 	private char[][] map;
 	private List<int[]> posList = new ArrayList<int[]>();
 	private List<int[]> emptyPosList;
-	private OneToOneMap<Player,int[]> playerToPosMap = new OneToOneMap<Player,int[]>();
+	private PlayerPosList playerPosList = new PlayerPosList();
 	
 	
 	public Map(){
@@ -65,9 +65,9 @@ public class Map {
      * @return : The position of the player.
      */
     protected int[] getPlayersPosition() {
-    	for(Player player:playerToPosMap.keySet()){
+    	for(Player player:playerPosList.keySet()){
     		if(player instanceof HumanPlayer){
-    			return playerToPosMap.get(player).clone();
+    			return playerPosList.get(player).clone();
     		}
     	}
     	return posList.get(0);
@@ -77,9 +77,9 @@ public class Map {
      * @return : The position of the bot.
      */
     protected int[] getBotsPosition() {
-    	for(Player player:playerToPosMap.keySet()){
+    	for(Player player:playerPosList.keySet()){
     		if(player instanceof BotPlayer){
-    			return playerToPosMap.get(player).clone();
+    			return playerPosList.get(player).clone();
     		}
     	}
     	return posList.get(0);
@@ -165,7 +165,7 @@ public class Map {
      */
     protected void updatePlayerPosition(int[] pos) {
     	int[] oldPos = getPlayersPosition();
-    	Player player = playerToPosMap.getKey(getListedTile(oldPos[0],oldPos[1]));
+    	Player player = playerPosList.getPlayer(getListedTile(oldPos[0],oldPos[1]));
     	updatePosition(player, pos);
     }
     
@@ -199,7 +199,7 @@ public class Map {
 	    	}    
 			tempPos = emptyPosList.get(rand.nextInt(emptyPosList.size()));
 		}
-		playerToPosMap.put(player,tempPos);
+		playerPosList.put(player,tempPos);
 		emptyPosList.remove(tempPos);
 		return true;
     }
@@ -210,9 +210,8 @@ public class Map {
     
     protected void updatePosition(Player player,int[] pos){
     	int[] newPos = getListedTile(pos[0],pos[1]);
-    	int[] oldPos = playerToPosMap.remove(player);
-    	emptyPosList.add(oldPos);
-    	playerToPosMap.put(player,newPos);
+    	int[] oldPos = playerPosList.update(player,newPos);;
+    	emptyPosList.add(oldPos);    	
 		emptyPosList.remove(newPos);
     }
 }

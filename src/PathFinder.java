@@ -62,7 +62,6 @@ public class PathFinder {
 		int[] current = map.getListedTile(goal[0],goal[1]);
 		while(!path.isEmpty()){				
 			if(path.get(current)==start){
-				System.out.println(current[0]+" "+current[1]);
 				return current;
 			}
 			current=path.get(current);

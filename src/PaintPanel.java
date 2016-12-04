@@ -61,34 +61,13 @@ public class PaintPanel extends JPanel{
 		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
 		height+=titleHeight;
 		
-		
 		int centerX = width/2-tileSize/2;
 		int centerY = height/2-tileSize/2;
-		int[] playerPos = map.getPlayersPosition();
-		int[] botPos = map.getBotsPosition();
-		for(int y = playerPos[1]-2;y < playerPos[1] + 3;++y){
-			for(int x = playerPos[0]-2;x < playerPos[0] + 3;++x){
-				Image tile;
-				char c =map.getTile(new int[]{x,y});
-				if(x == botPos[0] && y == botPos[1]){
-					tile = bot;
-				}else if(c == '#'){
-					tile = wall;
-				}else if(c == 'G'){
-					tile = gold;
-				}else if(c == 'E'){
-					tile = exit;
-				}else if(c == '.'){
-					tile = floor;
-				}else if(c == 'X'){
-					continue;
-				}else{
-					tile = getDefaultImg();
-				}
-				g2d.drawImage(floor, (x-playerPos[0])*tileSize+centerX, (y-playerPos[1])*tileSize+centerY, null);
-				g2d.drawImage(tile, (x-playerPos[0])*tileSize+centerX, (y-playerPos[1])*tileSize+centerY, null);
-			}			
-		}
+		
+		Image backGround = drawMap();
+		int bgWidth = backGround.getWidth(null);
+		int bgHeight = backGround.getHeight(null);
+		g2d.drawImage(backGround, centerX-bgWidth/2+tileSize/2, centerY-bgHeight/2+tileSize/2,null);
 		g2d.drawImage(player, centerX, centerY, null);
 		
 	//	g2d.drawImage(bot,0,0,null);
@@ -128,5 +107,42 @@ public class PaintPanel extends JPanel{
 			gold = defaultImg;
 			e.printStackTrace();
 		}
+	}
+	
+	private Image drawMap(){
+		int imageWidth = tileSize * 7;
+		int imageHeight = tileSize * 7;
+		BufferedImage image = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
+		
+		Graphics2D g2d = (Graphics2D)image.getGraphics();
+		int[] playerPos = map.getPlayersPosition();
+		int offsety = playerPos[1]-3;
+		int offsetx = playerPos[0]-3;
+		for(int y = offsety;y <= offsety + 6;++y){
+			for(int x = offsetx;x <= offsetx + 6;++x){
+				Image tile;
+				char c =map.getTile(new int[]{x,y});
+				if(c == '#'){
+					tile = wall;
+				}else if(c == 'G'){
+					tile = gold;
+				}else if(c == 'E'){
+					tile = exit;
+				}else if(c == '.'){
+					tile = floor;
+				}else if(c == 'X'){
+					continue;
+				}else{
+					tile = getDefaultImg();
+				}
+				g2d.drawImage(floor, (x-offsetx)*tileSize, (y-offsety)*tileSize, null);
+				g2d.drawImage(tile, (x-offsetx)*tileSize, (y-offsety)*tileSize, null);
+			}			
+		}
+		g2d.setColor(Color.red);
+		g2d.drawRect(0, 0, imageWidth-1, imageHeight-1);
+		g2d.drawLine(0, 0, imageWidth,imageHeight);
+		g2d.drawLine(0, imageHeight, imageWidth, 0);
+		return image;
 	}
 }
