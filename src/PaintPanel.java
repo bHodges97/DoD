@@ -12,8 +12,9 @@ import javax.swing.JPanel;
 
 public class PaintPanel extends JPanel{
 	
-	Map map = null;
-	Image bot,player,wall,floor,gold,exit;
+	private Map map = null;
+	private Image bot,player,wall,floor,gold,exit;
+	private int tileSize = 64;
 	
 	public PaintPanel() {
 		super.repaint();
@@ -45,7 +46,8 @@ public class PaintPanel extends JPanel{
 	public void paintComponent(Graphics g){
 		Graphics2D g2d = (Graphics2D)g;
 		int width =getWidth();
-		int height = getHeight();		
+		int height = getHeight();	
+		
 		g2d.fillRect(0,0 , width, height);
 		g2d.setColor(Color.WHITE);
 		if(map==null){
@@ -60,8 +62,8 @@ public class PaintPanel extends JPanel{
 		height+=titleHeight;
 		
 		
-		int centerX = width/2-32;
-		int centerY = height/2-32;
+		int centerX = width/2-tileSize/2;
+		int centerY = height/2-tileSize/2;
 		int[] playerPos = map.getPlayersPosition();
 		int[] botPos = map.getBotsPosition();
 		for(int y = playerPos[1]-2;y < playerPos[1] + 3;++y){
@@ -70,8 +72,6 @@ public class PaintPanel extends JPanel{
 				char c =map.getTile(new int[]{x,y});
 				if(x == botPos[0] && y == botPos[1]){
 					tile = bot;
-				}else if(x == playerPos[0] && y == playerPos[1]){
-					tile = player;
 				}else if(c == '#'){
 					tile = wall;
 				}else if(c == 'G'){
@@ -85,20 +85,22 @@ public class PaintPanel extends JPanel{
 				}else{
 					tile = getDefaultImg();
 				}
-				g2d.drawImage(floor, (x-playerPos[0])*64+centerX, (y-playerPos[1])*64+centerY, null);
-				g2d.drawImage(tile, (x-playerPos[0])*64+centerX, (y-playerPos[1])*64+centerY, null);
+				g2d.drawImage(floor, (x-playerPos[0])*tileSize+centerX, (y-playerPos[1])*tileSize+centerY, null);
+				g2d.drawImage(tile, (x-playerPos[0])*tileSize+centerX, (y-playerPos[1])*tileSize+centerY, null);
 			}			
 		}
+		g2d.drawImage(player, centerX, centerY, null);
 		
 	//	g2d.drawImage(bot,0,0,null);
 		
 	}
 	
 	protected Image getDefaultImg(){
-		BufferedImage defaultImg = new BufferedImage(64,64,BufferedImage.TYPE_INT_ARGB);
-		for(int x = 0;x < 64;++x){
-			for(int y = 0;y<64;++y){
-				if((x<32&&y<32) ||( x>=32&&y>=32)){
+		int halfTile = tileSize/2;
+		BufferedImage defaultImg = new BufferedImage(tileSize,tileSize,BufferedImage.TYPE_INT_ARGB);
+		for(int x = 0;x < tileSize;++x){
+			for(int y = 0;y< tileSize;++y){
+				if(( x < halfTile && y < halfTile) ||( x >= halfTile && y >= halfTile)){
 					defaultImg.setRGB(x, y, new Color(255,0,220).getRGB());//purple
 				}else{
 					defaultImg.setRGB(x, y, Color.black.getRGB());

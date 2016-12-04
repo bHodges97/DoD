@@ -14,23 +14,30 @@ public class GameLogic {
 	private boolean running = true;
 	private Map map;
 	private List<Player> players = new ArrayList<Player>();
-	private Player humanPlayer; 
-	private Console console;
+	private Player currentPlayer; 
+	protected Console console;
 	private int turnCounter;
 	
 	public GameLogic(Console console){
 		this.console = console;
 		map = new Map();
 		map.readMap("example_map.txt");
-		addPlayer(new HumanPlayer(this));
-		addPlayer(new BotPlayer(this));
-		
+		if(map.getMap()==null){
+			console.println("map load failed: exiting");
+		}else{
+			console.setMap(map);
+		}
+	}
+	
+	protected void startGame(){
 		turnCounter = 0;		
-		console.drawMap(map);
-		
 		while(running){
-			console.println("New turn");
+			if(players.isEmpty()){
+				continue;
+			}
+			console.println("Turn "+turnCounter);
 			for(Player player: players){
+				currentPlayer = player;
 				player.selectNextAction();
 				if(checkWin()){
 					console.showWinEvent();
@@ -38,37 +45,21 @@ public class GameLogic {
 				}else if(checkLost()){
 					console.showFailEvent();
 					running = false;
-				}					
+				}
+				wait(500);
 			}				
 			++turnCounter;
 		}
-		if(console.readln().equals("QUIT")){
-			quitGame();
-		}else{
+		while(!console.readln().equals("QUIT")){
 			console.println("GAME OVER(type QUIT to exit)");
 		}
+		quitGame();
 	}
 	
-	protected void addPlayer(Player player){
-    	Random rand = new Random(System.currentTimeMillis());    	
+	protected void addPlayer(Player player){    	   	
 		players.add(player);
 		player.setGameLogic(this);
-		int[] botPos = map.getBotsPosition();
-		int[] playerPos = {rand.nextInt(map.getMapWidth()),rand.nextInt(map.getMapHeight())};
-		while(map.getTile(playerPos) == '#' || map.getPlayerOrTile(playerPos) == 'P' || map.getPlayerOrTile(playerPos) == 'B'){
-			playerPos[0] = rand.nextInt(map.getMapWidth());
-			playerPos[1] = rand.nextInt(map.getMapHeight());
-		}
-		if(player instanceof HumanPlayer){
-			map.updatePlayerPosition(playerPos);
-			this.humanPlayer = player;
-		}else{
-			map.updateBotsPosition(playerPos);
-		}
-	}
-	
-	protected Console getConsole(){
-		return console;
+		map.placePlayer(player);
 	}
 	
 	protected Map getMap(){
@@ -96,7 +87,7 @@ public class GameLogic {
      * @return : Protocol if success or not.
      */
     protected String move(char direction) {
-    	int[] playerPos = map.getPlayersPosition();
+    	int[] playerPos = currentPlayer instanceof HumanPlayer?map.getPlayersPosition():map.getBotsPosition();
 		switch(direction){
 			case 'N':
 				--playerPos[1];
@@ -114,7 +105,7 @@ public class GameLogic {
 				return "Fail";
 		}
 		if(map.getTile(playerPos) != 'X' && map.getTile(playerPos) !='#'){
-			map.updatePlayerPosition(playerPos);
+			map.updatePosition(currentPlayer,playerPos);
 			return "Success";
 		}else{
 			return "Fail";
@@ -157,9 +148,9 @@ public class GameLogic {
     	int[] playerPos = map.getPlayersPosition();
 		if(map.getTile(playerPos) == 'G'){
 			map.updateMapLocation(playerPos,'.');
-			humanPlayer.addGold(1);
+			currentPlayer.addGold(1);
 		}
-		return ("You have "+humanPlayer.getGoldCount()+" gold!");    	
+		return ("You have "+currentPlayer.getGoldCount()+" gold!");    	
     }
 
     /**
@@ -172,7 +163,7 @@ public class GameLogic {
     
     private boolean checkWin(){
     	int[] playerPos = map.getPlayersPosition();
-    	if(map.getTile(playerPos) =='E' && humanPlayer.getGoldCount() >= map.getGoldRequired()){
+    	if(map.getTile(playerPos) =='E' && currentPlayer.getGoldCount() >= map.getGoldRequired()){
 			//TODO: WIN;
 			return true;
 		}
@@ -185,5 +176,13 @@ public class GameLogic {
 			return true;
 		}
     	return false;
+    }
+    private void wait(int time){
+    	try {
+			Thread.sleep(time);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 }

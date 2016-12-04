@@ -1,21 +1,21 @@
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 public class PathFinder {
 	private Map map;
     private java.util.Map<int[],int[]> path;
-    private int[][][] posMap;
 	private int[] start,goal;
     
 	public PathFinder(Map map){
 		this.map = map;
-		this.posMap = map.getPosMap();
 	}
 	
 	protected boolean  pathFind(int[] posA,int[] posB){	 	
-	    start = posMap[posA[0]][posA[1]];
-	    goal = posMap[posB[0]][posB[1]];
+	    start = map.getListedTile(posA[0],posA[1]);
+	    goal = map.getListedTile(posB[0],posB[1]);
 	    Set<int[]> closedSet = new HashSet<int[]>();
 	    Set<int[]> openSet = new HashSet<int[]>();
 	    openSet.add(start);
@@ -59,17 +59,40 @@ public class PathFinder {
 	}
 	
 	protected int[] findNextStep(){
-		int[] current = map.getPosMap()[goal[0]][goal[1]];
+		int[] current = map.getListedTile(goal[0],goal[1]);
 		while(!path.isEmpty()){				
 			if(path.get(current)==start){
 				System.out.println(current[0]+" "+current[1]);
 				return current;
 			}
 			current=path.get(current);
-			System.out.println(current[0]+current[1]-goal[0]-goal[1]);
 		}
 		return null;
 	}
+	
+	protected int[] randomNextStep(){
+		List<int[]> neighbours = map.getAdjacentClearTiles(start);
+    	if(neighbours.isEmpty()){
+    		return null;//if bot has no where to go
+    	}
+    	Random rand = new Random(System.currentTimeMillis());
+    	return neighbours.get(rand.nextInt(neighbours.size()));
+	}
+
+    
+    protected char getRelativeDirection(int[] start,int[] end){
+		if(end[1]>start[1]){
+    		return 'S';
+    	}else if(end[1]<start[1]){
+    		return 'N';
+    	}else if(end[0]>start[0]){
+    		return 'E';
+    	}else if(end[0]<start[0]){
+    		return 'W';
+    	}else{
+    		throw new IllegalArgumentException("start is same as end");
+    	}
+    }   
 	
     /**
      * Manhattan block distance from a to b

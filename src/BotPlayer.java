@@ -1,10 +1,3 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
 /**
  * Starts the game with a Bot Player. Contains code for bot's decision making.
@@ -14,7 +7,7 @@ import java.util.Set;
 public class BotPlayer extends Player{
 	private boolean	seenPlayer = false;
 	private Map gameMap;
-	PathFinder finder;
+	private PathFinder finder;
 	
 	public BotPlayer(GameLogic logic){
 		this.gameLogic = logic;
@@ -30,31 +23,11 @@ public class BotPlayer extends Player{
      * @return : Processed output or Invalid if the @param command is wrong.
      */
     public String processCommand(String command) {
-    	//command = command.split("MOVE")[1];
-    	Map map = gameLogic.getMap();
-    	int[] botPos = map.getBotsPosition();
-    	switch(command.charAt(5)){
-		case 'N':
-			--botPos[1];
-			break;
-		case 'S':
-			++botPos[1];
-			break;
-		case 'W':
-			--botPos[0];
-			break;
-		case 'E':
-			++botPos[0];
-			break;
-		default:
-			return "Fail";
+    	String output = "Invalid";
+    	if(command.length() == 6 && command.substring(0,5).equals("MOVE ")){
+			output = gameLogic.move(command.charAt(5));
     	}
-    	if(map.getTile(botPos) != 'X' || map.getTile(botPos) !='#'){
-			map.updateBotsPosition(botPos);
-			return "Success";
-		}else{
-			return "Fail";
-		}
+    	return output;
     }
 
     /**
@@ -62,8 +35,8 @@ public class BotPlayer extends Player{
      */
     public void selectNextAction() {
     	String command = "MOVE "+selectMoveDirection(gameLogic.getMap().getMap());
-    	gameLogic.getConsole().println("Bot: "+command);
-    	gameLogic.getConsole().println(processCommand(command));//TODO: can bots fail?
+    	gameLogic.console.println(command);
+    	gameLogic.console.println(processCommand(command));//TODO: can bots fail?
     }	
 
     /**
@@ -72,55 +45,37 @@ public class BotPlayer extends Player{
     protected char selectMoveDirection(char[][] map) {
      	int[] start = gameMap.getBotsPosition();
     	int[] goal = gameMap.getPlayersPosition();
+    	int[] next;
     	PathFinder finder = new PathFinder(gameMap);
     	if(canSeePlayer()){
     		seenPlayer = true;
     	}    	
-    	if(seenPlayer && finder.pathFind(start, goal)){    		
-    		int[] next = finder.findNextStep();
-    		return getRelativeDirection(start,next);
-			
-    	}else{
-	    	System.out.println("Where are you?");
-	    	List<int[]> neighbours= gameMap.getAdjacentClearTiles(start);
-	    	if(neighbours.isEmpty()){
-	    		return 'N';
-	    	}
-	    	Random rand = new Random(System.currentTimeMillis());
-	    	int[] next = neighbours.get(rand.nextInt(neighbours.size()));
-	    	return getRelativeDirection(start, next);
+    	if(seenPlayer & finder.pathFind(start, goal)){//must evaluate both to generate a path 		
+    		next = finder.findNextStep();			
+    	}else{//random pathing
+	    	next = finder.randomNextStep();
     	}
+	    return finder.getRelativeDirection(start, next);
     }
-    
-    private char getRelativeDirection(int[] start,int[] end){
-		if(end[1]>start[1]){
-    		return 'S';
-    	}else if(end[1]<start[1]){
-    		return 'N';
-    	}else if(end[0]>start[0]){
-    		return 'E';
-    	}else if(end[0]<start[0]){
-    		return 'W';
-    	}else{
-    		throw new IllegalArgumentException("start is same as end");
-    	}
-    }
-    
-  
-    
+    /**
+     * @return : Can the bot see a human player;
+     */
     private boolean canSeePlayer(){
-     	int[] start = gameLogic.getMap().getBotsPosition();
-    	int[] goal = gameLogic.getMap().getPlayersPosition();
+     	int[] start = gameMap.getBotsPosition();
+    	int[] goal = gameMap.getPlayersPosition();
     	if(Math.abs(start[0]-goal[0]) <= 2 && Math.abs(start[1] - goal[1]) <= 2){
     		return true;
     	}
     	return false;	
-    }   
-    
+    }      
     
 
     public static void main(String[] args) {
-    	//GameLogic main = new GameLogic();
+    	Console console = new Console();
+    	GameLogic game = new GameLogic(console);
+		//game.addPlayer(new HumanPlayer(game));
+		game.addPlayer(new BotPlayer(game));
         // RUN FOREST RUN!
+		game.startGame();
     }
 }

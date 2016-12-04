@@ -3,6 +3,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.Scanner;
 
 /**
@@ -15,9 +16,9 @@ public class Map {
 	private String mapName = "";
 	private int goldRequired = 0;
 	private char[][] map;
-	private int[][][] posMap;
-	private int[] playerPos = {0,0};
-	private int[] botPos = {0,0};
+	private List<int[]> posList = new ArrayList<int[]>();
+	private List<int[]> emptyPosList;
+	private OneToOneMap<Player,int[]> playerToPosMap = new OneToOneMap<Player,int[]>();
 	
 	
 	public Map(){
@@ -38,9 +39,6 @@ public class Map {
         return map;
     }
     
-    protected int[][][] getPosMap(){
-    	return posMap;
-    }
 
     /**
      * @return : The height of the current map.
@@ -67,14 +65,24 @@ public class Map {
      * @return : The position of the player.
      */
     protected int[] getPlayersPosition() {
-    	return playerPos.clone();
+    	for(Player player:playerToPosMap.keySet()){
+    		if(player instanceof HumanPlayer){
+    			return playerToPosMap.get(player).clone();
+    		}
+    	}
+    	return posList.get(0);
     }
     
     /**
      * @return : The position of the bot.
      */
     protected int[] getBotsPosition() {
-    	return botPos.clone();
+    	for(Player player:playerToPosMap.keySet()){
+    		if(player instanceof BotPlayer){
+    			return playerToPosMap.get(player).clone();
+    		}
+    	}
+    	return posList.get(0);
     }
 
     /**
@@ -108,13 +116,12 @@ public class Map {
 				}
 			}			
 			
-			posMap = new int[map.length][map[0].length][2];
 			for(int y = 0;y < getMapHeight();++y){
 				for(int x = 0; x< getMapWidth();++x){
-					posMap[x][y][0] = x;
-					posMap[x][y][1] = y;
+					posList.add(new int[]{x,y});
 				}
 			}
+			emptyPosList = new ArrayList<int[]>(posList);
     	}catch(FileNotFoundException|NoSuchElementException e){
     		e.printStackTrace();
     		System.exit(1);
@@ -156,45 +163,56 @@ public class Map {
      *
      * @param location : New location of the player.
      */
-    protected void updatePlayerPosition(int[] location) {
-    	playerPos = location;
+    protected void updatePlayerPosition(int[] pos) {
+    	int[] oldPos = getPlayersPosition();
+    	Player player = playerToPosMap.getKey(getListedTile(oldPos[0],oldPos[1]));
+    	updatePosition(player, pos);
     }
     
-    /**
-     * Updates the stored in memory location of the bot.
-     *
-     * @param location : New location of the bot.
-     */
-    protected void updateBotsPosition(int[] location) {
-    	botPos = location;
-    }
     protected List<int[]> getAdjacentClearTiles(int[] current){
     	List<int[]> neighbors = new ArrayList<int[]>();
     	if(map[current[0]-1][current[1]] != '#'){
-    		neighbors.add(posMap[current[0]-1][current[1]]);
+    		neighbors.add(getListedTile(current[0]-1,current[1]));
     	}
     	if(map[current[0]+1][current[1]] != '#'){
-    		neighbors.add(posMap[current[0]+1][current[1]]);
+    		neighbors.add(getListedTile(current[0]+1,current[1]));
     	}
     	if(map[current[0]][current[1]-1] != '#'){
-    		neighbors.add(posMap[current[0]][current[1]-1]);
+    		neighbors.add(getListedTile(current[0],current[1]-1));
     	}
     	if(map[current[0]][current[1]+1] != '#'){
-    		neighbors.add(posMap[current[0]][current[1]+1]);
+    		neighbors.add(getListedTile(current[0],current[1]+1));
     	}
     	return neighbors;
+    }       
+    
+    protected boolean placePlayer(Player player){
+    	Random rand = new Random(System.currentTimeMillis());
+    	if(emptyPosList.isEmpty()){
+    		return false;
+    	}    	
+    	int[] tempPos = emptyPosList.get(rand.nextInt(emptyPosList.size()));
+		while(getTile(tempPos)=='#'){
+			emptyPosList.remove(tempPos);
+	    	if(emptyPosList.isEmpty()){
+	    		return false;
+	    	}    
+			tempPos = emptyPosList.get(rand.nextInt(emptyPosList.size()));
+		}
+		playerToPosMap.put(player,tempPos);
+		emptyPosList.remove(tempPos);
+		return true;
     }
     
+    protected int[] getListedTile(int x,int y){
+    	return posList.get(y*getMapWidth()+x);
+    }
     
-    protected char getPlayerOrTile(int[] coords){
-    	int x = coords[0];
-    	int y = coords[1];
-    	if(playerPos[0] == x && playerPos[1] == y){
-    		return 'P';
-    	}else if(botPos[0] == x && botPos[1] == y){
-    		return 'B';
-    	}else{
-    		return getTile(coords);
-    	}
+    protected void updatePosition(Player player,int[] pos){
+    	int[] newPos = getListedTile(pos[0],pos[1]);
+    	int[] oldPos = playerToPosMap.remove(player);
+    	emptyPosList.add(oldPos);
+    	playerToPosMap.put(player,newPos);
+		emptyPosList.remove(newPos);
     }
 }

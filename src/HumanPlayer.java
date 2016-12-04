@@ -15,7 +15,7 @@ public class HumanPlayer extends Player{
     * @return : A string containing the input the player entered.
     */
     protected String getInputFromConsole() {
-		return gameLogic.getConsole().readln();
+		return gameLogic.console.readln();
     }
 
     /**
@@ -26,7 +26,7 @@ public class HumanPlayer extends Player{
      * @return : Processed output or Invalid if the @param command is wrong.
      */
 	protected String processCommand(String command) {
-		String output = "";
+		String output = "Invalid";
 		if(command.equals("HELLO")){
 			output = gameLogic.hello();
 		}else if(command.equals("PICKUP")){
@@ -37,8 +37,6 @@ public class HumanPlayer extends Player{
 			gameLogic.quitGame();
 		}else if(command.length() == 6 && command.substring(0,5).equals("MOVE ")){
 			output = gameLogic.move(command.charAt(5));
-	    }else{
-	    	output = "Invalid";
 	    }
 	    return output;
     }
@@ -50,15 +48,18 @@ public class HumanPlayer extends Player{
     	String input = getInputFromConsole();
     	String output = processCommand(input);
     	while((output.equals("Invalid") || output.equals("Fail"))||(input.equals("LOOK"))){
-    		gameLogic.getConsole().println(output);
+    		gameLogic.console.println(output);
     		output = processCommand(getInputFromConsole());
     	}
-    	gameLogic.getConsole().println(output);
+    	gameLogic.console.println(output);
     }    
 
     public static void main(String[] args) {
     	Console console = new Console();
-    	GameLogic main = new GameLogic(console);    	
+    	GameLogic game = new GameLogic(console);
+		game.addPlayer(new HumanPlayer(game));
+		game.addPlayer(new BotPlayer(game));
         // RUN FOREST RUN!
+		game.startGame();
     }
 }
