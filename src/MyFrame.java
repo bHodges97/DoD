@@ -48,8 +48,10 @@ public class MyFrame extends JFrame{
 		pack();
 	}
 	
-
-	protected void drawMap(Map map){
+	protected void update(Player player){
+		paintPanel.update(player);
+	}
+	protected void setMap(Map map){
 		paintPanel.setMap(map);
 	}
 	protected String getInput(){

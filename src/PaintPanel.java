@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
@@ -13,28 +14,47 @@ import javax.swing.JPanel;
 public class PaintPanel extends JPanel{
 	
 	private Map map = null;
-	private Image bot,player,wall,floor,gold,exit;
+	private Image backGround,bot,player,wall,floor,gold,exit;
 	private int tileSize = 64;
+	private int frame = 0;
+	private java.util.Map<Player,int[]> posMap = new HashMap<Player,int[]>();
+	private Player current;
+	private int[] offSet = new int[]{0,0};
 	
 	public PaintPanel() {
 		super.repaint();
 		setPreferredSize(new Dimension(350,350));
 		loadSprites();
 		
-		Runnable runner = new Runnable() {
-		      public void run() {
-		    	  while(true){
-			    	  repaint();
-			    	  try {
-						Thread.sleep(100);
+		Runnable runner = new Runnable(){
+			@Override
+			public void run() {
+				while(map==null){
+					try {
+						Thread.sleep(1);
 					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
 						e.printStackTrace();
-					}
-		    	  }
-		      }
-		 };
-		 Thread repaintThread = new Thread(runner, "repaint thread");
-		 repaintThread.start();;
+					}			
+				}
+				// TODO Auto-generated method stub
+				while(true){
+					Player changed = checkChange();
+					if(changed!=null){
+						update(changed);
+					}	
+					repaint();
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}			
+				}
+			}			
+		};
+		Thread repaintThread = new Thread(runner,"repainter");
+		repaintThread.start();
 	}
 	
 	protected void setMap(Map map){
@@ -44,6 +64,7 @@ public class PaintPanel extends JPanel{
 	
 	@Override
 	public void paintComponent(Graphics g){
+		//super.paint(g); this line is VERY BAD
 		Graphics2D g2d = (Graphics2D)g;
 		int width =getWidth();
 		int height = getHeight();	
@@ -58,20 +79,21 @@ public class PaintPanel extends JPanel{
 		g2d.setFont(new Font("monospaced", Font.BOLD, 20));
 		int titleWidth = g2d.getFontMetrics().stringWidth(title);
 		int titleHeight = g2d.getFontMetrics().getHeight();
-		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
 		height+=titleHeight;
 		
 		int centerX = width/2-tileSize/2;
 		int centerY = height/2-tileSize/2;
 		
-		Image backGround = drawMap();
+		if(backGround == null || (offSet[0] == 0 && offSet[1] == 0)){
+			backGround = drawMap();
+		}
 		int bgWidth = backGround.getWidth(null);
 		int bgHeight = backGround.getHeight(null);
-		g2d.drawImage(backGround, centerX-bgWidth/2+tileSize/2, centerY-bgHeight/2+tileSize/2,null);
+		g2d.drawImage(backGround, centerX-bgWidth/2+tileSize/2-offSet[0], centerY-bgHeight/2+tileSize/2-offSet[1],null);
 		g2d.drawImage(player, centerX, centerY, null);
-		
 	//	g2d.drawImage(bot,0,0,null);
-		
+
+		g2d.drawString(title+frame+":"+offSet[0]+","+offSet[1], (width-titleWidth)/2, titleHeight) ;	
 	}
 	
 	protected Image getDefaultImg(){
@@ -87,6 +109,31 @@ public class PaintPanel extends JPanel{
 			}
 		}
 		return defaultImg;
+	}
+	
+	protected void update(Player player){
+		if(player instanceof BotPlayer){
+			updatePosMap();
+		}
+		System.out.println("HELLO");
+		current = player;
+		int[] pos = map.getPosition(player);
+		int[] oldPos = posMap.get(player);
+		int[] posDif = new int[]{pos[0]-oldPos[0],pos[1]-oldPos[1]};
+		if(frame < tileSize){
+			++frame;
+			offSet[0]+=posDif[0];
+			offSet[1]+=posDif[1];
+			System.out.println(offSet[0] + " " + offSet[1]);
+		}else{
+			System.out.println("WORlD");
+			frame = 0;
+			offSet = new int[]{0,0};
+			posMap.remove(player);
+			posMap.put(player,pos);
+			backGround = drawMap();
+		}		
+		
 	}
 
 	private void loadSprites(){
@@ -110,16 +157,17 @@ public class PaintPanel extends JPanel{
 	}
 	
 	private Image drawMap(){
-		int imageWidth = tileSize * 7;
-		int imageHeight = tileSize * 7;
+		int tilesWide = 11;//Must be odd
+		int imageWidth = tileSize * tilesWide;
+		int imageHeight = tileSize * tilesWide;
 		BufferedImage image = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
 		
 		Graphics2D g2d = (Graphics2D)image.getGraphics();
 		int[] playerPos = map.getPlayersPosition();
-		int offsety = playerPos[1]-3;
-		int offsetx = playerPos[0]-3;
-		for(int y = offsety;y <= offsety + 6;++y){
-			for(int x = offsetx;x <= offsetx + 6;++x){
+		int offsety = playerPos[1]-(tilesWide-1)/2;
+		int offsetx = playerPos[0]-(tilesWide-1)/2;
+		for(int y = offsety;y < offsety + tilesWide;++y){
+			for(int x = offsetx;x < offsetx + tilesWide;++x){
 				Image tile;
 				char c =map.getTile(new int[]{x,y});
 				if(c == '#'){
@@ -140,9 +188,39 @@ public class PaintPanel extends JPanel{
 			}			
 		}
 		g2d.setColor(Color.red);
-		g2d.drawRect(0, 0, imageWidth-1, imageHeight-1);
-		g2d.drawLine(0, 0, imageWidth,imageHeight);
-		g2d.drawLine(0, imageHeight, imageWidth, 0);
+		//g2d.drawRect(0, 0, imageWidth-1, imageHeight-1);
+		//g2d.drawLine(0, 0, imageWidth,imageHeight);
+		//g2d.drawLine(0, imageHeight, imageWidth, 0);
 		return image;
+	}
+	
+	private void updatePosMap(){
+		for(Player player:posMap.keySet()){
+			if(player instanceof HumanPlayer){
+				return;
+			}
+			posMap.remove(player);
+			posMap.put(player,map.getPosition(player));
+		}
+	}
+	
+	private Player checkChange(){
+		PlayerPosList mapList = map.getPlayerPosList();
+		if(posMap.size()!=mapList.size()){
+			for(Player player:mapList){
+				if(!posMap.containsKey(player)){
+					posMap.put(player,mapList.get(player).clone());
+				}
+			}
+		}
+		
+		for(Player player:posMap.keySet()){
+			int[] stored = posMap.get(player);
+			int[] mapval = map.getPosition(player);
+			if(stored[0] != mapval[0] && stored[1] != mapval[1]){
+				return player;
+			}
+		}
+		return null;
 	}
 }

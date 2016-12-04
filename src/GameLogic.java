@@ -38,7 +38,7 @@ public class GameLogic {
 			console.println("Turn "+turnCounter);
 			for(Player player: players){
 				currentPlayer = player;
-				player.selectNextAction();
+				player.selectNextAction();				
 				if(checkWin()){
 					console.showWinEvent();
 					running = false;
@@ -46,6 +46,7 @@ public class GameLogic {
 					console.showFailEvent();
 					running = false;
 				}
+				console.update(player);
 				wait(500);
 			}				
 			++turnCounter;

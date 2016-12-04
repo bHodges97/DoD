@@ -84,7 +84,15 @@ public class Map {
     	}
     	return posList.get(0);
     }
-
+    
+    protected int[] getPosition(Player player){
+    	return playerPosList.get(player).clone();
+    }
+    
+    protected PlayerPosList getPlayerPosList(){
+    	return playerPosList;
+    }
+    
     /**
      * Reads the map from file.
      *

@@ -65,10 +65,14 @@ public class Console extends JTextArea{
 		setCaretPosition(getText().length());
 	}
 	
-	protected void setMap(Map map){
-		gui.drawMap(map);
+	protected void update(Player player){
+		gui.update(player);
 	}
-
+	
+	protected void setMap(Map map){
+		gui.setMap(map);
+	}
+	
 	
 	private KeyListener getTextAreaKeyListener(){
 		KeyListener textAreaListener = new KeyListener() {			

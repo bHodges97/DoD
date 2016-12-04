@@ -1,12 +1,17 @@
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 
-public class PlayerPosList{
+public class PlayerPosList implements Iterable<Player>{
 	List<Player> players = new ArrayList<Player>();
 	List<int[]> positions = new ArrayList<int[]>();
+	
+	public PlayerPosList(){
+		
+	}
 	
 	public int[] update(Player player,int[] pos){
 		int index = players.indexOf(player);
@@ -34,5 +39,14 @@ public class PlayerPosList{
 	}
 	public Set<Player> keySet(){
 		return new HashSet<Player>(players);
+	}
+	
+	public int size(){
+		return players.size();
+	}
+	
+	@Override
+	public Iterator<Player> iterator() {
+		return players.iterator();
 	}
 }
