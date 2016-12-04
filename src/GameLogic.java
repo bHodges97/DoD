@@ -46,7 +46,6 @@ public class GameLogic {
 					console.showFailEvent();
 					running = false;
 				}
-				console.update(player);
 				wait(500);
 			}				
 			++turnCounter;
