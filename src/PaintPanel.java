@@ -1,3 +1,4 @@
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -90,8 +91,10 @@ public class PaintPanel extends JPanel{
 		int centerX = width/2-tileSize/2;
 		int centerY = height/2-tileSize/2;
 		
-		if((offSet[0] == 0 && offSet[1] == 0) || backGround == null){
-			if(current instanceof HumanPlayer)
+		if( backGround == null){
+			backGround = drawMap();
+		}
+		if(current instanceof HumanPlayer){
 			backGround = drawMap();
 		}
 		int bgWidth = backGround.getWidth(null);
@@ -105,30 +108,43 @@ public class PaintPanel extends JPanel{
 			g2d.drawImage(backGround, centerX-bgWidth/2+tileSize/2,centerY-bgHeight/2+tileSize/2,null);
 		}
 		g2d.drawImage(player, centerX, centerY, null);
+		
+		
 		Player botPlayer = getBot();
 		int[] botOffSet = posRelativeToCamera(botPlayer);
-		if(current instanceof BotPlayer){
-		
+		int x,y;
+		if(current instanceof BotPlayer && !finishedMove()){
+			botOffSet = posDif(map.getPlayersPosition(),posMap.get(current));
+			x = centerX-botOffSet[0]*tileSize+offSet[0];
+			y = centerY-botOffSet[1]*tileSize+offSet[1];
+		}else{
+			botOffSet = posDif(map.getPlayersPosition(),map.getBotsPosition());
+			x = centerX-botOffSet[0]*tileSize-offSet[0];
+			y = centerY-botOffSet[1]*tileSize-offSet[1];
 		}
-		g2d.drawString(botOffSet[0]+","+botOffSet[1], 0, 300);
-		g2d.drawImage(bot, centerX-botOffSet[0]*tileSize, centerY-botOffSet[0]*tileSize, null);
-	//	g2d.drawImage(bot,0,0,null);b
+		g2d.drawImage(bot,x ,y ,null);
+		
+		
+		Image overlay = getOverlay(width,height);
+		g2d.drawImage(overlay, 0, 0, null);
 		
 		g2d.drawString(title+frame+":"+offSet[0]+","+offSet[1], (width-titleWidth)/2, titleHeight) ;
-		String str = current instanceof HumanPlayer?"human":"bot";
-		g2d.drawString(str, 0, 20);
 	}
 	
 	protected void update(Player player){
 		//if(player instanceof Player)return;
+
 		int[] pos = map.getPosition(player);
 		int[] oldPos = posMap.get(player);
-		int[] posDif = posDif(pos,oldPos); 
+		int[] posDif = posDif(pos,oldPos);
+		if(posDif[0] == 0 && posDif[1] == 0){
+			offSet = new int[]{0,0};
+		}
 		if(!finishedMove()){
 			offSet[0]+=posDif[0]*4;
 			offSet[1]+=posDif[1]*4;
 		}else{
-			offSet = new int[]{0,0};
+			offSet = new int[]{tileSize,tileSize};
 			posMap.remove(player);
 			posMap.put(player,pos);
 		}		
@@ -242,5 +258,17 @@ public class PaintPanel extends JPanel{
 			}
 		}
 		return null;
+	}
+	
+	private Image getOverlay(int width,int height){
+		BufferedImage overlay = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = (Graphics2D)overlay.getGraphics();
+		g2d.setColor(Color.DARK_GRAY);
+		g2d.fillRect(0, 0, width, height);
+		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
+		g2d.fillOval(width/2-160, height/2-160, 320, 320);
+		
+		
+		return overlay;
 	}
 }

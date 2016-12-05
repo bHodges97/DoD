@@ -45,6 +45,7 @@ public class MyFrame extends JFrame{
 		initialiseLayout();		
 		initialiseButtons();	
 		setVisible(true);
+		allowInputs(false);
 		pack();
 	}
 	
@@ -54,16 +55,25 @@ public class MyFrame extends JFrame{
 	protected void setMap(Map map){
 		paintPanel.setMap(map);
 	}
-	protected String getInput(){
-		guiInput = null;
-		try {
-			Thread.sleep(1);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+	protected void allowInputs(boolean mode){
+		if(mode){
+			guiInput = null;
+			for(Component comp:buttonsPanel.getComponents()){
+				if(comp instanceof JButton){
+					((JButton)comp).setEnabled(true);
+				}
+			}
+		}else{
+			for(Component comp:buttonsPanel.getComponents()){
+				if(comp instanceof JButton){
+					((JButton)comp).setEnabled(false);
+				}
+			}
 		}
-		String holder = guiInput;
-		guiInput = null;
-		return holder;
+	}
+	
+	protected String getInput(){
+		return guiInput;
 	}
 	
 	private void loadIcons(){

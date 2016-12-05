@@ -23,6 +23,7 @@ public class Console extends JTextArea{
 		setFont(new Font("monospaced", Font.PLAIN, 12));
 		//setRows(10);
 		initialiseArrowKeys();
+		setCaretPosition(0);
 		addKeyListener(getTextAreaKeyListener());
 	}
 	
@@ -40,6 +41,8 @@ public class Console extends JTextArea{
 		while(buffer.ready()){
 			buffer.readLine();
 		}
+		gui.allowInputs(true);
+		
 		while(input == null || input.equals("")){				
 			input = gui.getInput();
 			if(buffer.ready()){
@@ -53,6 +56,7 @@ public class Console extends JTextArea{
 				e.printStackTrace();
 			}
 		}
+		gui.allowInputs(false);
 		setEditable(false);
 		if(fromGui){
 			println(input);
