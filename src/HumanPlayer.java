@@ -1,3 +1,5 @@
+import java.io.IOException;
+
 /**
  * Runs the game with a human player and contains code needed to read inputs.
  *
@@ -15,7 +17,13 @@ public class HumanPlayer extends Player{
     * @return : A string containing the input the player entered.
     */
     protected String getInputFromConsole() {
-		return gameLogic.console.readln();
+		try {
+			return gameLogic.console.readln();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "";
     }
 
     /**

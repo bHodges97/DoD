@@ -55,6 +55,12 @@ public class MyFrame extends JFrame{
 		paintPanel.setMap(map);
 	}
 	protected String getInput(){
+		guiInput = null;
+		try {
+			Thread.sleep(1);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		String holder = guiInput;
 		guiInput = null;
 		return holder;

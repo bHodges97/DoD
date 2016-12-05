@@ -33,20 +33,25 @@ public class Console extends JTextArea{
 		println("----****YOU_DEAD****----");
 	}
 	
-	protected  String readln(){
+	protected  String readln() throws IOException{
 		input = null;
 		setEditable(true);
 		boolean fromGui = true;
+		while(buffer.ready()){
+			buffer.readLine();
+		}
 		while(input == null || input.equals("")){				
 			input = gui.getInput();
+			if(buffer.ready()){
+				input=buffer.readLine();
+				fromGui = false;
+			}
 			try {
-				if(buffer.ready()){
-					input=buffer.readLine();
-					fromGui = false;
-				}
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}	
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		setEditable(false);
 		if(fromGui){
@@ -99,8 +104,11 @@ public class Console extends JTextArea{
 						int start = getLineStartOffset(getLineCount()-1);
 						int end = getLineEndOffset(getLineCount()-1);
 						input = getText().substring(start,end);
+						setText(getText().substring(0,start));
 					}else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V){
 						e.consume();//no pasting
+					}else if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE && caretPos <= getLineStartOffset(getLineCount()-1) ){
+						e.consume();
 					}
 				} catch (BadLocationException exception) {
 					exception.printStackTrace();

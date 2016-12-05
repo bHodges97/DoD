@@ -20,6 +20,7 @@ public class PaintPanel extends JPanel{
 	private java.util.Map<Player,int[]> posMap = new HashMap<Player,int[]>();
 	private Player current;
 	private int[] offSet = new int[]{0,0};
+	private boolean started = false;
 	
 	public PaintPanel() {
 		super.repaint();
@@ -29,7 +30,7 @@ public class PaintPanel extends JPanel{
 		Runnable runner = new Runnable(){
 			@Override
 			public void run() {
-				while(map==null){
+				while(map==null || !started){
 					try {
 						Thread.sleep(1);
 					} catch (InterruptedException e) {
@@ -37,11 +38,10 @@ public class PaintPanel extends JPanel{
 						e.printStackTrace();
 					}			
 				}
+				initialisePos();
 				// TODO Auto-generated method stub
 				while(true){
-					if(checkChange(current)){
-						update(current);
-					}	
+					update(current);
 					repaint();
 					try {
 						Thread.sleep(10);
@@ -60,6 +60,7 @@ public class PaintPanel extends JPanel{
 		this.map = map;
 	}
 	protected void setPlayer(Player player){
+		started = true;
 		current = player;
 	}
 	
@@ -76,6 +77,10 @@ public class PaintPanel extends JPanel{
 			g2d.drawString("MAP LOAD FAILED", 0, 20);
 			return;
 		}
+		if(!started){
+			g2d.drawString("NO PLAYERS", 0, 20);
+			return;
+		}
 		String title = map.getMapName();		
 		g2d.setFont(new Font("monospaced", Font.BOLD, 20));
 		int titleWidth = g2d.getFontMetrics().stringWidth(title);
@@ -85,26 +90,68 @@ public class PaintPanel extends JPanel{
 		int centerX = width/2-tileSize/2;
 		int centerY = height/2-tileSize/2;
 		
-		if(current==null){
-			initialisePos();
-			return;
-		}
 		if((offSet[0] == 0 && offSet[1] == 0) || backGround == null){
+			if(current instanceof HumanPlayer)
 			backGround = drawMap();
 		}
 		int bgWidth = backGround.getWidth(null);
 		int bgHeight = backGround.getHeight(null);
-		g2d.drawImage(backGround, centerX-bgWidth/2+tileSize/2-offSet[0], centerY-bgHeight/2+tileSize/2-offSet[1],null);
-		if(current instanceof HumanPlayer){
-			g2d.drawImage(player, centerX, centerY, null);
-		}else{
-			g2d.drawImage(bot, centerX, centerY, null);
-		}
-	//	g2d.drawImage(bot,0,0,null);
 		
-		g2d.drawString(title+frame+":"+offSet[0]+","+offSet[1], (width-titleWidth)/2, titleHeight) ;	
+		
+		if(current instanceof HumanPlayer){
+			g2d.drawImage(backGround, centerX-bgWidth/2+tileSize/2-offSet[0], centerY-bgHeight/2+tileSize/2-offSet[1],null);
+			
+		}else{
+			g2d.drawImage(backGround, centerX-bgWidth/2+tileSize/2,centerY-bgHeight/2+tileSize/2,null);
+		}
+		g2d.drawImage(player, centerX, centerY, null);
+		Player botPlayer = getBot();
+		int[] botOffSet = posRelativeToCamera(botPlayer);
+		if(current instanceof BotPlayer){
+		
+		}
+		g2d.drawString(botOffSet[0]+","+botOffSet[1], 0, 300);
+		g2d.drawImage(bot, centerX-botOffSet[0]*tileSize, centerY-botOffSet[0]*tileSize, null);
+	//	g2d.drawImage(bot,0,0,null);b
+		
+		g2d.drawString(title+frame+":"+offSet[0]+","+offSet[1], (width-titleWidth)/2, titleHeight) ;
+		String str = current instanceof HumanPlayer?"human":"bot";
+		g2d.drawString(str, 0, 20);
 	}
 	
+	protected void update(Player player){
+		//if(player instanceof Player)return;
+		int[] pos = map.getPosition(player);
+		int[] oldPos = posMap.get(player);
+		int[] posDif = posDif(pos,oldPos); 
+		if(!finishedMove()){
+			offSet[0]+=posDif[0]*4;
+			offSet[1]+=posDif[1]*4;
+		}else{
+			offSet = new int[]{0,0};
+			posMap.remove(player);
+			posMap.put(player,pos);
+		}		
+		
+	}
+	private boolean finishedMove(){
+		if(Math.abs(offSet[0])>=tileSize || Math.abs(offSet[1]) >= tileSize){
+			return true;
+		}
+		return false;
+	}
+	
+	protected void initialisePos(){
+		PlayerPosList mapList = map.getPlayerPosList();
+		for(Player player:mapList){
+			if(!posMap.containsKey(player)){
+				posMap.put(player,mapList.get(player).clone());
+				if(player instanceof HumanPlayer)
+				current = player;
+			}
+		}
+	}
+
 	protected Image getDefaultImg(){
 		int halfTile = tileSize/2;
 		BufferedImage defaultImg = new BufferedImage(tileSize,tileSize,BufferedImage.TYPE_INT_ARGB);
@@ -120,23 +167,6 @@ public class PaintPanel extends JPanel{
 		return defaultImg;
 	}
 	
-	protected void update(Player player){
-		int[] pos = map.getPosition(player);
-		int[] oldPos = posMap.get(player);
-		int[] posDif = new int[]{pos[0]-oldPos[0],pos[1]-oldPos[1]};
-		if(frame < tileSize){
-			frame+=2;
-			offSet[0]+=posDif[0]*2;
-			offSet[1]+=posDif[1]*2;
-		}else{
-			System.out.println("WORlD");
-			frame = 0;
-			offSet = new int[]{0,0};
-			posMap.remove(player);
-			posMap.put(player,pos);
-		}		
-		
-	}
 
 	private void loadSprites(){
 	try {
@@ -195,28 +225,22 @@ public class PaintPanel extends JPanel{
 		return image;
 	}
 	
-	
-	private boolean checkChange(Player player){
-		PlayerPosList mapList = map.getPlayerPosList();
-		if(posMap.size()!=mapList.size()){
-			initialisePos();
-		}
-		
-		int[] stored = posMap.get(player);
-		int[] mapval = map.getPosition(player);
-		if(stored[0] != mapval[0] || stored[1] != mapval[1]){
-			return true;
-		}else{
-			return false;
-		}
+	private int[] posRelativeToCamera(Player player){
+		int[] current = map.getPosition(player);
+		int[] center  = map.getPlayersPosition();
+		return posDif(center,current);
 	}
-	public void initialisePos(){
-		PlayerPosList mapList = map.getPlayerPosList();
-		for(Player player:mapList){
-			if(!posMap.containsKey(player)){
-				posMap.put(player,mapList.get(player).clone());
-				current = player;
+	
+	private int[] posDif(int[] a,int[] b){
+		return new int[]{a[0]-b[0],a[1]-b[1]};
+	}
+	
+	private Player getBot(){
+		for(Player player:posMap.keySet()){
+			if(player instanceof BotPlayer){
+				return player;
 			}
 		}
+		return null;
 	}
 }

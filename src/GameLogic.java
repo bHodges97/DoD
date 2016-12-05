@@ -1,8 +1,6 @@
 import java.util.List;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
 
 /**
  * Contains the main logic part of the game, as it processes.
@@ -34,12 +32,12 @@ public class GameLogic {
 		while(running){
 			if(players.isEmpty()){
 				continue;
-			}			
+			}
 			console.println("Turn "+turnCounter);
 			for(Player player: players){
 				currentPlayer = player;
 				console.update(player);
-				player.selectNextAction();				
+				player.selectNextAction();
 				if(checkWin()){
 					console.showWinEvent();
 					running = false;
@@ -47,12 +45,17 @@ public class GameLogic {
 					console.showFailEvent();
 					running = false;
 				}
-				wait(500);
+				console.update(player);
+				wait(1000);
 			}				
 			++turnCounter;
 		}
-		while(!console.readln().equals("QUIT")){
-			console.println("GAME OVER(type QUIT to exit)");
+		try {
+			while(!console.readln().equals("QUIT")){
+				console.println("GAME OVER(type QUIT to exit)");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		quitGame();
 	}
