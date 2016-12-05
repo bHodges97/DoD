@@ -41,9 +41,11 @@ public class GameLogic {
 				if(checkWin()){
 					console.showWinEvent();
 					running = false;
+					break;
 				}else if(checkLost()){
 					console.showFailEvent();
 					running = false;
+					break;
 				}
 				console.update(player);
 				wait(1000);

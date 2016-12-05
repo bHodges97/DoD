@@ -46,7 +46,7 @@ public class PaintPanel extends JPanel{
 					update(current);
 					repaint();
 					try {
-						Thread.sleep(10);
+						Thread.sleep(2);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -80,8 +80,11 @@ public class PaintPanel extends JPanel{
 			return;
 		}
 		if(!started){
-			g2d.drawString("NO PLAYERS", 0, 20);
+			g2d.drawString("GAME NOT STARTED", 0, 20);
 			return;
+		}
+		if(true){
+			//check player exisit
 		}
 		String title = map.getMapName();		
 		g2d.setFont(new Font("monospaced", Font.BOLD, 20));
@@ -92,47 +95,49 @@ public class PaintPanel extends JPanel{
 		int centerX = width/2-tileSize/2;
 		int centerY = height/2-tileSize/2;
 		
-		//BufferedImage backGround = drawMap();
 		if(backGround == null){
 			backGround = drawFullMap();
 		}
-		
-		
-		
-		int bgWidth = backGround.getWidth(null);
-		int bgHeight = backGround.getHeight(null);
-		
-		
-		if(current instanceof HumanPlayer){
-			g2d.drawImage(backGround, centerX-bgWidth/2+tileSize/2-offSet[0], centerY-bgHeight/2+tileSize/2-offSet[1],null);
-			
-		}else{
-			g2d.drawImage(backGround, centerX-bgWidth/2+tileSize/2,centerY-bgHeight/2+tileSize/2,null);
-		}
-		g2d.drawImage(player, centerX, centerY, null);
-		
-		
-		Player botPlayer = getBot();
-		int[] botOffSet = posRelativeToCamera(botPlayer);
 		int x,y;
-		if(current instanceof BotPlayer && !finishedMove()){
-			botOffSet = posDif(map.getPlayersPosition(),posMap.get(current));
-			x = centerX-botOffSet[0]*tileSize+offSet[0];
-			y = centerY-botOffSet[1]*tileSize+offSet[1];
-		}else{
-			botOffSet = posDif(map.getPlayersPosition(),map.getBotsPosition());
-			x = centerX-botOffSet[0]*tileSize-offSet[0];
-			y = centerY-botOffSet[1]*tileSize-offSet[1];
+		int[] cameraPos = new int[]{0,0};
+		for(Player player:posMap.keySet()){
+			if(player.isPlayer){
+				cameraPos = posMap.get(player);
+				x = centerX - cameraPos[0]*tileSize;
+				y = centerY - cameraPos[1]*tileSize;
+				if(player == current){
+					x-=offSet[0];
+					y-=offSet[1];
+				}
+				g2d.drawImage(backGround, x, y, null);
+				break;
+			}
 		}
-		g2d.drawImage(bot,x ,y ,null);
 		
 		
+		for(Player player:posMap.keySet()){
+			if(player.isPlayer){
+				continue;
+			}else{
+				int[] posDif = posDif(cameraPos,posMap.get(player));
+				x = centerX- posDif[0]*tileSize;
+				y = centerY- posDif[1]*tileSize;
+				if(!current.isPlayer){
+					x+=offSet[0];
+					y+=offSet[1];
+				}else{
+					x-=offSet[0];
+					y-=offSet[1];
+				}
+				g2d.drawImage(bot,x ,y ,null);
+			}
+		}	
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
 			overlay = getOverlay(width,height);
 		}
+		g2d.drawImage(player, centerX, centerY, null);		
 		g2d.drawImage(overlay, 0, 0, null);
-		
-		g2d.drawString(title+frame+":"+offSet[0]+","+offSet[1], (width-titleWidth)/2, titleHeight) ;
+		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
 	}
 	
 	protected void update(Player player){
@@ -145,8 +150,8 @@ public class PaintPanel extends JPanel{
 			offSet = new int[]{0,0};
 		}
 		if(!finishedMove()){
-			offSet[0]+=posDif[0]*4;
-			offSet[1]+=posDif[1]*4;
+			offSet[0]+=posDif[0];
+			offSet[1]+=posDif[1];
 		}else{
 			offSet = new int[]{tileSize,tileSize};
 			posMap.remove(player);
@@ -164,6 +169,7 @@ public class PaintPanel extends JPanel{
 	protected void initialisePos(){
 		PlayerPosList mapList = map.getPlayerPosList();
 		for(Player player:mapList){
+			System.out.println("a");
 			if(!posMap.containsKey(player)){
 				posMap.put(player,mapList.get(player).clone());
 				if(player instanceof HumanPlayer)
@@ -208,43 +214,6 @@ public class PaintPanel extends JPanel{
 		}
 	}
 	
-	private BufferedImage drawMap(){
-		int tilesWide = 11;//Must be odd
-		int imageWidth = tileSize * tilesWide;
-		int imageHeight = tileSize * tilesWide;
-		BufferedImage image = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g2d = (Graphics2D)image.getGraphics();
-		int[] playerPos = posMap.get(getHuman());
-		int offsety = playerPos[1]-(tilesWide-1)/2;
-		int offsetx = playerPos[0]-(tilesWide-1)/2;
-		for(int y = offsety;y < offsety + tilesWide;++y){
-			for(int x = offsetx;x < offsetx + tilesWide;++x){
-				Image tile;
-				char c =map.getTile(new int[]{x,y});
-				if(c == '#'){
-					tile = wall;
-				}else if(c == 'G'){
-					tile = gold;
-				}else if(c == 'E'){
-					tile = exit;
-				}else if(c == '.'){
-					tile = floor;
-				}else if(c == 'X'){
-					continue;
-				}else{
-					tile = getDefaultImg();
-				}
-				g2d.drawImage(floor, (x-offsetx)*tileSize, (y-offsety)*tileSize, null);
-				g2d.drawImage(tile, (x-offsetx)*tileSize, (y-offsety)*tileSize, null);
-			}			
-		}
-		g2d.setColor(Color.red);
-		//g2d.drawRect(0, 0, imageWidth-1, imageHeight-1);
-		//g2d.drawLine(0, 0, imageWidth,imageHeight);
-		//g2d.drawLine(0, imageHeight, imageWidth, 0);
-		return image;
-	}
-	
 	private BufferedImage drawFullMap(){
 		int imageWidth = tileSize * map.getMapWidth();
 		int imageHeight = tileSize * map.getMapHeight();
@@ -273,33 +242,10 @@ public class PaintPanel extends JPanel{
 		}
 		return image;
 	}
-	
-	private int[] posRelativeToCamera(Player player){
-		int[] current = map.getPosition(player);
-		int[] center  = map.getPlayersPosition();
-		return posDif(center,current);
-	}
-	
 	private int[] posDif(int[] a,int[] b){
 		return new int[]{a[0]-b[0],a[1]-b[1]};
 	}
 	
-	private Player getBot(){
-		for(Player player:posMap.keySet()){
-			if(player instanceof BotPlayer){
-				return player;
-			}
-		}
-		return null;
-	}
-	private Player getHuman(){
-		for(Player player:posMap.keySet()){
-			if(player instanceof HumanPlayer){
-				return player;
-			}
-		}
-		return null;
-	}
 	
 	private BufferedImage getOverlay(int width,int height){
 		BufferedImage overlay = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);		
