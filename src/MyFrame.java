@@ -49,7 +49,7 @@ public class MyFrame extends JFrame{
 	}
 	
 	protected void update(Player player){
-		paintPanel.update(player);
+		paintPanel.setPlayer(player);
 	}
 	protected void setMap(Map map){
 		paintPanel.setMap(map);

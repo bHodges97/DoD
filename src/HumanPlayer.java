@@ -58,7 +58,7 @@ public class HumanPlayer extends Player{
     	Console console = new Console();
     	GameLogic game = new GameLogic(console);
 		game.addPlayer(new HumanPlayer(game));
-		//game.addPlayer(new BotPlayer(game));
+		game.addPlayer(new BotPlayer(game));
         // RUN FOREST RUN!
 		game.startGame();
     }

@@ -34,10 +34,11 @@ public class GameLogic {
 		while(running){
 			if(players.isEmpty()){
 				continue;
-			}
+			}			
 			console.println("Turn "+turnCounter);
 			for(Player player: players){
 				currentPlayer = player;
+				console.update(player);
 				player.selectNextAction();				
 				if(checkWin()){
 					console.showWinEvent();

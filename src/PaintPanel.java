@@ -39,9 +39,8 @@ public class PaintPanel extends JPanel{
 				}
 				// TODO Auto-generated method stub
 				while(true){
-					Player changed = checkChange();
-					if(changed!=null){
-						update(changed);
+					if(checkChange(current)){
+						update(current);
 					}	
 					repaint();
 					try {
@@ -60,7 +59,9 @@ public class PaintPanel extends JPanel{
 	protected void setMap(Map map){
 		this.map = map;
 	}
-	
+	protected void setPlayer(Player player){
+		current = player;
+	}
 	
 	@Override
 	public void paintComponent(Graphics g){
@@ -94,9 +95,13 @@ public class PaintPanel extends JPanel{
 		int bgWidth = backGround.getWidth(null);
 		int bgHeight = backGround.getHeight(null);
 		g2d.drawImage(backGround, centerX-bgWidth/2+tileSize/2-offSet[0], centerY-bgHeight/2+tileSize/2-offSet[1],null);
-		g2d.drawImage(player, centerX, centerY, null);
+		if(current instanceof HumanPlayer){
+			g2d.drawImage(player, centerX, centerY, null);
+		}else{
+			g2d.drawImage(bot, centerX, centerY, null);
+		}
 	//	g2d.drawImage(bot,0,0,null);
-
+		
 		g2d.drawString(title+frame+":"+offSet[0]+","+offSet[1], (width-titleWidth)/2, titleHeight) ;	
 	}
 	
@@ -116,10 +121,6 @@ public class PaintPanel extends JPanel{
 	}
 	
 	protected void update(Player player){
-		if(player instanceof BotPlayer){
-			updatePosMap();
-		}
-		current = player;
 		int[] pos = map.getPosition(player);
 		int[] oldPos = posMap.get(player);
 		int[] posDif = new int[]{pos[0]-oldPos[0],pos[1]-oldPos[1]};
@@ -194,33 +195,22 @@ public class PaintPanel extends JPanel{
 		return image;
 	}
 	
-	private void updatePosMap(){
-		for(Player player:posMap.keySet()){
-			if(player instanceof HumanPlayer){
-				return;
-			}
-			posMap.remove(player);
-			posMap.put(player,map.getPosition(player));
-		}
-	}
 	
-	private Player checkChange(){
+	private boolean checkChange(Player player){
 		PlayerPosList mapList = map.getPlayerPosList();
 		if(posMap.size()!=mapList.size()){
 			initialisePos();
 		}
 		
-		for(Player player:posMap.keySet()){
-			int[] stored = posMap.get(player);
-			int[] mapval = map.getPosition(player);
-			if(stored[0] != mapval[0] || stored[1] != mapval[1]){
-				current = player;
-				return player;
-			}
+		int[] stored = posMap.get(player);
+		int[] mapval = map.getPosition(player);
+		if(stored[0] != mapval[0] || stored[1] != mapval[1]){
+			return true;
+		}else{
+			return false;
 		}
-		return null;
 	}
-	private void initialisePos(){
+	public void initialisePos(){
 		PlayerPosList mapList = map.getPlayerPosList();
 		for(Player player:mapList){
 			if(!posMap.containsKey(player)){
