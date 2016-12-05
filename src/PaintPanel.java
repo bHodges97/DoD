@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,7 +16,7 @@ import javax.swing.JPanel;
 public class PaintPanel extends JPanel{
 	
 	private Map map = null;
-	private Image backGround,bot,player,wall,floor,gold,exit;
+	private Image overlay,backGround,bot,player,wall,floor,gold,exit;
 	private int tileSize = 64;
 	private int frame = 0;
 	private java.util.Map<Player,int[]> posMap = new HashMap<Player,int[]>();
@@ -91,12 +92,13 @@ public class PaintPanel extends JPanel{
 		int centerX = width/2-tileSize/2;
 		int centerY = height/2-tileSize/2;
 		
-		if( backGround == null){
-			backGround = drawMap();
+		//BufferedImage backGround = drawMap();
+		if(backGround == null){
+			backGround = drawFullMap();
 		}
-		if(current instanceof HumanPlayer){
-			backGround = drawMap();
-		}
+		
+		
+		
 		int bgWidth = backGround.getWidth(null);
 		int bgHeight = backGround.getHeight(null);
 		
@@ -125,7 +127,9 @@ public class PaintPanel extends JPanel{
 		g2d.drawImage(bot,x ,y ,null);
 		
 		
-		Image overlay = getOverlay(width,height);
+		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
+			overlay = getOverlay(width,height);
+		}
 		g2d.drawImage(overlay, 0, 0, null);
 		
 		g2d.drawString(title+frame+":"+offSet[0]+","+offSet[1], (width-titleWidth)/2, titleHeight) ;
@@ -204,13 +208,13 @@ public class PaintPanel extends JPanel{
 		}
 	}
 	
-	private Image drawMap(){
+	private BufferedImage drawMap(){
 		int tilesWide = 11;//Must be odd
 		int imageWidth = tileSize * tilesWide;
 		int imageHeight = tileSize * tilesWide;
 		BufferedImage image = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g2d = (Graphics2D)image.getGraphics();
-		int[] playerPos = posMap.get(current);
+		int[] playerPos = posMap.get(getHuman());
 		int offsety = playerPos[1]-(tilesWide-1)/2;
 		int offsetx = playerPos[0]-(tilesWide-1)/2;
 		for(int y = offsety;y < offsety + tilesWide;++y){
@@ -241,6 +245,35 @@ public class PaintPanel extends JPanel{
 		return image;
 	}
 	
+	private BufferedImage drawFullMap(){
+		int imageWidth = tileSize * map.getMapWidth();
+		int imageHeight = tileSize * map.getMapHeight();
+		BufferedImage image = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = (Graphics2D)image.getGraphics();
+		for(int y = 0;y < map.getMapHeight();++y){
+			for(int x = 0;x < map.getMapWidth();++x){
+				Image tile;
+				char c =map.getTile(new int[]{x,y});
+				if(c == '#'){
+					tile = wall;
+				}else if(c == 'G'){
+					tile = gold;
+				}else if(c == 'E'){
+					tile = exit;
+				}else if(c == '.'){
+					tile = floor;
+				}else if(c == 'X'){
+					continue;
+				}else{
+					tile = getDefaultImg();
+				}
+				g2d.drawImage(floor, x*tileSize, y*tileSize, null);
+				g2d.drawImage(tile,  x*tileSize, y*tileSize, null);
+			}			
+		}
+		return image;
+	}
+	
 	private int[] posRelativeToCamera(Player player){
 		int[] current = map.getPosition(player);
 		int[] center  = map.getPlayersPosition();
@@ -259,16 +292,29 @@ public class PaintPanel extends JPanel{
 		}
 		return null;
 	}
+	private Player getHuman(){
+		for(Player player:posMap.keySet()){
+			if(player instanceof HumanPlayer){
+				return player;
+			}
+		}
+		return null;
+	}
 	
-	private Image getOverlay(int width,int height){
-		BufferedImage overlay = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g2d = (Graphics2D)overlay.getGraphics();
-		g2d.setColor(Color.DARK_GRAY);
-		g2d.fillRect(0, 0, width, height);
-		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
-		g2d.fillOval(width/2-160, height/2-160, 320, 320);
-		
-		
+	private BufferedImage getOverlay(int width,int height){
+		BufferedImage overlay = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);		
+		int tileWidth = 5;
+		int maskDiameter = tileWidth * tileSize;
+		int maskRadius = maskDiameter/2;
+		float ratio = ((float)255/(float)maskRadius) * 0.9f;
+		for(int x = 0;x < width;++x){
+			for(int y = 0;y < height;++y){
+				int dist = (int) Point2D.distance(x, y, width/2,height/2);
+				int alpha = dist*ratio > 255?255:(int)(dist*ratio);
+				Color c = new Color(0,0,0,alpha);
+				overlay.setRGB(x, y,c.getRGB());
+			}
+		}
 		return overlay;
 	}
 }
