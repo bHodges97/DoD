@@ -62,7 +62,7 @@ public class BotPlayer extends Player{
      */
     private boolean canSeePlayer(){
      	int[] start = gameMap.getPosition(this);
-    	int[] goal = gameMap.getPlayersPosition();
+    	int[] goal = gameMap.getNearestHumanPos(start);
     	if(Math.abs(start[0]-goal[0]) <= 2 && Math.abs(start[1] - goal[1]) <= 2){
     		return true;
     	}

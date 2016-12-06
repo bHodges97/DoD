@@ -29,8 +29,12 @@ public class PlayerPosList implements Iterable<Player>{
 		return positions.get(index);
 	}
 	public Player getFirstIndexedPlayer(int[] pos){
-		int index = positions.indexOf(pos);
-		return players.get(index);
+		for(int i  = 0; i < size(); ++i){
+			if(equals(positions.get(i), pos)){
+				return players.get(i);
+			}
+		}
+		return null;
 	}
 	public int[] remove(Player player){
 		int index = players.indexOf(player);
@@ -82,7 +86,7 @@ public class PlayerPosList implements Iterable<Player>{
 	}
 	
 	public static boolean equals(int[] a,int[] b){
-		return (a[0] == a[0] && b[1] == b[1]);
+		return (a[0] == b[0] && a[1] == b[1]);
 	}
 	
 	@Override

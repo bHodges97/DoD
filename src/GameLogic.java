@@ -128,7 +128,7 @@ public class GameLogic {
      */
     protected String look() {
     	String output = "";
-    	int[] playerPos = map.getPosition(currentPlayer).clone();
+    	int[] playerPos = map.getPosition(currentPlayer);
     	playerPos[0] -=2;
 		playerPos[1] -=2;
 		for(int y = 0;y<5;++y){

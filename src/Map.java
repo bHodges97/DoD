@@ -228,4 +228,8 @@ public class Map {
     protected boolean hasOverLap(int[] pos){
     	return playerPosList.hasOverLap(pos);
     }
+    //TODO: remove
+    public static String toString(int[] param){
+    	return("("+param[0]+","+param[1]+")");
+    }
 }
