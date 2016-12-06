@@ -8,6 +8,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -19,9 +20,11 @@ public class PaintPanel extends JPanel{
 	private static final int TILESIZE = 64;
 	
 	private Map map = null;
-	private Image overlay,backGround,bot,player,wall,floor,gold,exit;
+	private BufferedImage overlay,backGround;
+	private Image bot,player,wall,floor,gold,exit;
 	private int frame = 0;
 	private java.util.Map<Player,int[]> posMap = new HashMap<Player,int[]>();
+	private Set<int[]> wallSet;
 	private Player current;
 	private int[] offSet = new int[]{0,0};
 	private boolean started = false;
@@ -113,6 +116,10 @@ public class PaintPanel extends JPanel{
 			backGround = drawFullMap();
 			mapNeedsUpdate = false;
 		}
+		
+		
+		
+		
 		int x,y;
 		int[] cameraPos = new int[]{0,0};
 		for(Player player:posMap.keySet()){
@@ -153,7 +160,7 @@ public class PaintPanel extends JPanel{
 			overlay = getOverlay(width,height);
 		}
 		g2d.drawImage(player, centerX, centerY, null);		
-		//g2d.drawImage(overlay, 0, 0, null);
+		g2d.drawImage(overlay, 0, 0, null);
 		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
 	}
 	
@@ -253,6 +260,7 @@ public class PaintPanel extends JPanel{
 	}
 	
 	private BufferedImage drawFullMap(){
+		wallSet = new HashSet<int[]>();
 		int imageWidth = TILESIZE * map.getMapWidth();
 		int imageHeight = TILESIZE * map.getMapHeight();
 		BufferedImage image = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
@@ -263,7 +271,7 @@ public class PaintPanel extends JPanel{
 				char c =map.getTile(new int[]{x,y});
 				if(c == '#'){
 					tile = wall;
-					drawWallEdge(g2d,x,y);
+					wallSet.add(new int[]{x,y});
 				}else if(c == 'G'){
 					tile = gold;
 				}else if(c == 'E'){
@@ -279,23 +287,42 @@ public class PaintPanel extends JPanel{
 				g2d.drawImage(tile,  x*TILESIZE, y*TILESIZE, null);
 			}			
 		}
+		for(int[] wall : wallSet){
+			drawWallEdge(image, wall);
+		}
 		return image;
 	}
 	public static int[] posDif(int[] a,int[] b){
 		return new int[]{a[0]-b[0],a[1]-b[1]};
 	}
 	
-	private void drawWallEdge(Graphics2D g2d,int x, int y){
-		List<int[]> neighBours = map.getAdjacentClearTiles(new int[]{x,y});
-		//g2d.setColor(new Color(0,0,0,200));
+	private void drawWallEdge(BufferedImage image,int[] wallPos){
+		Graphics2D g2d = (Graphics2D) image.getGraphics();
+		g2d.setColor(new Color(0,0,0,100));
+		List<int[]> neighBours = map.getAdjacentClearTiles(wallPos);
 		for(int[] pos:neighBours){
-			int[] dist = posDif(pos,new int[]{x,y});
-			int sx = (x+dist[0])*TILESIZE;
-			int sy = (y+dist[1])*TILESIZE;
-			int swidth = (int)(TILESIZE*0.1*dist[0]);
-			int sheight =(int)(TILESIZE*0.1*dist[1]);
-			//g2d.drawRect(sx, sy, swidth, sheight);
-			//g2d.drawRect(0,0,10,10);
+			int[] dif = posDif(wallPos,pos);
+			int sx = wallPos[0]*TILESIZE;
+			int sy = wallPos[1]*TILESIZE;
+			int swidth,sheight;
+			if(dif[0]<0){
+				sx+=TILESIZE;
+				swidth = TILESIZE / 8;
+				sheight = TILESIZE;
+			}else if(dif[0]>0){
+				swidth = TILESIZE / 8;
+				sheight = TILESIZE;
+				sx-=swidth;
+			}else if(dif[1]<0){
+				sy+=TILESIZE;
+				swidth = TILESIZE;
+				sheight = TILESIZE / 8;
+			}else{
+				swidth = TILESIZE;
+				sheight = TILESIZE/ 8;
+				sy-=sheight;
+			}
+			g2d.fillRect(sx, sy, swidth, sheight);
 		}		
 	}
 	
