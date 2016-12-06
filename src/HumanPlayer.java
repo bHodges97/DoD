@@ -57,7 +57,8 @@ public class HumanPlayer extends Player{
     	String output = processCommand(input);
     	while((output.equals("Invalid") || output.equals("Fail"))||(input.equals("LOOK"))){
     		gameLogic.console.println(output);
-    		output = processCommand(getInputFromConsole());
+    		input = getInputFromConsole();
+    		output = processCommand(input);
     	}
     	gameLogic.console.println(output);
     }    

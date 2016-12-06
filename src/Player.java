@@ -13,10 +13,6 @@ abstract class Player{
     protected void addGold(int i){
     	goldCount+=i;
     }
-	
-    protected boolean isPlayer(){
-    	return isMainPlayer;
-    }
 	protected abstract String processCommand(String command);
 	protected abstract void selectNextAction();
 }

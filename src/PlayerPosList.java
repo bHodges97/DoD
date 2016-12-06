@@ -82,11 +82,17 @@ public class PlayerPosList implements Iterable<Player>{
 				overlapCount++;
 			}
 		}
-		return overlapCount>2?true:false;
+		return overlapCount>1?true:false;
 	}
 	
 	public static boolean equals(int[] a,int[] b){
 		return (a[0] == b[0] && a[1] == b[1]);
+	}
+	public boolean isReady(){
+		if(players.size() ==  positions.size()){
+			return true;
+		}
+		return false;
 	}
 	
 	@Override

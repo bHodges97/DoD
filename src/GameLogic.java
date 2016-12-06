@@ -65,6 +65,7 @@ public class GameLogic {
 	
 	protected void addPlayer(Player player){ 
 		if(!hasMainPlayer){
+			hasMainPlayer = true;
 			player.isMainPlayer = true;
 		}else if(player.isMainPlayer){
 			console.println("Only one main player can exist");

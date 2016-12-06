@@ -50,9 +50,11 @@ public class BotPlayer extends Player{
     	if(canSeePlayer()){
     		seenPlayer = true;
     	}    	
-    	if(seenPlayer & finder.pathFind(start, goal)){//must evaluate both to generate a path 		
+    	if(seenPlayer & finder.pathFind(start, goal)){//must evaluate both to generate a path 
+    		System.out.println("Pather pathing"+Map.toString(start)+Map.toString(goal));
     		next = finder.findNextStep();			
     	}else{//random pathing
+    		System.out.println("Random pathing"+Map.toString(start)+Map.toString(goal));
 	    	next = finder.randomNextStep();
     	}
 	    return PathFinder.getRelativeDirection(start, next);

@@ -177,10 +177,18 @@ public class Map {
     
     protected Set<int[]>getAdjacentTiles(int[] current){
     	Set<int[]> neighbors = new HashSet<int[]>();
-		neighbors.add(getListedTile(current[0]-1,current[1]));
-		neighbors.add(getListedTile(current[0]+1,current[1]));
-		neighbors.add(getListedTile(current[0],current[1]-1));
-		neighbors.add(getListedTile(current[0],current[1]+1));		
+    	if(current[0]-1>=0){
+    		neighbors.add(getListedTile(current[0]-1,current[1]));
+    	}
+    	if(current[0]+1<getMapWidth()){
+    		neighbors.add(getListedTile(current[0]+1,current[1]));
+    	}
+    	if(current[1]-1>=0){
+    		neighbors.add(getListedTile(current[0],current[1]-1));
+    	}
+    	if(current[1]+1<getMapHeight()){
+    		neighbors.add(getListedTile(current[0],current[1]+1));		
+    	}
     	return neighbors;
     }
     
@@ -231,5 +239,9 @@ public class Map {
     //TODO: remove
     public static String toString(int[] param){
     	return("("+param[0]+","+param[1]+")");
+    }
+    
+    public boolean isReady(){
+    	return playerPosList.isReady();
     }
 }
