@@ -192,7 +192,7 @@ public class Map {
     			tileList.add(neighbor);
     		}
     	}
-    	return neighbors;
+    	return tileList;
     }       
     
     protected boolean placePlayer(Player player){

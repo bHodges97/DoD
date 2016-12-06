@@ -15,6 +15,7 @@ public class GameLogic {
 	private Player currentPlayer; 
 	protected Console console;
 	private int turnCounter;
+	private boolean hasMainPlayer = false;
 	
 	public GameLogic(Console console){
 		this.console = console;
@@ -62,7 +63,13 @@ public class GameLogic {
 		quitGame();
 	}
 	
-	protected void addPlayer(Player player){    	   	
+	protected void addPlayer(Player player){ 
+		if(!hasMainPlayer){
+			player.isMainPlayer = true;
+		}else if(player.isMainPlayer){
+			console.println("Only one main player can exist");
+			return;
+		}
 		players.add(player);
 		player.setGameLogic(this);
 		map.placePlayer(player);
@@ -172,8 +179,8 @@ public class GameLogic {
     
     private boolean checkWin(){
     	int[] playerPos = map.getPosition(currentPlayer);
-    	if(map.getTile(playerPos) =='E' && currentPlayer.getGoldCount() >= map.getGoldRequired()){
-			//TODO: WIN;
+    	if(map.getTile(playerPos) =='E' 
+    			&& currentPlayer.getGoldCount() >= map.getGoldRequired()){
 			return true;
 		}
     	return false;

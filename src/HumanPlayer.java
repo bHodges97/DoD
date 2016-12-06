@@ -8,7 +8,6 @@ import java.io.IOException;
 public class HumanPlayer extends Player{	
 	
 	public HumanPlayer(GameLogic gameLogic){
-		isMainPlayer= true;
 		this.gameLogic = gameLogic;
 	}
 	
