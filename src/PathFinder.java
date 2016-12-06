@@ -79,7 +79,7 @@ public class PathFinder {
 	}
 
     
-    protected char getRelativeDirection(int[] start,int[] end){
+    public static char getRelativeDirection(int[] start,int[] end){
 		if(end[1]>start[1]){
     		return 'S';
     	}else if(end[1]<start[1]){
@@ -99,7 +99,7 @@ public class PathFinder {
      * @param b Position b
      * @return Distance from a to b
      */
-    private int estimateDistance(int[] a,int[] b){
+    public static int estimateDistance(int[] a,int[] b){
     	return Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1]);
     }
 }

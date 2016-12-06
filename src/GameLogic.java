@@ -76,7 +76,7 @@ public class GameLogic {
      * @return if the game is running.
      */
     protected boolean gameRunning() {
-        return running;//??????
+        return running;
     }
 
     /**
@@ -93,7 +93,7 @@ public class GameLogic {
      * @return : Protocol if success or not.
      */
     protected String move(char direction) {
-    	int[] playerPos = currentPlayer instanceof HumanPlayer?map.getPlayersPosition():map.getBotsPosition();
+    	int[] playerPos = map.getPosition(currentPlayer);
 		switch(direction){
 			case 'N':
 				--playerPos[1];
@@ -110,7 +110,9 @@ public class GameLogic {
 			default:
 				return "Fail";
 		}
-		if(map.getTile(playerPos) != 'X' && map.getTile(playerPos) !='#'){
+		if(map.getTile(playerPos) != 'X' 
+				&& map.getTile(playerPos) != '#' 
+				 ){
 			map.updatePosition(currentPlayer,playerPos);
 			return "Success";
 		}else{
@@ -126,18 +128,19 @@ public class GameLogic {
      */
     protected String look() {
     	String output = "";
-    	int[] playerPos = map.getPlayersPosition();
-    	int[] botPos = map.getBotsPosition();
+    	int[] playerPos = map.getPosition(currentPlayer).clone();
     	playerPos[0] -=2;
 		playerPos[1] -=2;
 		for(int y = 0;y<5;++y){
 			for(int x = 0;x<5;++x){
-				if(x == 2 && y == 2){
+				int[] currentPos = new int[]{playerPos[0]+x,playerPos[1]+y};
+				Player player = map.getPlayer(currentPos);
+				if(player instanceof HumanPlayer){
 					output+='P';
-				}else if(playerPos[0]+x == botPos[0] && playerPos[1]+y == botPos[1] ){
+				}else if (player instanceof BotPlayer){
 					output+='B';
 				}else{
-					output+=map.getTile(new int[] {playerPos[0]+x,playerPos[1]+y});
+					output+=map.getTile(currentPos);					
 				}
 			}
 			output+="\n";
@@ -151,7 +154,7 @@ public class GameLogic {
      * @return If the player successfully picked-up gold or not.
      */
     protected String pickup() {
-    	int[] playerPos = map.getPlayersPosition();
+    	int[] playerPos = map.getPosition(currentPlayer);
 		if(map.getTile(playerPos) == 'G'){
 			map.updateMapLocation(playerPos,'.');
 			currentPlayer.addGold(1);
@@ -168,7 +171,7 @@ public class GameLogic {
     
     
     private boolean checkWin(){
-    	int[] playerPos = map.getPlayersPosition();
+    	int[] playerPos = map.getPosition(currentPlayer);
     	if(map.getTile(playerPos) =='E' && currentPlayer.getGoldCount() >= map.getGoldRequired()){
 			//TODO: WIN;
 			return true;
@@ -176,9 +179,8 @@ public class GameLogic {
     	return false;
     }
     private boolean checkLost(){
-    	int[] playerPos = map.getPlayersPosition();
-    	int[] botPos = map.getBotsPosition();
-    	if(botPos[0]==playerPos[0]&&botPos[1]==playerPos[1]){
+    	int[] playerPos = map.getPosition(currentPlayer);
+    	if(map.hasOverLap(playerPos)){
 			return true;
 		}
     	return false;

@@ -36,15 +36,15 @@ public class BotPlayer extends Player{
     public void selectNextAction() {
     	String command = "MOVE "+selectMoveDirection(gameLogic.getMap().getMap());
     	gameLogic.console.println(command);
-    	gameLogic.console.println(processCommand(command));//TODO: can bots fail?
+    	gameLogic.console.println(processCommand(command));
     }	
 
     /**
      * @return :  The direction the agent will move.
      */
     protected char selectMoveDirection(char[][] map) {
-     	int[] start = gameMap.getBotsPosition();
-    	int[] goal = gameMap.getPlayersPosition();
+     	int[] start = gameMap.getPosition(this);
+    	int[] goal = gameMap.getNearestHumanPos(start);
     	int[] next;
     	PathFinder finder = new PathFinder(gameMap);
     	if(canSeePlayer()){
@@ -55,13 +55,13 @@ public class BotPlayer extends Player{
     	}else{//random pathing
 	    	next = finder.randomNextStep();
     	}
-	    return finder.getRelativeDirection(start, next);
+	    return PathFinder.getRelativeDirection(start, next);
     }
     /**
      * @return : Can the bot see a human player;
      */
     private boolean canSeePlayer(){
-     	int[] start = gameMap.getBotsPosition();
+     	int[] start = gameMap.getPosition(this);
     	int[] goal = gameMap.getPlayersPosition();
     	if(Math.abs(start[0]-goal[0]) <= 2 && Math.abs(start[1] - goal[1]) <= 2){
     		return true;

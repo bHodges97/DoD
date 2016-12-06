@@ -1,7 +1,7 @@
 abstract class Player{
 	protected GameLogic gameLogic = null;
 	protected int goldCount = 0;
-	protected boolean isPlayer = false;
+	protected boolean isMainPlayer = false;
 	protected boolean alive = true;
 
     protected void setGameLogic(GameLogic logic){
@@ -15,7 +15,7 @@ abstract class Player{
     }
 	
     protected boolean isPlayer(){
-    	return isPlayer;
+    	return isMainPlayer;
     }
 	protected abstract String processCommand(String command);
 	protected abstract void selectNextAction();

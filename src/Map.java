@@ -1,10 +1,12 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 
 /**
  * Reads and contains in memory the map of the game.
@@ -16,7 +18,7 @@ public class Map {
 	private String mapName = "";
 	private int goldRequired = 0;
 	private char[][] map;
-	private List<int[]> posList = new ArrayList<int[]>();
+	private List<int[]> posList;
 	private List<int[]> emptyPosList;
 	private PlayerPosList playerPosList = new PlayerPosList();
 	
@@ -73,20 +75,12 @@ public class Map {
     	return posList.get(0);
     }
     
-    /**
-     * @return : The position of the bot.
-     */
-    protected int[] getBotsPosition() {
-    	for(Player player:playerPosList.keySet()){
-    		if(player instanceof BotPlayer){
-    			return playerPosList.get(player).clone();
-    		}
-    	}
-    	return posList.get(0);
-    }
-    
     protected int[] getPosition(Player player){
     	return playerPosList.get(player).clone();
+    }
+    
+    protected int[] getNearestHumanPos(int[] pos){
+    	return playerPosList.getNearestHuman(pos);
     }
     
     protected PlayerPosList getPlayerPosList(){
@@ -113,23 +107,20 @@ public class Map {
 				buffer.add(reader.nextLine().toCharArray());
 			}
 			char[][] bufferMap = new char[buffer.size()][];
+			int width = 0;
 			for(int i =0;i<buffer.size();++i){//transform buffer to char array.
 				bufferMap[i] = buffer.get(i);
+				width = bufferMap[i].length>width?bufferMap[i].length:width;
 			}
 			
-			map = new char[bufferMap[0].length][bufferMap.length];
+			map = new char[width][bufferMap.length];
 			for(int i = 0;i < bufferMap.length;++i){
-				for(int j = 0; j< bufferMap[0].length;++j){
+				for(int j = 0; j< bufferMap[i].length;++j){
 					map[j][i] = bufferMap[i][j];
 				}
 			}			
 			
-			for(int y = 0;y < getMapHeight();++y){
-				for(int x = 0; x< getMapWidth();++x){
-					posList.add(new int[]{x,y});
-				}
-			}
-			emptyPosList = new ArrayList<int[]>(posList);
+			generatePosList();
     	}catch(FileNotFoundException|NoSuchElementException e){
     		e.printStackTrace();
     		System.exit(1);
@@ -139,7 +130,15 @@ public class Map {
     		}
     	}
     }
-
+    protected void generatePosList(){
+    	posList = new ArrayList<int[]>(getMapHeight()*getMapWidth());
+    	for(int y = 0;y < getMapHeight();++y){
+			for(int x = 0; x< getMapWidth();++x){
+				posList.add(new int[]{x,y});
+			}
+		}
+		emptyPosList = new ArrayList<int[]>(posList);    	
+    }
 
     /**
      * Retrieves a tile on the map. If the location requested is outside bounds of the map, it returns 'X' wall.
@@ -172,24 +171,26 @@ public class Map {
      * @param location : New location of the player.
      */
     protected void updatePlayerPosition(int[] pos) {
-    	int[] oldPos = getPlayersPosition();
-    	Player player = playerPosList.getPlayer(getListedTile(oldPos[0],oldPos[1]));
+    	Player player = playerPosList.getMainPlayer();
     	updatePosition(player, pos);
     }
     
+    protected Set<int[]>getAdjacentTiles(int[] current){
+    	Set<int[]> neighbors = new HashSet<int[]>();
+		neighbors.add(getListedTile(current[0]-1,current[1]));
+		neighbors.add(getListedTile(current[0]+1,current[1]));
+		neighbors.add(getListedTile(current[0],current[1]-1));
+		neighbors.add(getListedTile(current[0],current[1]+1));		
+    	return neighbors;
+    }
+    
     protected List<int[]> getAdjacentClearTiles(int[] current){
-    	List<int[]> neighbors = new ArrayList<int[]>();
-    	if(map[current[0]-1][current[1]] != '#'){
-    		neighbors.add(getListedTile(current[0]-1,current[1]));
-    	}
-    	if(map[current[0]+1][current[1]] != '#'){
-    		neighbors.add(getListedTile(current[0]+1,current[1]));
-    	}
-    	if(map[current[0]][current[1]-1] != '#'){
-    		neighbors.add(getListedTile(current[0],current[1]-1));
-    	}
-    	if(map[current[0]][current[1]+1] != '#'){
-    		neighbors.add(getListedTile(current[0],current[1]+1));
+    	List<int[]> neighbors = new ArrayList<int[]>(getAdjacentTiles(current));
+    	List<int[]> tileList = new ArrayList<int[]>();
+    	for(int[] neighbor:neighbors){
+    		if(map[neighbor[0]][neighbor[1]] != '#'){
+    			tileList.add(neighbor);
+    		}
     	}
     	return neighbors;
     }       
@@ -215,11 +216,16 @@ public class Map {
     protected int[] getListedTile(int x,int y){
     	return posList.get(y*getMapWidth()+x);
     }
-    
+    protected Player getPlayer(int[] pos){
+    	return playerPosList.getFirstIndexedPlayer(pos);
+    }
     protected void updatePosition(Player player,int[] pos){
     	int[] newPos = getListedTile(pos[0],pos[1]);
     	int[] oldPos = playerPosList.update(player,newPos);;
     	emptyPosList.add(oldPos);    	
 		emptyPosList.remove(newPos);
+    }
+    protected boolean hasOverLap(int[] pos){
+    	return playerPosList.hasOverLap(pos);
     }
 }

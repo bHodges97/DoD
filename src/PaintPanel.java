@@ -1,4 +1,3 @@
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -14,15 +13,19 @@ import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 public class PaintPanel extends JPanel{
+
+	private static final int TILESIZE = 64;
 	
 	private Map map = null;
 	private Image overlay,backGround,bot,player,wall,floor,gold,exit;
-	private int tileSize = 64;
 	private int frame = 0;
 	private java.util.Map<Player,int[]> posMap = new HashMap<Player,int[]>();
 	private Player current;
 	private int[] offSet = new int[]{0,0};
 	private boolean started = false;
+	private boolean mapNeedsUpdate = true;
+	private boolean playLoseAnimation = false;
+	private int loseAnimFrame = 0;
 	
 	public PaintPanel() {
 		super.repaint();
@@ -43,8 +46,12 @@ public class PaintPanel extends JPanel{
 				initialisePos();
 				// TODO Auto-generated method stub
 				while(true){
+					if(frame > 10){
+						frame = 0;
+					}
 					update(current);
 					repaint();
+					frame++;
 					try {
 						Thread.sleep(2);
 					} catch (InterruptedException e) {
@@ -64,6 +71,7 @@ public class PaintPanel extends JPanel{
 	protected void setPlayer(Player player){
 		started = true;
 		current = player;
+		mapNeedsUpdate = true;
 	}
 	
 	@Override
@@ -92,19 +100,20 @@ public class PaintPanel extends JPanel{
 		int titleHeight = g2d.getFontMetrics().getHeight();
 		height+=titleHeight;
 		
-		int centerX = width/2-tileSize/2;
-		int centerY = height/2-tileSize/2;
+		int centerX = width/2-TILESIZE/2;
+		int centerY = height/2-TILESIZE/2;
 		
-		if(backGround == null){
+		if(backGround == null || mapNeedsUpdate){
 			backGround = drawFullMap();
+			mapNeedsUpdate = false;
 		}
 		int x,y;
 		int[] cameraPos = new int[]{0,0};
 		for(Player player:posMap.keySet()){
-			if(player.isPlayer){
+			if(player.isMainPlayer){
 				cameraPos = posMap.get(player);
-				x = centerX - cameraPos[0]*tileSize;
-				y = centerY - cameraPos[1]*tileSize;
+				x = centerX - cameraPos[0]*TILESIZE;
+				y = centerY - cameraPos[1]*TILESIZE;
 				if(player == current){
 					x-=offSet[0];
 					y-=offSet[1];
@@ -116,13 +125,13 @@ public class PaintPanel extends JPanel{
 		
 		
 		for(Player player:posMap.keySet()){
-			if(player.isPlayer){
+			if(player.isMainPlayer){
 				continue;
 			}else{
 				int[] posDif = posDif(cameraPos,posMap.get(player));
-				x = centerX- posDif[0]*tileSize;
-				y = centerY- posDif[1]*tileSize;
-				if(!current.isPlayer){
+				x = centerX- posDif[0]*TILESIZE;
+				y = centerY- posDif[1]*TILESIZE;
+				if(!current.isMainPlayer){
 					x+=offSet[0];
 					y+=offSet[1];
 				}else{
@@ -141,26 +150,47 @@ public class PaintPanel extends JPanel{
 	}
 	
 	protected void update(Player player){
-		//if(player instanceof Player)return;
-
 		int[] pos = map.getPosition(player);
 		int[] oldPos = posMap.get(player);
 		int[] posDif = posDif(pos,oldPos);
 		if(posDif[0] == 0 && posDif[1] == 0){
 			offSet = new int[]{0,0};
+			if(map.hasOverLap(pos)){
+				playDefeat(player);
+				return;
+			}
 		}
 		if(!finishedMove()){
 			offSet[0]+=posDif[0];
 			offSet[1]+=posDif[1];
 		}else{
-			offSet = new int[]{tileSize,tileSize};
+			offSet = new int[]{TILESIZE,TILESIZE};
 			posMap.remove(player);
 			posMap.put(player,pos);
 		}		
-		
 	}
+	private void playDefeat(Player player){
+		playLoseAnimation = true;
+		if(loseAnimFrame == 10){
+			playLoseAnimation = false;
+		}else{
+			return;
+		}
+		int[] pos = map.getPosition(player);
+		int[] oldPos = posMap.get(player);
+		int[] posDif = posDif(pos,oldPos);
+		if(!finishedMove()){
+			offSet[0]+=posDif[0];
+			offSet[1]+=posDif[1];
+		}else{
+			offSet = new int[]{TILESIZE,TILESIZE};
+			posMap.remove(player);
+			posMap.put(player,pos);
+		}
+	}
+	
 	private boolean finishedMove(){
-		if(Math.abs(offSet[0])>=tileSize || Math.abs(offSet[1]) >= tileSize){
+		if(Math.abs(offSet[0])>=TILESIZE || Math.abs(offSet[1]) >= TILESIZE){
 			return true;
 		}
 		return false;
@@ -169,7 +199,6 @@ public class PaintPanel extends JPanel{
 	protected void initialisePos(){
 		PlayerPosList mapList = map.getPlayerPosList();
 		for(Player player:mapList){
-			System.out.println("a");
 			if(!posMap.containsKey(player)){
 				posMap.put(player,mapList.get(player).clone());
 				if(player instanceof HumanPlayer)
@@ -179,10 +208,10 @@ public class PaintPanel extends JPanel{
 	}
 
 	protected Image getDefaultImg(){
-		int halfTile = tileSize/2;
-		BufferedImage defaultImg = new BufferedImage(tileSize,tileSize,BufferedImage.TYPE_INT_ARGB);
-		for(int x = 0;x < tileSize;++x){
-			for(int y = 0;y< tileSize;++y){
+		int halfTile = TILESIZE/2;
+		BufferedImage defaultImg = new BufferedImage(TILESIZE,TILESIZE,BufferedImage.TYPE_INT_ARGB);
+		for(int x = 0;x < TILESIZE;++x){
+			for(int y = 0;y< TILESIZE;++y){
 				if(( x < halfTile && y < halfTile) ||( x >= halfTile && y >= halfTile)){
 					defaultImg.setRGB(x, y, new Color(255,0,220).getRGB());//purple
 				}else{
@@ -215,8 +244,8 @@ public class PaintPanel extends JPanel{
 	}
 	
 	private BufferedImage drawFullMap(){
-		int imageWidth = tileSize * map.getMapWidth();
-		int imageHeight = tileSize * map.getMapHeight();
+		int imageWidth = TILESIZE * map.getMapWidth();
+		int imageHeight = TILESIZE * map.getMapHeight();
 		BufferedImage image = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g2d = (Graphics2D)image.getGraphics();
 		for(int y = 0;y < map.getMapHeight();++y){
@@ -225,6 +254,7 @@ public class PaintPanel extends JPanel{
 				char c =map.getTile(new int[]{x,y});
 				if(c == '#'){
 					tile = wall;
+					drawWallEdge(g2d,imageWidth,imageHeight,x,y);
 				}else if(c == 'G'){
 					tile = gold;
 				}else if(c == 'E'){
@@ -236,8 +266,8 @@ public class PaintPanel extends JPanel{
 				}else{
 					tile = getDefaultImg();
 				}
-				g2d.drawImage(floor, x*tileSize, y*tileSize, null);
-				g2d.drawImage(tile,  x*tileSize, y*tileSize, null);
+				g2d.drawImage(floor, x*TILESIZE, y*TILESIZE, null);
+				g2d.drawImage(tile,  x*TILESIZE, y*TILESIZE, null);
 			}			
 		}
 		return image;
@@ -246,11 +276,17 @@ public class PaintPanel extends JPanel{
 		return new int[]{a[0]-b[0],a[1]-b[1]};
 	}
 	
+	private void drawWallEdge(Graphics2D g2d,int width,int height,int x, int y){
+		
+		
+		
+	}
+	
 	
 	private BufferedImage getOverlay(int width,int height){
 		BufferedImage overlay = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);		
 		int tileWidth = 5;
-		int maskDiameter = tileWidth * tileSize;
+		int maskDiameter = tileWidth * TILESIZE;
 		int maskRadius = maskDiameter/2;
 		float ratio = ((float)255/(float)maskRadius) * 0.9f;
 		for(int x = 0;x < width;++x){
