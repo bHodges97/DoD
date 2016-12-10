@@ -21,7 +21,6 @@ public class PaintPanel extends JPanel{
 	
 	private Map map = null;
 	private BufferedImage overlay,backGround,bot;
-	//private Image bot,player,wall,floor,gold,exit,botL,botR;
 	private int frame = 0;
 	private java.util.Map<Player,int[]> posMap = new HashMap<Player,int[]>();
 	private Set<int[]> wallSet;
@@ -115,10 +114,7 @@ public class PaintPanel extends JPanel{
 		if(backGround == null || mapNeedsUpdate){
 			backGround = drawFullMap();
 			mapNeedsUpdate = false;
-		}
-		
-		
-		
+		}		
 		
 		int x,y;
 		int[] cameraPos = new int[]{0,0};
@@ -143,7 +139,7 @@ public class PaintPanel extends JPanel{
 			if(player.isMainPlayer){
 				continue;
 			}else{
-				int[] posDif = posDif(cameraPos,posMap.get(player));
+				int[] posDif = PosList.subtract(cameraPos,posMap.get(player));
 				x = centerX- posDif[0]*TILESIZE;
 				y = centerY- posDif[1]*TILESIZE;
 				if(!current.isMainPlayer){
@@ -173,7 +169,7 @@ public class PaintPanel extends JPanel{
 		if(!map.isReady())return;
 		int[] pos = map.getPosition(player);
 		int[] oldPos = posMap.get(player);
-		int[] posDif = posDif(pos,oldPos);
+		int[] posDif = PosList.subtract(pos,oldPos);
 		if(posDif[0] == 0 && posDif[1] == 0){
 			offSet = new int[]{0,0};
 			if(map.hasOverLap(pos)){
@@ -199,7 +195,7 @@ public class PaintPanel extends JPanel{
 		}
 		int[] pos = map.getPosition(player);
 		int[] oldPos = posMap.get(player);
-		int[] posDif = posDif(pos,oldPos);
+		int[] posDif = PosList.subtract(pos,oldPos);
 		if(!finishedMove()){
 			offSet[0]+=posDif[0];
 			offSet[1]+=posDif[1];
@@ -211,14 +207,14 @@ public class PaintPanel extends JPanel{
 	}
 	
 	private boolean finishedMove(){
-		if(Math.abs(offSet[0])>=TILESIZE || Math.abs(offSet[1]) >= TILESIZE){
+		if(Math.abs(offSet[0]) >= TILESIZE || Math.abs(offSet[1]) >= TILESIZE){
 			return true;
 		}
 		return false;
 	}
 	
 	protected void initialisePos(){
-		PlayerPosList mapList = map.getPlayerPosList();
+		PosList mapList = map.getPlayerPosList();
 		for(Player player:mapList){
 			if(!posMap.containsKey(player)){
 				posMap.put(player,mapList.get(player).clone());
@@ -261,16 +257,13 @@ public class PaintPanel extends JPanel{
 		}
 		return image;
 	}
-	public static int[] posDif(int[] a,int[] b){
-		return new int[]{a[0]-b[0],a[1]-b[1]};
-	}
 	
 	private void drawWallEdge(BufferedImage image,int[] wallPos){
 		Graphics2D g2d = (Graphics2D) image.getGraphics();
 		g2d.setColor(new Color(0,0,0,100));
 		List<int[]> neighBours = map.getAdjacentClearTiles(wallPos);
 		for(int[] pos:neighBours){
-			int[] dif = posDif(wallPos,pos);
+			int[] dif = PosList.subtract(wallPos,pos);
 			int sx = wallPos[0]*TILESIZE;
 			int sy = wallPos[1]*TILESIZE;
 			int swidth,sheight;

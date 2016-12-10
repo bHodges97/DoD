@@ -6,11 +6,11 @@ import java.util.Iterator;
 import java.util.Set;
 
 
-public class PlayerPosList implements Iterable<Player>{
+public class PosList implements Iterable<Player>{
 	List<Player> players = new ArrayList<Player>();
 	List<int[]> positions = new ArrayList<int[]>();
 	
-	public PlayerPosList(){
+	public PosList(){
 		
 	}
 	
@@ -93,6 +93,10 @@ public class PlayerPosList implements Iterable<Player>{
 			return true;
 		}
 		return false;
+	}
+	
+	public static int[] subtract(int[] a,int[] b){
+		return new int[]{a[0]-b[0],a[1]-b[1]};
 	}
 	
 	@Override

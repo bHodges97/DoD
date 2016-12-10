@@ -79,7 +79,7 @@ public class PathFinder {
     	Random rand = new Random(System.currentTimeMillis());
     	return neighbours.get(rand.nextInt(neighbours.size()));
 	}
-
+	
     
     public static char getRelativeDirection(int[] start,int[] end){
 		if(end[1]>start[1]){

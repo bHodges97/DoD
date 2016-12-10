@@ -17,9 +17,9 @@ public class Map {
 	private String mapName = "";
 	private int goldRequired = 0;
 	private char[][] map;
-	private List<int[]> posList;
-	private List<int[]> emptyPosList;
-	private PlayerPosList playerPosList = new PlayerPosList();
+	private List<int[]> tileList;
+	private List<int[]> emptyTileList;
+	private PosList posList = new PosList();
 	
     /**
      * @return : Gold required to exit the current map.
@@ -61,19 +61,19 @@ public class Map {
      * @return : The position of the player.
      */
     protected int[] getPlayersPosition() {
-    	return playerPosList.getNearestHuman(new int[]{0,0});
+    	return posList.getNearestHuman(new int[]{0,0});
     }
     
     protected int[] getPosition(Player player){
-    	return playerPosList.get(player).clone();
+    	return posList.get(player).clone();
     }
     
     protected int[] getNearestHumanPos(int[] pos){
-    	return playerPosList.getNearestHuman(pos);
+    	return posList.getNearestHuman(pos);
     }
     
-    protected PlayerPosList getPlayerPosList(){
-    	return playerPosList;
+    protected PosList getPlayerPosList(){
+    	return posList;
     }
     
     /**
@@ -109,7 +109,7 @@ public class Map {
 				}
 			}			
 			
-			generatePosList();
+			generateTileList();
     	}catch(FileNotFoundException|NoSuchElementException e){
     		e.printStackTrace();
     		System.exit(1);
@@ -119,14 +119,14 @@ public class Map {
     		}
     	}
     }
-    protected void generatePosList(){
-    	posList = new ArrayList<int[]>(getMapHeight()*getMapWidth());
+    protected void generateTileList(){
+    	tileList = new ArrayList<int[]>(getMapHeight()*getMapWidth());
     	for(int y = 0;y < getMapHeight();++y){
 			for(int x = 0; x< getMapWidth();++x){
-				posList.add(new int[]{x,y});
+				tileList.add(new int[]{x,y});
 			}
 		}
-		emptyPosList = new ArrayList<int[]>(posList);    	
+		emptyTileList = new ArrayList<int[]>(tileList);    	
     }
 
     /**
@@ -160,7 +160,7 @@ public class Map {
      * @param location : New location of the player.
      */
     protected void updatePlayerPosition(int[] pos) {
-    	Player player = playerPosList.getMainPlayer();
+    	Player player = posList.getMainPlayer();
     	updatePosition(player, pos);
     }
     
@@ -194,36 +194,36 @@ public class Map {
     
     protected boolean placePlayer(Player player){
     	Random rand = new Random(System.currentTimeMillis());
-    	if(emptyPosList.isEmpty()){
+    	if(emptyTileList.isEmpty()){
     		return false;
     	}    	
-    	int[] tempPos = emptyPosList.get(rand.nextInt(emptyPosList.size()));
+    	int[] tempPos = emptyTileList.get(rand.nextInt(emptyTileList.size()));
 		while(getTile(tempPos)=='#'){
-			emptyPosList.remove(tempPos);
-	    	if(emptyPosList.isEmpty()){
+			emptyTileList.remove(tempPos);
+	    	if(emptyTileList.isEmpty()){
 	    		return false;
 	    	}    
-			tempPos = emptyPosList.get(rand.nextInt(emptyPosList.size()));
+			tempPos = emptyTileList.get(rand.nextInt(emptyTileList.size()));
 		}
-		playerPosList.put(player,tempPos);
-		emptyPosList.remove(tempPos);
+		posList.put(player,tempPos);
+		emptyTileList.remove(tempPos);
 		return true;
     }
     
     protected int[] getListedTile(int x,int y){
-    	return posList.get(y*getMapWidth()+x);
+    	return tileList.get(y*getMapWidth()+x);
     }
     protected Player getPlayer(int[] pos){
-    	return playerPosList.getFirstIndexedPlayer(pos);
+    	return posList.getFirstIndexedPlayer(pos);
     }
     protected void updatePosition(Player player,int[] pos){
     	int[] newPos = getListedTile(pos[0],pos[1]);
-    	int[] oldPos = playerPosList.update(player,newPos);;
-    	emptyPosList.add(oldPos);    	
-		emptyPosList.remove(newPos);
+    	int[] oldPos = posList.update(player,newPos);;
+    	emptyTileList.add(oldPos);    	
+		emptyTileList.remove(newPos);
     }
     protected boolean hasOverLap(int[] pos){
-    	return playerPosList.hasOverLap(pos);
+    	return posList.hasOverLap(pos);
     }
     //TODO: remove
     public static String toString(int[] param){
@@ -231,6 +231,6 @@ public class Map {
     }
     
     protected boolean isReady(){
-    	return playerPosList.isReady();
+    	return posList.isReady();
     }
 }

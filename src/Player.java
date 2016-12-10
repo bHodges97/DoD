@@ -23,4 +23,5 @@ abstract class Player{
 	//TODO:make a map reader class
 	//TODO:Fix issues with resizing
 	//TODO: make big classes smaller
+	//TODO:CARET POS
 }
