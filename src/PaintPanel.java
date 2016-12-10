@@ -106,11 +106,8 @@ public class PaintPanel extends JPanel{
 			g2d.drawString("GAME NOT STARTED", 0, 20);
 			return;
 		}
-		if(true){
-			//check player exisit
-		}
 		String title = map.getMapName();		
-		defaultFont = new Font("monospaced", Font.BOLD, 20);
+		defaultFont = new Font("Comic Sans Ms", Font.BOLD, 20);
 		g2d.setFont(defaultFont);
 		int titleWidth = g2d.getFontMetrics().stringWidth(title);
 		int titleHeight = g2d.getFontMetrics().getHeight();
@@ -162,17 +159,23 @@ public class PaintPanel extends JPanel{
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
 			overlay = getOverlay(width,height);
 		}
-		g2d.drawImage(overlay, 0, 0, null);		
-		if(loseAnimeFrame != 4){
+		
+		
+		if(loseAnimeFrame != 4 && !gameState.equals("WON")){
 			g2d.drawImage(Sprite.get("player"), centerX, centerY, null);
+			g2d.drawImage(overlay, 0, 0, null);	
+		}else if(gameState.equals("WON")){
+			g2d.setColor(Color.orange);
+			g2d.setFont(defaultFont.deriveFont(32f));
+			int twidth = g2d.getFontMetrics().stringWidth("♪YOU WIN♪");
+			g2d.drawString("♪YOU WIN♪", (width - twidth )/2,centerY);
 		}else{
-			g2d.setColor(new Color(frame%255,0,0));
+			g2d.setColor(new Color(frame*2+100,0,0));
 			g2d.setFont(defaultFont.deriveFont(32f));
 			int twidth = g2d.getFontMetrics().stringWidth("GAME OVER");
 			g2d.drawString("GAME OVER", (width - twidth )/2,centerY);
 		}
-		g2d.setFont(defaultFont);
-		g2d.setColor(Color.LIGHT_GRAY);
+		
 		if(playLoseAnimation){
 			BufferedImage[] animation = Sprite.getRow(8);
 			int[] posDif = PosList.subtract(cameraPos,posMap.get(current));
@@ -180,6 +183,9 @@ public class PaintPanel extends JPanel{
 			y = centerY- posDif[1]*TILESIZE;
 			g2d.drawImage(animation[loseAnimeFrame], x + animeOffSet[0], y + animeOffSet[1], null);
 		}
+
+		g2d.setFont(defaultFont);
+		g2d.setColor(Color.LIGHT_GRAY);
 		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
 	}
 	

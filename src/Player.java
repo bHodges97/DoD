@@ -1,6 +1,6 @@
 abstract class Player{
 	protected GameLogic gameLogic = null;
-	protected int goldCount = 0;
+	protected int goldCount = 10;//TODO:
 	protected boolean isMainPlayer = false;
 	protected boolean alive = true;
 
