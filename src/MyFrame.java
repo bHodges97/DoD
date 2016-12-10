@@ -49,8 +49,8 @@ public class MyFrame extends JFrame{
 		pack();
 	}
 	
-	protected void update(Player player){
-		paintPanel.setPlayer(player);
+	protected void update(Player player, String gameState){
+		paintPanel.setPlayer(player,gameState);
 	}
 	protected void setMap(Map map){
 		paintPanel.setMap(map);

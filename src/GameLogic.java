@@ -16,6 +16,7 @@ public class GameLogic {
 	protected Console console;
 	private int turnCounter;
 	private boolean hasMainPlayer = false;
+	private String gameState = "NOTSTARTED";
 	
 	public GameLogic(Console console){
 		this.console = console;
@@ -29,6 +30,7 @@ public class GameLogic {
 	}
 	
 	protected void startGame(){
+		gameState = "RUNNING";
 		turnCounter = 0;		
 		while(running){
 			if(players.isEmpty()){
@@ -37,22 +39,23 @@ public class GameLogic {
 			console.println("Turn "+turnCounter);
 			for(Player player: players){
 				currentPlayer = player;
-				console.update(player);
+				console.update(player,gameState);
 				player.selectNextAction();
 				if(checkWin()){
-					console.showWinEvent();
+					gameState = "WON";
 					running = false;
 					break;
 				}else if(checkLost()){
-					console.showFailEvent();
+					gameState = "LOST";
 					running = false;
 					break;
 				}
-				console.update(player);
+				console.update(player,gameState);
 				wait(1000);
 			}				
 			++turnCounter;
 		}
+		console.update(currentPlayer,gameState);
 		try {
 			while(!console.readln().equals("QUIT")){
 				console.println("GAME OVER(type QUIT to exit)");
@@ -120,7 +123,7 @@ public class GameLogic {
 		}
 		if(map.getTile(playerPos) != 'X' 
 				&& map.getTile(playerPos) != '#' 
-				 ){
+				 &&!(currentPlayer instanceof HumanPlayer && map.getPlayer(playerPos) != null) ){
 			map.updatePosition(currentPlayer,playerPos);
 			return "Success";
 		}else{

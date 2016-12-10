@@ -204,6 +204,11 @@ public class Map {
 	    		return false;
 	    	}    
 			tempPos = emptyTileList.get(rand.nextInt(emptyTileList.size()));
+		}//for testing remove TODO:
+		if(player instanceof HumanPlayer){
+			tempPos = new int[]{1,1};
+		}else{
+			tempPos = new int[]{1,2};
 		}
 		posList.put(player,tempPos);
 		emptyTileList.remove(tempPos);

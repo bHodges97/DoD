@@ -74,8 +74,8 @@ public class Console extends JTextArea{
 		setCaretPosition(getText().length());
 	}
 	
-	protected void update(Player player){
-		gui.update(player);
+	protected void update(Player player, String gameState){
+		gui.update(player,gameState);
 	}
 	
 	protected void setMap(Map map){

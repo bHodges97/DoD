@@ -26,10 +26,13 @@ public class PaintPanel extends JPanel{
 	private Set<int[]> wallSet;
 	private Player current;
 	private int[] offSet = new int[]{0,0};
-	private boolean started = false;
-	private boolean mapNeedsUpdate = true;
 	private boolean playLoseAnimation = false;
-	private int loseAnimFrame = 0;
+	private int loseAnimeFrame = 0;
+	private int[] animeOffSet = new int[]{0,0};
+	private Font defaultFont;
+	private int tileFrame = 0;
+	private String gameState = "NOTSTARTED";
+	
 	
 	public PaintPanel() {
 		super.repaint();
@@ -39,7 +42,7 @@ public class PaintPanel extends JPanel{
 		Runnable runner = new Runnable(){
 			@Override
 			public void run() {
-				while(map==null || !started){
+				while(map==null || gameState.equals("NOTSTARTED")){
 					try {
 						Thread.sleep(1);
 					} catch (InterruptedException e) {
@@ -50,18 +53,23 @@ public class PaintPanel extends JPanel{
 				initialisePos();
 				// TODO Auto-generated method stub
 				while(true){
-					if(frame > 10){
+					if(frame > TILESIZE){
 						frame = 0;
+						if(tileFrame > 10){
+							tileFrame = 0;
+						}
+						if(System.currentTimeMillis() % 10 == 0)
+						++tileFrame;
 					}
+					++frame;
 					try{
 						update(current);
 					}catch(Exception e){
 						e.printStackTrace();
 					}
 					repaint();
-					frame++;
 					try {
-						Thread.sleep(2);
+						Thread.sleep(4);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -76,10 +84,9 @@ public class PaintPanel extends JPanel{
 	protected void setMap(Map map){
 		this.map = map;
 	}
-	protected void setPlayer(Player player){
-		started = true;
+	protected void setPlayer(Player player, String gameState){
+		this.gameState = gameState;
 		current = player;
-		mapNeedsUpdate = true;
 	}
 	
 	@Override
@@ -95,7 +102,7 @@ public class PaintPanel extends JPanel{
 			g2d.drawString("MAP LOAD FAILED", 0, 20);
 			return;
 		}
-		if(!started){
+		if(gameState.equals("NOTSTARTED")){
 			g2d.drawString("GAME NOT STARTED", 0, 20);
 			return;
 		}
@@ -103,18 +110,15 @@ public class PaintPanel extends JPanel{
 			//check player exisit
 		}
 		String title = map.getMapName();		
-		g2d.setFont(new Font("monospaced", Font.BOLD, 20));
+		defaultFont = new Font("monospaced", Font.BOLD, 20);
+		g2d.setFont(defaultFont);
 		int titleWidth = g2d.getFontMetrics().stringWidth(title);
 		int titleHeight = g2d.getFontMetrics().getHeight();
 		height+=titleHeight;
 		
 		int centerX = width/2-TILESIZE/2;
 		int centerY = height/2-TILESIZE/2;
-		
-		if(backGround == null || mapNeedsUpdate){
-			backGround = drawFullMap();
-			mapNeedsUpdate = false;
-		}		
+		backGround = drawFullMap();
 		
 		int x,y;
 		int[] cameraPos = new int[]{0,0};
@@ -128,8 +132,6 @@ public class PaintPanel extends JPanel{
 					y-=offSet[1];
 				}
 				g2d.drawImage(backGround, x, y, null);
-
-				g2d.drawString(""+(player instanceof HumanPlayer), 0, 30);
 				break;
 			}
 		}
@@ -156,12 +158,28 @@ public class PaintPanel extends JPanel{
 				}
 				g2d.drawImage(bot,x ,y ,null);
 			}
-		}	
+		}
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
 			overlay = getOverlay(width,height);
 		}
-		g2d.drawImage(Sprite.get("player"), centerX, centerY, null);		
-		g2d.drawImage(overlay, 0, 0, null);
+		g2d.drawImage(overlay, 0, 0, null);		
+		if(loseAnimeFrame != 4){
+			g2d.drawImage(Sprite.get("player"), centerX, centerY, null);
+		}else{
+			g2d.setColor(new Color(frame%255,0,0));
+			g2d.setFont(defaultFont.deriveFont(32f));
+			int twidth = g2d.getFontMetrics().stringWidth("GAME OVER");
+			g2d.drawString("GAME OVER", (width - twidth )/2,centerY);
+		}
+		g2d.setFont(defaultFont);
+		g2d.setColor(Color.LIGHT_GRAY);
+		if(playLoseAnimation){
+			BufferedImage[] animation = Sprite.getRow(8);
+			int[] posDif = PosList.subtract(cameraPos,posMap.get(current));
+			x = centerX- posDif[0]*TILESIZE;
+			y = centerY- posDif[1]*TILESIZE;
+			g2d.drawImage(animation[loseAnimeFrame], x + animeOffSet[0], y + animeOffSet[1], null);
+		}
 		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
 	}
 	
@@ -172,10 +190,9 @@ public class PaintPanel extends JPanel{
 		int[] posDif = PosList.subtract(pos,oldPos);
 		if(posDif[0] == 0 && posDif[1] == 0){
 			offSet = new int[]{0,0};
-			if(map.hasOverLap(pos)){
-				//playDefeat(player);
-				//return;
-			}
+		}
+		if(gameState.equals("LOST") && playDefeat(player)){
+			return;
 		}
 		if(!finishedMove()){
 			offSet[0]+=posDif[0];
@@ -186,24 +203,27 @@ public class PaintPanel extends JPanel{
 			posMap.put(player,pos);
 		}		
 	}
-	private void playDefeat(Player player){
-		playLoseAnimation = true;
-		if(loseAnimFrame == 10){
-			playLoseAnimation = false;
-		}else{
-			return;
-		}
+	private boolean playDefeat(Player player){
 		int[] pos = map.getPosition(player);
 		int[] oldPos = posMap.get(player);
 		int[] posDif = PosList.subtract(pos,oldPos);
-		if(!finishedMove()){
-			offSet[0]+=posDif[0];
-			offSet[1]+=posDif[1];
-		}else{
-			offSet = new int[]{TILESIZE,TILESIZE};
-			posMap.remove(player);
-			posMap.put(player,pos);
+		playLoseAnimation = true;
+		if(loseAnimeFrame == 4){
+			playLoseAnimation = false;
+			return false;
+		}else if(loseAnimeFrame == 0 && frame == TILESIZE){
+			int x =  TILESIZE * posDif[0] / 4;
+			int y =  TILESIZE * posDif[1] / 4;
+			animeOffSet = new int[]{x,y};
+			++loseAnimeFrame;
+			return true;
 		}
+		if(frame == TILESIZE){
+			animeOffSet[0]+= TILESIZE  / 4 * posDif[0];
+			animeOffSet[1]+= TILESIZE  / 4 * posDif[1];
+			++loseAnimeFrame;
+		}
+		return true;
 	}
 	
 	private boolean finishedMove(){
@@ -240,7 +260,7 @@ public class PaintPanel extends JPanel{
 				}else if(c == 'G'){
 					tile = Sprite.get("gold");
 				}else if(c == 'E'){
-					tile = Sprite.get("exit");
+					tile = Sprite.getRow(4)[tileFrame%4];
 				}else if(c == '.'){
 					tile = Sprite.get("floor");
 				}else if(c == 'X'){
