@@ -276,6 +276,10 @@ public class PaintPanel extends JPanel{
 				}
 				g2d.drawImage(Sprite.get("floor"), x*TILESIZE, y*TILESIZE, null);
 				g2d.drawImage(tile,  x*TILESIZE, y*TILESIZE, null);
+				
+				if(gameState.equals("WON")){
+					g2d.drawImage(Sprite.get("confetti"),x*TILESIZE, y*TILESIZE, null);
+				}
 			}			
 		}
 		for(int[] wall : wallSet){

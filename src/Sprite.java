@@ -38,6 +38,7 @@ public class Sprite {
 		sprites.put("arrow1",getSprite(1,7));
 		sprites.put("arrow2", getSprite(2,7));
 		sprites.put("arrow3", getSprite(3,7));		
+		sprites.put("confetti", getSprite(4,7));		
 	}
 	
 	private static void loadSpriteSheet(){
