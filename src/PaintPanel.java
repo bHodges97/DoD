@@ -20,8 +20,9 @@ public class PaintPanel extends JPanel{
 	private static final int TILESIZE = 64;
 	
 	private Map map = null;
-	private BufferedImage overlay,backGround;
-	private Image bot,player,wall,floor,gold,exit;
+	private BufferedImage overlay,backGround,bot;
+	//private Image bot,player,wall,floor,gold,exit,botL,botR;
+	private Sprite sprites;
 	private int frame = 0;
 	private java.util.Map<Player,int[]> posMap = new HashMap<Player,int[]>();
 	private Set<int[]> wallSet;
@@ -35,7 +36,8 @@ public class PaintPanel extends JPanel{
 	public PaintPanel() {
 		super.repaint();
 		setPreferredSize(new Dimension(350,350));
-		loadSprites();
+		sprites = new Sprite();
+		bot = sprites.get("bot");
 		
 		Runnable runner = new Runnable(){
 			@Override
@@ -153,13 +155,18 @@ public class PaintPanel extends JPanel{
 					x-=offSet[0];
 					y-=offSet[1];
 				}
+				if(offSet[0] < 0){
+					bot = sprites.get("bot1");
+				}else if(offSet[0] > 0){
+					bot = sprites.get("bot2");
+				}
 				g2d.drawImage(bot,x ,y ,null);
 			}
 		}	
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
 			overlay = getOverlay(width,height);
 		}
-		g2d.drawImage(player, centerX, centerY, null);		
+		g2d.drawImage(sprites.get("player"), centerX, centerY, null);		
 		g2d.drawImage(overlay, 0, 0, null);
 		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
 	}
@@ -222,42 +229,6 @@ public class PaintPanel extends JPanel{
 			}
 		}
 	}
-
-	protected Image getDefaultImg(){
-		int halfTile = TILESIZE/2;
-		BufferedImage defaultImg = new BufferedImage(TILESIZE,TILESIZE,BufferedImage.TYPE_INT_ARGB);
-		for(int x = 0;x < TILESIZE;++x){
-			for(int y = 0;y< TILESIZE;++y){
-				if(( x < halfTile && y < halfTile) ||( x >= halfTile && y >= halfTile)){
-					defaultImg.setRGB(x, y, new Color(255,0,220).getRGB());//purple
-				}else{
-					defaultImg.setRGB(x, y, Color.black.getRGB());
-				}
-			}
-		}
-		return defaultImg;
-	}
-	
-
-	private void loadSprites(){
-	try {
-			bot = ImageIO.read(getClass().getResource("bot.png"));
-			player = ImageIO.read(getClass().getResourceAsStream("player.png"));
-			floor = ImageIO.read(getClass().getResource("floor.png"));
-			wall =ImageIO.read(getClass().getResource("wall.png"));
-			exit = ImageIO.read(getClass().getResource("exit.png"));
-			gold = ImageIO.read(getClass().getResource("hello.png"));
-		} catch (IOException e) {
-			Image defaultImg = getDefaultImg();
-			bot = defaultImg;
-			player = defaultImg;
-			floor= defaultImg;
-			wall = defaultImg;
-			exit = defaultImg;
-			gold = defaultImg;
-			e.printStackTrace();
-		}
-	}
 	
 	private BufferedImage drawFullMap(){
 		wallSet = new HashSet<int[]>();
@@ -270,20 +241,20 @@ public class PaintPanel extends JPanel{
 				Image tile;
 				char c =map.getTile(new int[]{x,y});
 				if(c == '#'){
-					tile = wall;
+					tile = sprites.get("wall");
 					wallSet.add(new int[]{x,y});
 				}else if(c == 'G'){
-					tile = gold;
+					tile = sprites.get("gold");
 				}else if(c == 'E'){
-					tile = exit;
+					tile = sprites.get("exit");
 				}else if(c == '.'){
-					tile = floor;
+					tile = sprites.get("floor");
 				}else if(c == 'X'){
 					continue;
 				}else{
-					tile = getDefaultImg();
+					tile = Sprite.getDefaultImg();
 				}
-				g2d.drawImage(floor, x*TILESIZE, y*TILESIZE, null);
+				g2d.drawImage(sprites.get("floor"), x*TILESIZE, y*TILESIZE, null);
 				g2d.drawImage(tile,  x*TILESIZE, y*TILESIZE, null);
 			}			
 		}

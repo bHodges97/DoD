@@ -20,7 +20,6 @@ public class HumanPlayer extends Player{
 		try {
 			return gameLogic.console.readln();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return "";

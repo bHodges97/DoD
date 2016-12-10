@@ -77,29 +77,15 @@ public class MyFrame extends JFrame{
 	}
 	
 	private void loadIcons(){
-		Image imgLOOK,imgPICKUP,imgEXIT,imgHELLO,imgArrowN,imgArrowE,imgArrowS,imgArrowW;
-		try{
-			imgLOOK = ImageIO.read(getClass().getResource("look.png"));
-			imgPICKUP = ImageIO.read(getClass().getResource("pickup.png"));
-			imgEXIT = ImageIO.read(getClass().getResource("quit.png"));
-			imgHELLO = ImageIO.read(getClass().getResource("hello.png"));
-			imgArrowN = ImageIO.read(getClass().getResource("arrowN.png"));
-			imgArrowS = ImageIO.read(getClass().getResource("arrowS.png"));
-			imgArrowE = ImageIO.read(getClass().getResource("arrowE.png"));
-			imgArrowW = ImageIO.read(getClass().getResource("arrowW.png"));
-		}catch(IOException e){
-			e.printStackTrace();
-			return;
-		}
-		
-		buttonLook.setIcon(new ImageIcon(imgLOOK));
-		buttonPickup.setIcon(new ImageIcon(imgPICKUP));
-		buttonHello.setIcon(new ImageIcon(imgHELLO));
-		buttonExit.setIcon(new ImageIcon(imgEXIT));
-		buttonNorth.setIcon(new ImageIcon(imgArrowN));
-		buttonSouth.setIcon(new ImageIcon(imgArrowS));
-		buttonWest.setIcon(new ImageIcon(imgArrowW));
-		buttonEast.setIcon(new ImageIcon(imgArrowE));
+		Sprite sprites = new Sprite();		
+		buttonLook.setIcon(new ImageIcon(sprites.get("look")));
+		buttonPickup.setIcon(new ImageIcon(sprites.get("pickup")));
+		buttonHello.setIcon(new ImageIcon(sprites.get("hello")));
+		buttonExit.setIcon(new ImageIcon(sprites.get("exit")));
+		buttonNorth.setIcon(new ImageIcon(sprites.get("arrow1")));
+		buttonSouth.setIcon(new ImageIcon(sprites.get("arrow2")));
+		buttonWest.setIcon(new ImageIcon(sprites.get("arrow3")));
+		buttonEast.setIcon(new ImageIcon(sprites.get("arrow")));
 	}
 	
 	private void initialiseLayout(){

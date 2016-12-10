@@ -13,8 +13,7 @@ import java.util.Set;
  *
  * @author: The unnamed tutor.
  */
-public class Map {
-	
+public class Map {	
 	private String mapName = "";
 	private int goldRequired = 0;
 	private char[][] map;
@@ -22,11 +21,6 @@ public class Map {
 	private List<int[]> emptyPosList;
 	private PlayerPosList playerPosList = new PlayerPosList();
 	
-	
-	public Map(){
-	}
-	
-
     /**
      * @return : Gold required to exit the current map.
      */
@@ -67,12 +61,7 @@ public class Map {
      * @return : The position of the player.
      */
     protected int[] getPlayersPosition() {
-    	for(Player player:playerPosList.keySet()){
-    		if(player instanceof HumanPlayer){
-    			return playerPosList.get(player).clone();
-    		}
-    	}
-    	return posList.get(0);
+    	return playerPosList.getNearestHuman(new int[]{0,0});
     }
     
     protected int[] getPosition(Player player){
@@ -241,7 +230,7 @@ public class Map {
     	return("("+param[0]+","+param[1]+")");
     }
     
-    public boolean isReady(){
+    protected boolean isReady(){
     	return playerPosList.isReady();
     }
 }
