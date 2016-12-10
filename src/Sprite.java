@@ -14,7 +14,7 @@ public class Sprite {
 	private static java.util.Map<String,BufferedImage> sprites = new HashMap<String,BufferedImage>();
 	
 	
-	private Sprite(){
+	private Sprite(){//whole class is static;
 	}
 	
 	static{
@@ -24,8 +24,7 @@ public class Sprite {
 	
 	private static void loadSprites(){
 		sprites.put("bot", getSprite(0,0));
-		sprites.put("bot1", getSprite(0,0));
-		sprites.put("bot2", getSprite(0,1));
+		sprites.put("bot1", getSprite(0,1));
 		sprites.put("player", getSprite(1,0));
 		sprites.put("floor", getSprite(2,0));
 		sprites.put("wall", getSprite(3,0));
@@ -68,7 +67,7 @@ public class Sprite {
 		if(spriteSheet == null){
 			return getDefaultImg();
 		}
-		try{
+		try{//x and  y inverse is intentional
 			return spriteSheet.getSubimage(y * TILESIZE, x * TILESIZE, TILESIZE, TILESIZE);
 		}catch(RasterFormatException  e){
 			e.printStackTrace();

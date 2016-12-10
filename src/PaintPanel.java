@@ -153,10 +153,10 @@ public class PaintPanel extends JPanel{
 					x-=offSet[0];
 					y-=offSet[1];
 				}
-				if(offSet[0] < 0){
+				if(offSet[0] < 0 && offSet[0] > -64){
+					bot = Sprite.get("bot"); 
+				}else if(offSet[0] > 1 && offSet[0] < 64){
 					bot = Sprite.get("bot1");
-				}else if(offSet[0] > 0){
-					bot = Sprite.get("bot2");
 				}
 				g2d.drawImage(bot,x ,y ,null);
 			}
