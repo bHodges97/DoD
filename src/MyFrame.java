@@ -76,16 +76,15 @@ public class MyFrame extends JFrame{
 		return guiInput;
 	}
 	
-	private void loadIcons(){
-		Sprite sprites = new Sprite();		
-		buttonLook.setIcon(new ImageIcon(sprites.get("look")));
-		buttonPickup.setIcon(new ImageIcon(sprites.get("pickup")));
-		buttonHello.setIcon(new ImageIcon(sprites.get("hello")));
-		buttonExit.setIcon(new ImageIcon(sprites.get("exit")));
-		buttonNorth.setIcon(new ImageIcon(sprites.get("arrow1")));
-		buttonSouth.setIcon(new ImageIcon(sprites.get("arrow2")));
-		buttonWest.setIcon(new ImageIcon(sprites.get("arrow3")));
-		buttonEast.setIcon(new ImageIcon(sprites.get("arrow")));
+	private void loadIcons(){	
+		buttonLook.setIcon(new ImageIcon(Sprite.get("look")));
+		buttonPickup.setIcon(new ImageIcon(Sprite.get("pickup")));
+		buttonHello.setIcon(new ImageIcon(Sprite.get("hello")));
+		buttonExit.setIcon(new ImageIcon(Sprite.get("exit")));
+		buttonNorth.setIcon(new ImageIcon(Sprite.get("arrow1")));
+		buttonSouth.setIcon(new ImageIcon(Sprite.get("arrow2")));
+		buttonWest.setIcon(new ImageIcon(Sprite.get("arrow3")));
+		buttonEast.setIcon(new ImageIcon(Sprite.get("arrow")));
 	}
 	
 	private void initialiseLayout(){

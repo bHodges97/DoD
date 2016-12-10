@@ -22,7 +22,6 @@ public class PaintPanel extends JPanel{
 	private Map map = null;
 	private BufferedImage overlay,backGround,bot;
 	//private Image bot,player,wall,floor,gold,exit,botL,botR;
-	private Sprite sprites;
 	private int frame = 0;
 	private java.util.Map<Player,int[]> posMap = new HashMap<Player,int[]>();
 	private Set<int[]> wallSet;
@@ -36,8 +35,7 @@ public class PaintPanel extends JPanel{
 	public PaintPanel() {
 		super.repaint();
 		setPreferredSize(new Dimension(350,350));
-		sprites = new Sprite();
-		bot = sprites.get("bot");
+		bot = Sprite.get("bot");
 		
 		Runnable runner = new Runnable(){
 			@Override
@@ -156,9 +154,9 @@ public class PaintPanel extends JPanel{
 					y-=offSet[1];
 				}
 				if(offSet[0] < 0){
-					bot = sprites.get("bot1");
+					bot = Sprite.get("bot1");
 				}else if(offSet[0] > 0){
-					bot = sprites.get("bot2");
+					bot = Sprite.get("bot2");
 				}
 				g2d.drawImage(bot,x ,y ,null);
 			}
@@ -166,7 +164,7 @@ public class PaintPanel extends JPanel{
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
 			overlay = getOverlay(width,height);
 		}
-		g2d.drawImage(sprites.get("player"), centerX, centerY, null);		
+		g2d.drawImage(Sprite.get("player"), centerX, centerY, null);		
 		g2d.drawImage(overlay, 0, 0, null);
 		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
 	}
@@ -241,20 +239,20 @@ public class PaintPanel extends JPanel{
 				Image tile;
 				char c =map.getTile(new int[]{x,y});
 				if(c == '#'){
-					tile = sprites.get("wall");
+					tile = Sprite.get("wall");
 					wallSet.add(new int[]{x,y});
 				}else if(c == 'G'){
-					tile = sprites.get("gold");
+					tile = Sprite.get("gold");
 				}else if(c == 'E'){
-					tile = sprites.get("exit");
+					tile = Sprite.get("exit");
 				}else if(c == '.'){
-					tile = sprites.get("floor");
+					tile = Sprite.get("floor");
 				}else if(c == 'X'){
 					continue;
 				}else{
 					tile = Sprite.getDefaultImg();
 				}
-				g2d.drawImage(sprites.get("floor"), x*TILESIZE, y*TILESIZE, null);
+				g2d.drawImage(Sprite.get("floor"), x*TILESIZE, y*TILESIZE, null);
 				g2d.drawImage(tile,  x*TILESIZE, y*TILESIZE, null);
 			}			
 		}
@@ -278,19 +276,19 @@ public class PaintPanel extends JPanel{
 			int swidth,sheight;
 			if(dif[0]<0){
 				sx+=TILESIZE;
-				swidth = TILESIZE / 8;
+				swidth = TILESIZE / 4;
 				sheight = TILESIZE;
 			}else if(dif[0]>0){
-				swidth = TILESIZE / 8;
+				swidth = TILESIZE / 4;
 				sheight = TILESIZE;
 				sx-=swidth;
 			}else if(dif[1]<0){
 				sy+=TILESIZE;
 				swidth = TILESIZE;
-				sheight = TILESIZE / 8;
+				sheight = TILESIZE / 4;
 			}else{
 				swidth = TILESIZE;
-				sheight = TILESIZE/ 8;
+				sheight = TILESIZE/ 4;
 				sy-=sheight;
 			}
 			g2d.fillRect(sx, sy, swidth, sheight);

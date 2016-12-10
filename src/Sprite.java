@@ -9,16 +9,20 @@ import javax.imageio.ImageIO;
 
 public class Sprite {	
 	
-	BufferedImage spriteSheet = null;
-	public static final int TILESIZE = 64;
-	public java.util.Map<String,BufferedImage> sprites = new HashMap<String,BufferedImage>();
+	private static BufferedImage spriteSheet = null;
+	private static final int TILESIZE = 64;
+	private static java.util.Map<String,BufferedImage> sprites = new HashMap<String,BufferedImage>();
 	
-	public Sprite(){
+	
+	private Sprite(){
+	}
+	
+	static{
 		loadSpriteSheet();
 		loadSprites();
 	}
 	
-	private void loadSprites(){
+	private static void loadSprites(){
 		sprites.put("bot", getSprite(0,0));
 		sprites.put("bot1", getSprite(0,0));
 		sprites.put("bot2", getSprite(0,1));
@@ -37,9 +41,9 @@ public class Sprite {
 		sprites.put("arrow3", getSprite(7,3));		
 	}
 	
-	private void loadSpriteSheet(){
+	private static void loadSpriteSheet(){
 		try {
-            spriteSheet = ImageIO.read(getClass().getResource("spritesheet.png"));
+            spriteSheet = ImageIO.read(Sprite.class.getResource("spritesheet.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -60,7 +64,7 @@ public class Sprite {
 		return defaultImg;
 	}
 	
-	public BufferedImage getSprite(int x, int y){
+	public static BufferedImage getSprite(int x, int y){
 		if(spriteSheet == null){
 			return getDefaultImg();
 		}
@@ -72,7 +76,7 @@ public class Sprite {
 		return getDefaultImg();
 	}	  
 	
-	public BufferedImage get(String name){
+	public static BufferedImage get(String name){
 		try{
 			return sprites.get(name);
 		}catch(NullPointerException e){
