@@ -80,7 +80,7 @@ public class MyFrame extends JFrame{
 		buttonLook.setIcon(new ImageIcon(Sprite.get("look")));
 		buttonPickup.setIcon(new ImageIcon(Sprite.get("pickup")));
 		buttonHello.setIcon(new ImageIcon(Sprite.get("hello")));
-		buttonExit.setIcon(new ImageIcon(Sprite.get("exit")));
+		buttonExit.setIcon(new ImageIcon(Sprite.get("quit")));
 		buttonNorth.setIcon(new ImageIcon(Sprite.get("arrow1")));
 		buttonSouth.setIcon(new ImageIcon(Sprite.get("arrow2")));
 		buttonWest.setIcon(new ImageIcon(Sprite.get("arrow3")));
