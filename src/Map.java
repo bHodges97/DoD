@@ -199,7 +199,7 @@ public class Map {
     		return false;
     	}    	
     	int[] tempPos = emptyTileList.get(rand.nextInt(emptyTileList.size()));
-		while(getTile(tempPos)=='#'){
+		while(getTile(tempPos)!='.'){
 			emptyTileList.remove(tempPos);
 	    	if(emptyTileList.isEmpty()){
 	    		return false;
@@ -257,7 +257,22 @@ public class Map {
 		placeCoins(goldCount);
 	}
 	protected void placeCoins(int count){
-		//TODO:
+		Random rand = new Random(System.currentTimeMillis());
+    	if(emptyTileList.isEmpty()){
+    		return;
+    	}
+		while (count > 0) {
+			int[] tempPos = emptyTileList.get(rand.nextInt(emptyTileList.size()));
+			while (getTile(tempPos) != '.') {
+				emptyTileList.remove(tempPos);
+				if (emptyTileList.isEmpty()) {
+					return;
+				}
+				tempPos = emptyTileList.get(rand.nextInt(emptyTileList.size()));
+			}
+			map[tempPos[0]][tempPos[1]] = 'G';
+			--count;
+		}
 	}
 
 	public List<Player> getPlayers(int[] pos) {

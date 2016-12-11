@@ -1,11 +1,14 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,20 +40,24 @@ public class PaintPanel extends JPanel{
 		super.repaint();
 		setPreferredSize(new Dimension(350,350));
 		bot = Sprite.get("bot");
+		InputStream is = getClass().getResourceAsStream("font.ttf");
+		try {
+			defaultFont = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(20f);
+		} catch (FontFormatException |IOException e) {
+			e.printStackTrace();
+		}
 		
 		Runnable runner = new Runnable(){
 			@Override
 			public void run() {
 				while(map==null || gameState.equals("NOTSTARTED")){
 					try {
-						Thread.sleep(1);
+						Thread.sleep(100);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}			
 				}
 				initialisePos();
-				// TODO Auto-generated method stub
 				long lastChange = System.currentTimeMillis();
 				while(true){
 					if(frame > TILESIZE){
@@ -73,7 +80,6 @@ public class PaintPanel extends JPanel{
 					try {
 						Thread.sleep(4);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}			
 				}
@@ -96,7 +102,8 @@ public class PaintPanel extends JPanel{
 		super.paintComponent(g);
 		Graphics2D g2d = (Graphics2D)g;
 		int width =getWidth();
-		int height = getHeight();	
+		int height = getHeight();
+		boolean showDeath = false;
 		
 		g2d.fillRect(0,0 , width, height);
 		if(map==null){
@@ -107,7 +114,7 @@ public class PaintPanel extends JPanel{
 			return;
 		}
 		String title = map.getMapName();		
-		defaultFont = new Font("Comic Sans Ms", Font.BOLD, 20);
+		//defaultFont = new Font("Comic Neue", Font.BOLD, 20);
 		g2d.setFont(defaultFont);
 		int titleWidth = g2d.getFontMetrics().stringWidth(title);
 		int titleHeight = g2d.getFontMetrics().getHeight();
@@ -129,13 +136,11 @@ public class PaintPanel extends JPanel{
 					y-=offSet[1];
 				}
 				g2d.drawImage(backGround, x, y, null);
-				if(deadPlayers.contains(player)){
-					g2d.setColor(Color.orange);
-					g2d.setFont(defaultFont.deriveFont(25f));
-					int twidth = g2d.getFontMetrics().stringWidth("YOU ARE DEAD");
-					g2d.drawString("YOU ARE DEAD", (width - twidth )/2,centerY+30);		
-				}else{
+				if(!deadPlayers.contains(player)){
 					g2d.drawImage(Sprite.getRow(1)[tileFrame%5], centerX, centerY, null);
+				}else{
+					g2d.drawImage(Sprite.get("blood"), centerX, centerY,null);
+					showDeath = true;
 				}
 				break;
 			}
@@ -167,6 +172,8 @@ public class PaintPanel extends JPanel{
 					}else{
 						g2d.drawImage(bot,x ,y ,null);
 					}
+				}else{
+					g2d.drawImage(Sprite.get("blood"), x ,y,null);
 				}
 				
 			}
@@ -185,7 +192,7 @@ public class PaintPanel extends JPanel{
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
 			overlay = getOverlay(width,height);
 		}		
-		//TODO:g2d.drawImage(overlay, 0, 0, null);	
+		g2d.drawImage(overlay, 0, 0, null);	
 				
 		if(gameState.equals("WON")){
 			g2d.setColor(Color.orange);
@@ -198,7 +205,12 @@ public class PaintPanel extends JPanel{
 			int twidth = g2d.getFontMetrics().stringWidth("GAME OVER");
 			g2d.drawString("GAME OVER", (width - twidth )/2,centerY);
 		}
-		
+		if(showDeath){
+			g2d.setColor(Color.orange);
+			g2d.setFont(defaultFont.deriveFont(25f));
+			int twidth = g2d.getFontMetrics().stringWidth("YOU ARE DEAD");
+			g2d.drawString("YOU ARE DEAD", (width - twidth )/2,centerY+30);		
+		}
 
 		g2d.setFont(defaultFont);
 		g2d.setColor(Color.LIGHT_GRAY);
