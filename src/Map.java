@@ -92,9 +92,9 @@ public class Map {
 			mapName = reader.nextLine().split("name ")[1];
 			goldRequired = Integer.parseInt(reader.nextLine().split("win ")[1]);
 			ArrayList<char[]> buffer = new ArrayList<char[]>();
-			while(reader.hasNextLine()){//store map contents into a buffer.
+			do{//store map contents into a buffer.
 				buffer.add(reader.nextLine().toCharArray());
-			}
+			}while(reader.hasNextLine());
 			char[][] bufferMap = new char[buffer.size()][];
 			int width = 0;
 			for(int i =0;i<buffer.size();++i){//transform buffer to char array.
@@ -111,6 +111,7 @@ public class Map {
 			
 			generateTileList();
     	}catch(FileNotFoundException|NoSuchElementException e){
+    		System.out.println("Map load failed");
     		e.printStackTrace();
     		System.exit(1);
     	}finally{

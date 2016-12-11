@@ -1,5 +1,4 @@
 import java.awt.Color;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.io.IOException;
@@ -64,7 +63,7 @@ public class Sprite {
 		return defaultImg;
 	}
 	
-	public static BufferedImage getSprite(int x, int y){
+	protected static BufferedImage getSprite(int x, int y){
 		if(spriteSheet == null){
 			return getDefaultImg();
 		}
@@ -76,7 +75,7 @@ public class Sprite {
 		return getDefaultImg();
 	}	  
 	
-	public static BufferedImage get(String name){
+	protected static BufferedImage get(String name){
 		try{
 			return sprites.get(name);
 		}catch(NullPointerException e){
@@ -85,7 +84,7 @@ public class Sprite {
 		return getDefaultImg();
 	}
 	
-	public static BufferedImage[] getRow(int row){
+	protected static BufferedImage[] getRow(int row){
 		int sheetWidth = 5;
 		BufferedImage[] sprites = new BufferedImage[sheetWidth];
 		for(int i = 0 ; i < sheetWidth; ++i){

@@ -1,4 +1,3 @@
-
 /**
  * Starts the game with a Bot Player. Contains code for bot's decision making.
  *
@@ -73,8 +72,8 @@ public class BotPlayer extends Player{
     
 
     public static void main(String[] args) {
-    	Console console = new Console();
-    	GameLogic game = new GameLogic(console);
+    	MyFrame gui = new MyFrame("Dungeon of Doom");
+    	GameLogic game = new GameLogic(gui);
 		//game.addPlayer(new HumanPlayer(game));
 		game.addPlayer(new BotPlayer(game));
         // RUN FOREST RUN!

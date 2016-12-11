@@ -1,6 +1,6 @@
 abstract class Player{
 	protected GameLogic gameLogic = null;
-	protected int goldCount = 10;//TODO:
+	protected int goldCount = 0;
 	protected boolean isMainPlayer = false;
 	protected boolean alive = true;
 
@@ -19,8 +19,6 @@ abstract class Player{
 	
 	//TODOLIST
 	//TODO:path finding may be broken?
-	//TODO:win/lose animation
-	//TODO:make a map reader class
 	//TODO:Fix issues with resizing
 	//TODO: make big classes smaller
 	//TODO:CARET POS

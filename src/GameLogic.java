@@ -14,18 +14,20 @@ public class GameLogic {
 	private List<Player> players = new ArrayList<Player>();
 	private Player currentPlayer; 
 	protected Console console;
+	private MyFrame gui;
 	private int turnCounter;
 	private boolean hasMainPlayer = false;
 	private String gameState = "NOTSTARTED";
 	
-	public GameLogic(Console console){
-		this.console = console;
+	public GameLogic(MyFrame frame){
+		this.gui = frame;
+		console = frame.getConsole();
 		map = new Map();
 		map.readMap("example_map.txt");
 		if(map.getMap()==null){
 			console.println("map load failed: exiting");
 		}else{
-			console.setMap(map);
+			gui.setMap(map);
 		}
 	}
 	
@@ -39,23 +41,25 @@ public class GameLogic {
 			console.println("Turn "+turnCounter);
 			for(Player player: players){
 				currentPlayer = player;
-				console.update(player,gameState);
+				gui.update(player,gameState);
 				player.selectNextAction();
 				if(checkWin()){
 					gameState = "WON";
+					console.showWinEvent();
 					running = false;
 					break;
 				}else if(checkLost()){
 					gameState = "LOST";
+					console.showFailEvent();
 					running = false;
 					break;
 				}
-				console.update(player,gameState);
-				wait(1000);
+				gui.update(player,gameState);
+				gui.waitForAnimation();
 			}				
 			++turnCounter;
 		}
-		console.update(currentPlayer,gameState);
+		gui.update(currentPlayer,gameState);
 		try {
 			while(!console.readln().equals("QUIT")){
 				console.println("GAME OVER(type QUIT to exit)");
@@ -195,13 +199,5 @@ public class GameLogic {
 			return true;
 		}
     	return false;
-    }
-    private void wait(int time){
-    	try {
-			Thread.sleep(time);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
     }
 }

@@ -4,12 +4,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -37,16 +34,17 @@ public class MyFrame extends JFrame{
 	private String guiInput = null;
 	
 	
-	public MyFrame(String title,Console console){
+	public MyFrame(String title){
 		super(title);
-		this.console = console;
+		this.console = new Console(this);
 		scrollArea = new JScrollPane(this.console);
 		loadIcons();
 		initialiseLayout();		
-		initialiseButtons();	
-		setVisible(true);
+		initialiseButtons();			
 		allowInputs(false);
+		setResizable(false);
 		pack();
+		setVisible(true);
 	}
 	
 	protected void update(Player player, String gameState){
@@ -74,6 +72,20 @@ public class MyFrame extends JFrame{
 	
 	protected String getInput(){
 		return guiInput;
+	}
+	
+	protected Console getConsole(){
+		return console;
+	}
+	
+	protected void waitForAnimation(){
+		do{
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}while(!paintPanel.finishedMove());
 	}
 	
 	private void loadIcons(){	
@@ -132,7 +144,6 @@ public class MyFrame extends JFrame{
 		c.gridx = 3;
 		c.gridy = 1;
 		buttonsPanel.add(buttonEast, c);
-
 
 		setMinimumSize(new Dimension(500, 600));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

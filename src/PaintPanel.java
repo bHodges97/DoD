@@ -6,13 +6,11 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 public class PaintPanel extends JPanel{
@@ -21,17 +19,17 @@ public class PaintPanel extends JPanel{
 	
 	private Map map = null;
 	private BufferedImage overlay,backGround,bot;
-	private int frame = 0;
 	private java.util.Map<Player,int[]> posMap = new HashMap<Player,int[]>();
-	private Set<int[]> wallSet;
-	private Player current;
-	private int[] offSet = new int[]{0,0};
+	private boolean animationComplete = true;
 	private boolean playLoseAnimation = false;
-	private int loseAnimeFrame = 0;
+	private int[] offSet = new int[]{0,0};
 	private int[] animeOffSet = new int[]{0,0};
-	private Font defaultFont;
+	private int loseAnimeFrame = 0;	
+	private int frame = 0;
 	private int tileFrame = 0;
+	private Font defaultFont;
 	private String gameState = "NOTSTARTED";
+	private Player current;
 	
 	
 	public PaintPanel() {
@@ -91,18 +89,16 @@ public class PaintPanel extends JPanel{
 	
 	@Override
 	public void paintComponent(Graphics g){
-		//super.paint(g); this line is VERY BAD
+		super.paintComponent(g);
 		Graphics2D g2d = (Graphics2D)g;
 		int width =getWidth();
 		int height = getHeight();	
 		
 		g2d.fillRect(0,0 , width, height);
-		g2d.setColor(Color.WHITE);
 		if(map==null){
 			g2d.drawString("MAP LOAD FAILED", 0, 20);
 			return;
-		}
-		if(gameState.equals("NOTSTARTED")){
+		}else if(gameState.equals("NOTSTARTED")){
 			g2d.drawString("GAME NOT STARTED", 0, 20);
 			return;
 		}
@@ -132,8 +128,7 @@ public class PaintPanel extends JPanel{
 				break;
 			}
 		}
-		
-		
+				
 		for(Player player:posMap.keySet()){
 			if(player.isMainPlayer){
 				continue;
@@ -156,10 +151,10 @@ public class PaintPanel extends JPanel{
 				g2d.drawImage(bot,x ,y ,null);
 			}
 		}
+		
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
 			overlay = getOverlay(width,height);
-		}
-		
+		}		
 		
 		if(loseAnimeFrame != 4 && !gameState.equals("WON")){
 			g2d.drawImage(Sprite.get("player"), centerX, centerY, null);
@@ -186,57 +181,11 @@ public class PaintPanel extends JPanel{
 
 		g2d.setFont(defaultFont);
 		g2d.setColor(Color.LIGHT_GRAY);
-		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
+		g2d.drawString(Map.toString(offSet)+(current instanceof HumanPlayer)+animationComplete, (width-titleWidth)/2, titleHeight) ;
 	}
 	
-	protected void update(Player player){
-		if(!map.isReady())return;
-		int[] pos = map.getPosition(player);
-		int[] oldPos = posMap.get(player);
-		int[] posDif = PosList.subtract(pos,oldPos);
-		if(posDif[0] == 0 && posDif[1] == 0){
-			offSet = new int[]{0,0};
-		}
-		if(gameState.equals("LOST") && playDefeat(player)){
-			return;
-		}
-		if(!finishedMove()){
-			offSet[0]+=posDif[0];
-			offSet[1]+=posDif[1];
-		}else{
-			offSet = new int[]{TILESIZE,TILESIZE};
-			posMap.remove(player);
-			posMap.put(player,pos);
-		}		
-	}
-	private boolean playDefeat(Player player){
-		int[] pos = map.getPosition(player);
-		int[] oldPos = posMap.get(player);
-		int[] posDif = PosList.subtract(pos,oldPos);
-		playLoseAnimation = true;
-		if(loseAnimeFrame == 4){
-			playLoseAnimation = false;
-			return false;
-		}else if(loseAnimeFrame == 0 && frame == TILESIZE){
-			int x =  TILESIZE * posDif[0] / 4;
-			int y =  TILESIZE * posDif[1] / 4;
-			animeOffSet = new int[]{x,y};
-			++loseAnimeFrame;
-			return true;
-		}
-		if(frame == TILESIZE){
-			animeOffSet[0]+= TILESIZE  / 4 * posDif[0];
-			animeOffSet[1]+= TILESIZE  / 4 * posDif[1];
-			++loseAnimeFrame;
-		}
-		return true;
-	}
-	
-	private boolean finishedMove(){
-		if(Math.abs(offSet[0]) >= TILESIZE || Math.abs(offSet[1]) >= TILESIZE){
-			return true;
-		}
-		return false;
+	protected boolean finishedMove(){
+		return animationComplete;
 	}
 	
 	protected void initialisePos(){
@@ -251,7 +200,7 @@ public class PaintPanel extends JPanel{
 	}
 	
 	private BufferedImage drawFullMap(){
-		wallSet = new HashSet<int[]>();
+		Set<int[]> wallSet = new HashSet<int[]>();
 		int imageWidth = TILESIZE * map.getMapWidth();
 		int imageHeight = TILESIZE * map.getMapHeight();
 		BufferedImage image = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
@@ -283,13 +232,12 @@ public class PaintPanel extends JPanel{
 			}			
 		}
 		for(int[] wall : wallSet){
-			drawWallEdge(image, wall);
+			drawWallEdge(g2d, wall);
 		}
 		return image;
 	}
 	
-	private void drawWallEdge(BufferedImage image,int[] wallPos){
-		Graphics2D g2d = (Graphics2D) image.getGraphics();
+	private void drawWallEdge(Graphics2D g2d,int[] wallPos){
 		g2d.setColor(new Color(0,0,0,100));
 		List<int[]> neighBours = map.getAdjacentClearTiles(wallPos);
 		for(int[] pos:neighBours){
@@ -318,7 +266,6 @@ public class PaintPanel extends JPanel{
 		}		
 	}
 	
-	
 	private BufferedImage getOverlay(int width,int height){
 		BufferedImage overlay = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);		
 		int tileWidth = 5;
@@ -334,5 +281,52 @@ public class PaintPanel extends JPanel{
 			}
 		}
 		return overlay;
+	}
+	
+
+	private void update(Player player){
+		if(!map.isReady())return;
+		int[] pos = map.getPosition(player);
+		int[] oldPos = posMap.get(player);
+		int[] posDif = PosList.subtract(pos,oldPos);
+		if(posDif[0] == 0 && posDif[1] == 0){
+			return;
+		}
+		if(gameState.equals("LOST") && playDefeat(player)){
+			return;
+		}
+		if(Math.abs(offSet[0]) >= TILESIZE || Math.abs(offSet[1]) >= TILESIZE){		
+			posMap.remove(player);
+			posMap.put(player,pos);
+			offSet = new int[]{0,0};
+			animationComplete = true;
+			//updateOtherPlayers();	
+		}else{
+			animationComplete = false;
+			offSet[0]+=posDif[0];
+			offSet[1]+=posDif[1];
+		}		
+	}
+	private boolean playDefeat(Player player){
+		int[] pos = map.getPosition(player);
+		int[] oldPos = posMap.get(player);
+		int[] posDif = PosList.subtract(pos,oldPos);
+		playLoseAnimation = true;
+		if(loseAnimeFrame == 4){
+			playLoseAnimation = false;
+			return false;
+		}else if(loseAnimeFrame == 0 && frame == TILESIZE){
+			int x =  TILESIZE * posDif[0] / 4;
+			int y =  TILESIZE * posDif[1] / 4;
+			animeOffSet = new int[]{x,y};
+			++loseAnimeFrame;
+			return true;
+		}
+		if(frame == TILESIZE){
+			animeOffSet[0]+= TILESIZE  / 4 * posDif[0];
+			animeOffSet[1]+= TILESIZE  / 4 * posDif[1];
+			++loseAnimeFrame;
+		}
+		return true;
 	}
 }

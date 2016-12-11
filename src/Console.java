@@ -17,9 +17,9 @@ public class Console extends JTextArea{
 	private String input;
 	private Set<Integer> arrowKeys = new HashSet<Integer>();
 	
-	public Console(){
+	public Console(MyFrame gui){
 		super();
-		gui = new MyFrame("Dungeon of Doom",this);
+		this.gui = gui;
 		setFont(new Font("monospaced", Font.PLAIN, 12));
 		//setRows(10);
 		initialiseArrowKeys();
@@ -72,16 +72,7 @@ public class Console extends JTextArea{
 		System.out.print(chars);
 		append(chars);
 		setCaretPosition(getText().length());
-	}
-	
-	protected void update(Player player, String gameState){
-		gui.update(player,gameState);
-	}
-	
-	protected void setMap(Map map){
-		gui.setMap(map);
-	}
-	
+	}	
 	
 	private KeyListener getTextAreaKeyListener(){
 		KeyListener textAreaListener = new KeyListener() {			
