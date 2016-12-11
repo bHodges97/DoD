@@ -2,7 +2,8 @@ abstract class Player{
 	protected GameLogic gameLogic = null;
 	protected int goldCount = 0;
 	protected boolean isMainPlayer = false;
-	protected boolean alive = true;
+	protected int lives = 1;
+	protected String name = "PLAYER_NAME";
 
     protected void setGameLogic(GameLogic logic){
     	this.gameLogic = logic;

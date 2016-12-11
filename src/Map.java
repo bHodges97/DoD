@@ -234,4 +234,8 @@ public class Map {
     protected boolean isReady(){
     	return posList.isReady();
     }
+
+	protected Player getHumanAt(int[] pos) {
+		return posList.getHumanAt(pos);
+	}
 }

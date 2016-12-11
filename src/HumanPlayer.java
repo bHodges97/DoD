@@ -66,6 +66,7 @@ public class HumanPlayer extends Player{
     	MyFrame gui = new MyFrame("Dungeon of Doom");
     	GameLogic game = new GameLogic(gui);
 		game.addPlayer(new HumanPlayer(game));
+		//game.addPlayer(new HumanPlayer(game));
 		game.addPlayer(new BotPlayer(game));
         // RUN FOREST RUN!
 		game.startGame();

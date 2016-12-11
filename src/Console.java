@@ -27,13 +27,6 @@ public class Console extends JTextArea{
 		addKeyListener(getTextAreaKeyListener());
 	}
 	
-	protected void showWinEvent(){
-		println("----****YOU_WIN****----");
-	}
-	protected void showFailEvent(){
-		println("----****YOU_DEAD****----");
-	}
-	
 	protected  String readln() throws IOException{
 		input = null;
 		setEditable(true);

@@ -38,24 +38,18 @@ public class GameLogic {
 			if(players.isEmpty()){
 				continue;
 			}
+			gui.update(players.get(0),gameState);
 			console.println("Turn "+turnCounter);
 			for(Player player: players){
+				if(player.lives == 0){
+					continue;
+				}
 				currentPlayer = player;
-				gui.update(player,gameState);
 				player.selectNextAction();
-				if(checkWin()){
-					gameState = "WON";
-					console.showWinEvent();
-					running = false;
-					break;
-				}else if(checkLost()){
-					gameState = "LOST";
-					console.showFailEvent();
-					running = false;
+				if(checkWin() || checkLost()){
 					break;
 				}
 				gui.update(player,gameState);
-				gui.waitForAnimation();
 			}				
 			++turnCounter;
 		}
@@ -125,13 +119,14 @@ public class GameLogic {
 			default:
 				return "Fail";
 		}
-		if(map.getTile(playerPos) != 'X' 
-				&& map.getTile(playerPos) != '#' 
-				 &&!(currentPlayer instanceof HumanPlayer && map.getPlayer(playerPos) != null) ){
+		if(map.getTile(playerPos) == '#' 
+			 ||(map.getPlayer(playerPos)!= null 
+				&& currentPlayer.getClass().equals(map.getPlayer(playerPos).getClass())) )
+			{
+			return "Fail";
+		}else{
 			map.updatePosition(currentPlayer,playerPos);
 			return "Success";
-		}else{
-			return "Fail";
 		}
        
     }
@@ -189,6 +184,9 @@ public class GameLogic {
     	int[] playerPos = map.getPosition(currentPlayer);
     	if(map.getTile(playerPos) =='E' 
     			&& currentPlayer.getGoldCount() >= map.getGoldRequired()){
+			gameState = "WON";
+			gui.showWinEvent(currentPlayer);
+			running = false;
 			return true;
 		}
     	return false;
@@ -196,6 +194,18 @@ public class GameLogic {
     private boolean checkLost(){
     	int[] playerPos = map.getPosition(currentPlayer);
     	if(map.hasOverLap(playerPos)){
+    		Player human = map.getHumanAt(playerPos);
+    		--human.lives;
+    		if(human.lives == 0){
+    			gui.showFailEvent(human);
+    		}
+    		for(Player player:players){
+    			if(player instanceof HumanPlayer && player.lives > 0){
+    				return false;
+    			}
+    		}
+			gameState = "END";
+			running = false;
 			return true;
 		}
     	return false;

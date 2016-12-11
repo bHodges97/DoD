@@ -49,6 +49,7 @@ public class MyFrame extends JFrame{
 	
 	protected void update(Player player, String gameState){
 		paintPanel.setPlayer(player,gameState);
+		waitForAnimation();
 	}
 	protected void setMap(Map map){
 		paintPanel.setMap(map);
@@ -86,6 +87,14 @@ public class MyFrame extends JFrame{
 				e.printStackTrace();
 			}
 		}while(!paintPanel.finishedMove());
+	}
+	
+	protected void showWinEvent(Player player){
+		console.println("----****"+player.name+"_WON****----");
+	}
+	protected void showFailEvent(Player player){
+		paintPanel.animation = "DEFEAT";
+		console.println("----****"+player.name+"_DIED****----");
 	}
 	
 	private void loadIcons(){	

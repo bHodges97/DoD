@@ -36,6 +36,14 @@ public class PosList implements Iterable<Player>{
 		}
 		return null;
 	}
+	public Player getHumanAt(int[] pos){
+		for(int i  = 0; i < size(); ++i){
+			if(equals(positions.get(i), pos) && players.get(i) instanceof HumanPlayer){
+				return players.get(i);
+			}
+		}
+		return null;
+	}
 	public int[] remove(Player player){
 		int index = players.indexOf(player);
 		int[] pos = positions.remove(index);
@@ -63,7 +71,7 @@ public class PosList implements Iterable<Player>{
 		int dist = Integer.MAX_VALUE;
 		int[] pos = new int[]{0,0};
 		for(Player player:players){
-			if((player instanceof HumanPlayer)){
+			if((player instanceof HumanPlayer) && player.lives > 0){
 				int[] point = get(player);
 				int newDist = (int) Point2D.distance(point[0],point[1], source[0], source[1]);
 				if(newDist < dist){
