@@ -42,7 +42,7 @@ public class MyFrame extends JFrame{
 		initialiseLayout();		
 		initialiseButtons();			
 		allowInputs(false);
-		setResizable(false);
+		//TODO:setResizable(false);
 		pack();
 		setVisible(true);
 	}

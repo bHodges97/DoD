@@ -136,12 +136,12 @@ public class PaintPanel extends JPanel{
 				int[] posDif = PosList.subtract(cameraPos,posMap.get(player));
 				x = centerX- posDif[0]*TILESIZE;
 				y = centerY- posDif[1]*TILESIZE;
-				if(!current.isMainPlayer){
-					x+=offSet[0];
-					y+=offSet[1];
-				}else{
+				if(current.isMainPlayer){
 					x-=offSet[0];
 					y-=offSet[1];
+				}else{
+					x+=offSet[0];
+					y+=offSet[1];
 				}
 				if(offSet[0] < 0 && offSet[0] > -64){
 					bot = Sprite.get("bot"); 
@@ -155,10 +155,9 @@ public class PaintPanel extends JPanel{
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
 			overlay = getOverlay(width,height);
 		}		
-		
+		g2d.drawImage(overlay, 0, 0, null);	
 		if(loseAnimeFrame != 4 && !gameState.equals("WON")){
-			g2d.drawImage(Sprite.get("player"), centerX, centerY, null);
-			g2d.drawImage(overlay, 0, 0, null);	
+			g2d.drawImage(Sprite.get("player"), centerX, centerY, null);			
 		}else if(gameState.equals("WON")){
 			g2d.setColor(Color.orange);
 			g2d.setFont(defaultFont.deriveFont(32f));
@@ -181,7 +180,7 @@ public class PaintPanel extends JPanel{
 
 		g2d.setFont(defaultFont);
 		g2d.setColor(Color.LIGHT_GRAY);
-		g2d.drawString(Map.toString(offSet)+(current instanceof HumanPlayer)+animationComplete, (width-titleWidth)/2, titleHeight) ;
+		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
 	}
 	
 	protected boolean finishedMove(){
@@ -268,8 +267,8 @@ public class PaintPanel extends JPanel{
 	
 	private BufferedImage getOverlay(int width,int height){
 		BufferedImage overlay = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);		
-		int tileWidth = 5;
-		int maskDiameter = tileWidth * TILESIZE;
+		int tileWidth = 6;
+		int maskDiameter = tileWidth * TILESIZE+10;
 		int maskRadius = maskDiameter/2;
 		float ratio = ((float)255/(float)maskRadius) * 0.9f;
 		for(int x = 0;x < width;++x){
@@ -291,8 +290,7 @@ public class PaintPanel extends JPanel{
 		int[] posDif = PosList.subtract(pos,oldPos);
 		if(posDif[0] == 0 && posDif[1] == 0){
 			return;
-		}
-		if(gameState.equals("LOST") && playDefeat(player)){
+		}else if(gameState.equals("LOST") && playDefeat(player)){
 			return;
 		}
 		if(Math.abs(offSet[0]) >= TILESIZE || Math.abs(offSet[1]) >= TILESIZE){		
