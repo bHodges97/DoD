@@ -9,6 +9,7 @@ public class BotPlayer extends Player{
 	private PathFinder finder;
 	
 	public BotPlayer(GameLogic logic){
+		strength = 10;
 		name = "bot";
 		this.gameLogic = logic;
 		gameMap = gameLogic.getMap();

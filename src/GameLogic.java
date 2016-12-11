@@ -33,12 +33,12 @@ public class GameLogic {
 	
 	protected void startGame(){
 		gameState = "RUNNING";
-		turnCounter = 0;		
+		turnCounter = 0;
+		while(players.isEmpty()){
+			
+		}
+		gui.update(players.get(0),gameState);
 		while(running){
-			if(players.isEmpty()){
-				continue;
-			}
-			gui.update(players.get(0),gameState);
 			console.println("Turn "+turnCounter);
 			for(Player player: players){
 				if(player.lives == 0){
@@ -121,7 +121,7 @@ public class GameLogic {
 		}
 		if(map.getTile(playerPos) == '#' 
 			 ||(map.getPlayer(playerPos)!= null 
-				&& currentPlayer.getClass().equals(map.getPlayer(playerPos).getClass())) )
+				&& currentPlayer.strength <= map.getPlayer(playerPos).strength ))
 			{
 			return "Fail";
 		}else{
@@ -198,6 +198,7 @@ public class GameLogic {
     		--human.lives;
     		if(human.lives == 0){
     			gui.showFailEvent(human);
+    			map.placeCoins(playerPos,human.getGoldCount());
     		}
     		for(Player player:players){
     			if(player instanceof HumanPlayer && player.lives > 0){

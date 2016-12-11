@@ -238,4 +238,23 @@ public class Map {
 	protected Player getHumanAt(int[] pos) {
 		return posList.getHumanAt(pos);
 	}
+
+	protected void placeCoins(int[] playerPos, int goldCount) {
+		if (getTile(playerPos) == '.' && goldCount > 0) {
+			map[playerPos[0]][playerPos[1]] = 'G';
+			--goldCount;
+		} else {
+			for (int[] tile : getAdjacentClearTiles(playerPos)) {
+				// TODO: rewrite poslist to remove duplication;
+				if (goldCount > 0) {
+					map[tile[0]][tile[1]] = 'G';
+					--goldCount;
+				}
+			}
+		}
+		placeCoins(goldCount);
+	}
+	protected void placeCoins(int count){
+		//TODO:
+	}
 }

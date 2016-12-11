@@ -28,6 +28,15 @@ public class PosList implements Iterable<Player>{
 		int index = players.indexOf(player);
 		return positions.get(index);
 	}
+	
+	public int[] get(int[] pos){
+		for(int i  = 0; i < size(); ++i){
+			if(equals(positions.get(i), pos)){
+				return positions.get(i);
+			}
+		}
+		return null;
+	}
 	public Player getFirstIndexedPlayer(int[] pos){
 		for(int i  = 0; i < size(); ++i){
 			if(equals(positions.get(i), pos)){

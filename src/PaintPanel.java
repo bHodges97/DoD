@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JPanel;
 
@@ -19,7 +20,8 @@ public class PaintPanel extends JPanel{
 	
 	private Map map = null;
 	private BufferedImage overlay,backGround,bot;
-	private java.util.Map<Player,int[]> posMap = new HashMap<Player,int[]>();
+	private java.util.Map<Player,int[]> posMap = new ConcurrentHashMap<Player,int[]>();
+	private Set<Player> deadPlayers = new HashSet<Player>();
 	private int[] offSet = new int[]{0,0};
 	private int[] animeOffSet = new int[]{0,0};
 	private int loseAnimeFrame = 0;	
@@ -127,7 +129,7 @@ public class PaintPanel extends JPanel{
 					y-=offSet[1];
 				}
 				g2d.drawImage(backGround, x, y, null);
-				if(loseAnimeFrame == 4 && player.lives == 0){
+				if(deadPlayers.contains(player)){
 					g2d.drawString("YOU DIED",centerX,centerY+20);					
 				}else{
 					g2d.drawImage(Sprite.getRow(1)[tileFrame%5], centerX, centerY, null);
@@ -146,9 +148,10 @@ public class PaintPanel extends JPanel{
 				if(current.isMainPlayer){
 					x-=offSet[0];
 					y-=offSet[1];
-				}else{
+				}else if(player == current){
 					x+=offSet[0];
 					y+=offSet[1];
+					
 				}
 				if(offSet[0] < 0 && offSet[0] > -64){
 					bot = Sprite.get("bot"); 
@@ -164,6 +167,16 @@ public class PaintPanel extends JPanel{
 				}
 				
 			}
+		}
+		
+
+		if(animation.equals("DEFEAT")){
+			BufferedImage[] animation = Sprite.getRow(8);
+			int[] posDif = PosList.subtract(map.getPosition(current),posMap.get(current));
+			int[] camera = PosList.subtract(map.getPosition(current),cameraPos);
+			x = centerX + camera[0] * TILESIZE - posDif[0]*TILESIZE;
+			y = centerY + camera[1] * TILESIZE - posDif[1]*TILESIZE;
+			g2d.drawImage(animation[loseAnimeFrame], x + animeOffSet[0], y + animeOffSet[1], null);
 		}
 		
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
@@ -183,13 +196,6 @@ public class PaintPanel extends JPanel{
 			g2d.drawString("GAME OVER", (width - twidth )/2,centerY);
 		}
 		
-		if(animation.equals("DEFEAT")){
-			BufferedImage[] animation = Sprite.getRow(8);
-			int[] posDif = PosList.subtract(map.getPosition(current),posMap.get(current));
-			x = centerX- posDif[0]*TILESIZE;
-			y = centerY- posDif[1]*TILESIZE;
-			g2d.drawImage(animation[loseAnimeFrame], x + animeOffSet[0], y + animeOffSet[1], null);
-		}
 
 		g2d.setFont(defaultFont);
 		g2d.setColor(Color.LIGHT_GRAY);
@@ -334,6 +340,8 @@ public class PaintPanel extends JPanel{
 		int[] posDif = PosList.subtract(pos,oldPos);
 		if(loseAnimeFrame == 4){
 			animation = "NONE";
+			deadPlayers.add(map.getHumanAt(pos));
+			loseAnimeFrame = 0;
 			return false;
 		}else if(loseAnimeFrame == 0 && frame == TILESIZE){
 			int x =  TILESIZE * posDif[0] / 4;

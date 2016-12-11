@@ -87,6 +87,7 @@ public class MyFrame extends JFrame{
 				e.printStackTrace();
 			}
 		}while(!paintPanel.finishedMove());
+		System.out.println("ANIME DONE");
 	}
 	
 	protected void showWinEvent(Player player){
