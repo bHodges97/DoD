@@ -211,6 +211,9 @@ public class GameLogic {
 			if (player instanceof HumanPlayer && player.lives > 0) {
 				return false;
 			}
+			if(player.isMainPlayer && player instanceof BotPlayer){
+				return false;
+			}
 		}
 		gameState = "END";
 		running = false;

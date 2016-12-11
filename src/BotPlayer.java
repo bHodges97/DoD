@@ -78,7 +78,12 @@ public class BotPlayer extends Player{
     	GameLogic game = new GameLogic(gui);
 		//game.addPlayer(new HumanPlayer(game));
 		game.addPlayer(new BotPlayer(game));
+		game.addPlayer(new BotPlayer(game));
+		game.addPlayer(new BotPlayer(game));
+		game.addPlayer(new BotPlayer(game));
+		game.addPlayer(new BotPlayer(game));
+		game.addPlayer(new BotPlayer(game));
         // RUN FOREST RUN!
-		//game.startGame();
+		game.startGame();
     }
 }

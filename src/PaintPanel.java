@@ -34,6 +34,9 @@ public class PaintPanel extends JPanel{
 	private String gameState = "NOTSTARTED";
 	protected String animation = "NONE";
 	private Player current;
+	private Player main;
+	private boolean showDeath = false;
+	private int centerX,centerY;
 
 	
 	public PaintPanel() {
@@ -95,6 +98,10 @@ public class PaintPanel extends JPanel{
 	protected void setPlayer(Player player, String gameState){
 		this.gameState = gameState;
 		current = player;
+		if(current.isMainPlayer){
+			main = player;
+			initialisePos();
+		}
 	}
 	
 	@Override
@@ -103,7 +110,7 @@ public class PaintPanel extends JPanel{
 		Graphics2D g2d = (Graphics2D)g;
 		int width =getWidth();
 		int height = getHeight();
-		boolean showDeath = false;
+		
 		
 		g2d.fillRect(0,0 , width, height);
 		if(map==null){
@@ -112,47 +119,61 @@ public class PaintPanel extends JPanel{
 		}else if(gameState.equals("NOTSTARTED")){
 			g2d.drawString("GAME NOT STARTED", 0, 20);
 			return;
+		}else if(main == null){
+			return;
 		}
-		String title = map.getMapName();		
 		//defaultFont = new Font("Comic Neue", Font.BOLD, 20);
 		g2d.setFont(defaultFont);
-		int titleWidth = g2d.getFontMetrics().stringWidth(title);
-		int titleHeight = g2d.getFontMetrics().getHeight();
-		height+=titleHeight;
+		height+=g2d.getFontMetrics().getHeight();
 		
-		int centerX = width/2-TILESIZE/2;
-		int centerY = height/2-TILESIZE/2;
+		centerX = width/2-TILESIZE/2;
+		centerY = height/2-TILESIZE/2;
 		backGround = drawFullMap();
 		
-		int x,y;
-		int[] cameraPos = new int[]{0,0};
-		for(Player player:posMap.keySet()){
-			if(player.isMainPlayer){
-				cameraPos = posMap.get(player);
-				x = centerX - cameraPos[0]*TILESIZE;
-				y = centerY - cameraPos[1]*TILESIZE;
-				if(player == current){
-					x-=offSet[0];
-					y-=offSet[1];
-				}
-				g2d.drawImage(backGround, x, y, null);
-				if(!deadPlayers.contains(player)){
-					g2d.drawImage(Sprite.getRow(1)[tileFrame%5], centerX, centerY, null);
-				}else{
-					g2d.drawImage(Sprite.get("blood"), centerX, centerY,null);
-					showDeath = true;
-				}
-				break;
+		int[] cameraPos = posMap.get(main);
+		drawBG(g2d,cameraPos);
+		drawPlayers(g2d,cameraPos);
+		drawAnimations(g2d, cameraPos);
+		
+		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
+			overlay = getOverlay(width,height);
+		}		
+		g2d.drawImage(overlay, 0, 0, null);	
+		
+		drawUI(g2d,width,height);
+	}
+	
+	protected boolean finishedMove(){
+		return animation.equals("NONE");
+	}
+	
+	protected void initialisePos(){
+		PosList mapList = map.getPlayerPosList();
+		for(Player player:mapList){
+			if(!posMap.containsKey(player)){
+				posMap.put(player,mapList.get(player).clone());
+				if(player instanceof HumanPlayer)
+				current = player;
 			}
 		}
-				
+	}
+	private void drawAnimations(Graphics2D g2d,int[] cameraPos){
+		int[] posDif = PosList.subtract(map.getPosition(current),posMap.get(current));
+		int[] camera = PosList.subtract(map.getPosition(current),cameraPos);
+		int	x = centerX + camera[0] * TILESIZE - posDif[0]*TILESIZE;
+		int y = centerY + camera[1] * TILESIZE - posDif[1]*TILESIZE;
+		if(animation.equals("DEFEAT")){		
+			g2d.drawImage(Sprite.getRow(8)[loseAnimeFrame], x + animeOffSet[0], y + animeOffSet[1], null);
+		}
+	}
+	private void drawPlayers(Graphics2D g2d,int[] cameraPos){
 		for(Player player:posMap.keySet()){
 			if(player.isMainPlayer){
 				continue;
 			}else{
 				int[] posDif = PosList.subtract(cameraPos,posMap.get(player));
-				x = centerX- posDif[0]*TILESIZE;
-				y = centerY- posDif[1]*TILESIZE;
+				int x = centerX- posDif[0]*TILESIZE;
+				int y = centerY- posDif[1]*TILESIZE;
 				if(current.isMainPlayer){
 					x-=offSet[0];
 					y-=offSet[1];
@@ -177,23 +198,33 @@ public class PaintPanel extends JPanel{
 				}
 				
 			}
-		}
-		
-
-		if(animation.equals("DEFEAT")){
-			BufferedImage[] animation = Sprite.getRow(8);
-			int[] posDif = PosList.subtract(map.getPosition(current),posMap.get(current));
-			int[] camera = PosList.subtract(map.getPosition(current),cameraPos);
-			x = centerX + camera[0] * TILESIZE - posDif[0]*TILESIZE;
-			y = centerY + camera[1] * TILESIZE - posDif[1]*TILESIZE;
-			g2d.drawImage(animation[loseAnimeFrame], x + animeOffSet[0], y + animeOffSet[1], null);
-		}
-		
-		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
-			overlay = getOverlay(width,height);
 		}		
-		g2d.drawImage(overlay, 0, 0, null);	
-				
+	}
+	private void drawBG(Graphics2D g2d,int[] cameraPos){
+		int x = centerX - cameraPos[0] * TILESIZE;
+		int y = centerY - cameraPos[1] * TILESIZE;
+		if (main == current) {
+			x -= offSet[0];
+			y -= offSet[1];
+			if(offSet[0] < 0 && offSet[0] > -64){
+				bot = Sprite.get("bot"); 
+			}else if(offSet[0] > 1 && offSet[0] < 64){
+				bot = Sprite.get("bot1");
+			}
+		}
+		g2d.drawImage(backGround, x, y, null);
+		if (!deadPlayers.contains(main)) {
+			if(main instanceof HumanPlayer){
+				g2d.drawImage(Sprite.getRow(1)[tileFrame%5],centerX ,centerY ,null);
+			}else{
+				g2d.drawImage(bot, centerX ,centerY ,null);
+			}
+		} else {
+			g2d.drawImage(Sprite.get("blood"), centerX, centerY, null);
+			showDeath = true;
+		}
+	}
+	private void drawUI(Graphics2D g2d,int width,int height){		
 		if(gameState.equals("WON")){
 			g2d.setColor(Color.orange);
 			g2d.setFont(defaultFont.deriveFont(32f));
@@ -205,31 +236,30 @@ public class PaintPanel extends JPanel{
 			int twidth = g2d.getFontMetrics().stringWidth("GAME OVER");
 			g2d.drawString("GAME OVER", (width - twidth )/2,centerY);
 		}
+
+		int x = 0;
+		int y = height-TILESIZE -TILESIZE/2;
+		g2d.setColor(Color.white);
+		g2d.drawImage(Sprite.get("gold") ,x,y,TILESIZE/2,TILESIZE/2, null);
+		g2d.drawString(" "+main.getGoldCount() + "/" + map.getGoldRequired(), x + TILESIZE/2, y + TILESIZE/2-8);
+		y+=TILESIZE/2 + 3;
+		g2d.drawImage(Sprite.get("heart"),x,y,TILESIZE/2,TILESIZE/2,null);
+		g2d.drawString(" "+main.lives+"/1", x + TILESIZE/2, y + TILESIZE/2-8);
+		
 		if(showDeath){
 			g2d.setColor(Color.orange);
 			g2d.setFont(defaultFont.deriveFont(25f));
 			int twidth = g2d.getFontMetrics().stringWidth("YOU ARE DEAD");
 			g2d.drawString("YOU ARE DEAD", (width - twidth )/2,centerY+30);		
 		}
-
+		
 		g2d.setFont(defaultFont);
 		g2d.setColor(Color.LIGHT_GRAY);
+
+		String title = map.getMapName();
+		int titleHeight = g2d.getFontMetrics().getHeight();
+		int titleWidth = g2d.getFontMetrics().stringWidth(title);
 		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
-	}
-	
-	protected boolean finishedMove(){
-		return animation.equals("NONE");
-	}
-	
-	protected void initialisePos(){
-		PosList mapList = map.getPlayerPosList();
-		for(Player player:mapList){
-			if(!posMap.containsKey(player)){
-				posMap.put(player,mapList.get(player).clone());
-				if(player instanceof HumanPlayer)
-				current = player;
-			}
-		}
 	}
 	
 	private BufferedImage drawFullMap(){

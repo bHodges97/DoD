@@ -33,6 +33,7 @@ public class Sprite {
 		sprites.put("quit", getSprite(0,6));
 		sprites.put("pickup", getSprite(1,6));
 		sprites.put("look", getSprite(2,6));
+		sprites.put("heart", getSprite(3,6));
 		sprites.put("arrow", getSprite(0,7));
 		sprites.put("arrow1",getSprite(1,7));
 		sprites.put("arrow2", getSprite(2,7));
