@@ -50,16 +50,19 @@ public class PaintPanel extends JPanel{
 				}
 				initialisePos();
 				// TODO Auto-generated method stub
+				long lastChange = System.currentTimeMillis();
 				while(true){
 					if(frame > TILESIZE){
 						frame = 0;
-						if(tileFrame > 10){
-							tileFrame = 0;
-						}
-						if(System.currentTimeMillis() % 10 == 0)
-						++tileFrame;
 					}
 					++frame;
+					if(tileFrame > 8){
+						tileFrame = 0;
+					}
+					if(System.currentTimeMillis() - lastChange > 2000){
+						++tileFrame;
+						lastChange = System.currentTimeMillis();
+					}
 					try{
 						update(current);
 					}catch(Exception e){
@@ -157,7 +160,7 @@ public class PaintPanel extends JPanel{
 		}		
 		g2d.drawImage(overlay, 0, 0, null);	
 		if(loseAnimeFrame != 4 && !gameState.equals("WON")){
-			g2d.drawImage(Sprite.get("player"), centerX, centerY, null);			
+			g2d.drawImage(Sprite.getRow(1)[tileFrame%5], centerX, centerY, null);			
 		}else if(gameState.equals("WON")){
 			g2d.setColor(Color.orange);
 			g2d.setFont(defaultFont.deriveFont(32f));
