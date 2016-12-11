@@ -4,7 +4,7 @@ abstract class Player{
 	protected boolean isMainPlayer = false;
 	protected int lives = 1;
 	protected int strength = 0;
-	protected String name = "PLAYER_NAME";
+	protected String name = "PLAYER";
 
     protected void setGameLogic(GameLogic logic){
     	this.gameLogic = logic;

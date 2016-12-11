@@ -130,7 +130,10 @@ public class PaintPanel extends JPanel{
 				}
 				g2d.drawImage(backGround, x, y, null);
 				if(deadPlayers.contains(player)){
-					g2d.drawString("YOU DIED",centerX,centerY+20);					
+					g2d.setColor(Color.orange);
+					g2d.setFont(defaultFont.deriveFont(25f));
+					int twidth = g2d.getFontMetrics().stringWidth("YOU ARE DEAD");
+					g2d.drawString("YOU ARE DEAD", (width - twidth )/2,centerY+30);		
 				}else{
 					g2d.drawImage(Sprite.getRow(1)[tileFrame%5], centerX, centerY, null);
 				}
@@ -158,7 +161,7 @@ public class PaintPanel extends JPanel{
 				}else if(offSet[0] > 1 && offSet[0] < 64){
 					bot = Sprite.get("bot1");
 				}
-				if(player.lives > 0){
+				if(!deadPlayers.contains(player)){
 					if(player instanceof HumanPlayer){
 						g2d.drawImage(Sprite.getRow(1)[tileFrame%5],x ,y ,null);
 					}else{
@@ -190,7 +193,7 @@ public class PaintPanel extends JPanel{
 			int twidth = g2d.getFontMetrics().stringWidth("♪YOU WIN♪");
 			g2d.drawString("♪YOU WIN♪", (width - twidth )/2,centerY);
 		}else if(gameState.equals("END")){
-			g2d.setColor(new Color(frame*2+100,0,0));
+			g2d.setColor(Color.red);
 			g2d.setFont(defaultFont.deriveFont(32f));
 			int twidth = g2d.getFontMetrics().stringWidth("GAME OVER");
 			g2d.drawString("GAME OVER", (width - twidth )/2,centerY);
@@ -307,9 +310,9 @@ public class PaintPanel extends JPanel{
 		int[] pos = map.getPosition(player);
 		int[] oldPos = posMap.get(player);
 		int[] posDif = PosList.subtract(pos,oldPos);
-		if(posDif[0] == 0 && posDif[1] == 0){
+		if(!animation.equals("NONE") && !animation.equals("MOVING") && playAnimation(animation,player)){
 			return;
-		}else if(!animation.equals("NONE") && !animation.equals("MOVING") && playAnimation(animation,player)){
+		}else if(posDif[0] == 0 && posDif[1] == 0){
 			return;
 		}
 		if(Math.abs(offSet[0]) >= TILESIZE || Math.abs(offSet[1]) >= TILESIZE){		
@@ -338,19 +341,24 @@ public class PaintPanel extends JPanel{
 		int[] pos = map.getPosition(player);
 		int[] oldPos = posMap.get(player);
 		int[] posDif = PosList.subtract(pos,oldPos);
+
 		if(loseAnimeFrame == 4){
 			animation = "NONE";
-			deadPlayers.add(map.getHumanAt(pos));
+			for(Player playerAtPos:map.getPlayers(pos)){
+				if(playerAtPos != player){
+					deadPlayers.add(playerAtPos);
+				}
+			}			
 			loseAnimeFrame = 0;
 			return false;
-		}else if(loseAnimeFrame == 0 && frame == TILESIZE){
+		}else if(loseAnimeFrame == 0 && frame >= TILESIZE){
 			int x =  TILESIZE * posDif[0] / 4;
 			int y =  TILESIZE * posDif[1] / 4;
 			animeOffSet = new int[]{x,y};
 			++loseAnimeFrame;
 			return true;
 		}
-		if(frame == TILESIZE){
+		if(frame >= TILESIZE){
 			animeOffSet[0]+= TILESIZE  / 4 * posDif[0];
 			animeOffSet[1]+= TILESIZE  / 4 * posDif[1];
 			++loseAnimeFrame;

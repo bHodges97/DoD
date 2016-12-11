@@ -73,6 +73,7 @@ public class GameLogic {
 			return;
 		}
 		players.add(player);
+		player.name+="("+players.size()+")";
 		player.setGameLogic(this);
 		map.placePlayer(player);
 	}
@@ -119,16 +120,30 @@ public class GameLogic {
 			default:
 				return "Fail";
 		}
-		if(map.getTile(playerPos) == '#' 
-			 ||(map.getPlayer(playerPos)!= null 
-				&& currentPlayer.strength <= map.getPlayer(playerPos).strength ))
-			{
-			return "Fail";
-		}else{
+		if(map.getTile(playerPos) != '#' ){ 
+			if(map.getPlayer(playerPos)!= null){
+				if( map.getPlayer(playerPos) instanceof HumanPlayer){
+					Player target = map.getPlayer(playerPos);					
+	    			--target.lives;				
+	    			if(target.lives == 0){
+	    				console.println(currentPlayer.name+" has eliminated " + target.name);	    				
+	    				gui.update(currentPlayer, "RUNNING");
+	    				map.updatePosition(currentPlayer,playerPos);
+	    				gui.showFailEvent(currentPlayer);
+	    				map.placeCoins(playerPos,target.getGoldCount());
+	    				map.remove(target);
+	    				return "Success";
+	    			}	    			
+				}
+	    		else{
+	    			return "Fail";
+	    		}
+			}
 			map.updatePosition(currentPlayer,playerPos);
 			return "Success";
+		}else{
+			return "Fail";
 		}
-       
     }
 
     /**
@@ -192,23 +207,13 @@ public class GameLogic {
     	return false;
     }
     private boolean checkLost(){
-    	int[] playerPos = map.getPosition(currentPlayer);
-    	if(map.hasOverLap(playerPos)){
-    		Player human = map.getHumanAt(playerPos);
-    		--human.lives;
-    		if(human.lives == 0){
-    			gui.showFailEvent(human);
-    			map.placeCoins(playerPos,human.getGoldCount());
-    		}
-    		for(Player player:players){
-    			if(player instanceof HumanPlayer && player.lives > 0){
-    				return false;
-    			}
-    		}
-			gameState = "END";
-			running = false;
-			return true;
+		for (Player player : players) {
+			if (player instanceof HumanPlayer && player.lives > 0) {
+				return false;
+			}
 		}
-    	return false;
+		gameState = "END";
+		running = false;
+		return true;
     }
 }

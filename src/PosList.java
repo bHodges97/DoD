@@ -120,4 +120,14 @@ public class PosList implements Iterable<Player>{
 	public Iterator<Player> iterator() {
 		return players.iterator();
 	}
+
+	public List<Player> getPlayers(int [] pos) {
+		List<Player> list = new ArrayList<Player>();
+		for(int i  = 0; i < size(); ++i){
+			if(equals(positions.get(i), pos)){
+				list.add(players.get(i));
+			}
+		}
+		return list;
+	}
 }

@@ -87,7 +87,6 @@ public class MyFrame extends JFrame{
 				e.printStackTrace();
 			}
 		}while(!paintPanel.finishedMove());
-		System.out.println("ANIME DONE");
 	}
 	
 	protected void showWinEvent(Player player){
@@ -95,7 +94,8 @@ public class MyFrame extends JFrame{
 	}
 	protected void showFailEvent(Player player){
 		paintPanel.animation = "DEFEAT";
-		console.println("----****"+player.name+"_DIED****----");
+		waitForAnimation();
+		//console.println("----****"+player.name+"_DIED****----");
 	}
 	
 	private void loadIcons(){	

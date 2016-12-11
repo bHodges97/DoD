@@ -238,7 +238,9 @@ public class Map {
 	protected Player getHumanAt(int[] pos) {
 		return posList.getHumanAt(pos);
 	}
-
+	protected void remove(Player player){
+		posList.remove(player);
+	}
 	protected void placeCoins(int[] playerPos, int goldCount) {
 		if (getTile(playerPos) == '.' && goldCount > 0) {
 			map[playerPos[0]][playerPos[1]] = 'G';
@@ -256,5 +258,9 @@ public class Map {
 	}
 	protected void placeCoins(int count){
 		//TODO:
+	}
+
+	public List<Player> getPlayers(int[] pos) {
+		return posList.getPlayers(pos);
 	}
 }
