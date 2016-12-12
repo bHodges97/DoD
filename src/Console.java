@@ -93,6 +93,7 @@ public class Console extends JTextArea{
 						int end = getLineEndOffset(getLineCount()-1);
 						input = getText().substring(start,end);
 						setText(getText().substring(0,start));
+						e.consume();
 					}else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V){
 						e.consume();//no pasting
 					}else if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE && caretPos <= getLineStartOffset(getLineCount()-1) ){
