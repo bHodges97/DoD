@@ -7,7 +7,6 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
-
 /**
  * Reads and contains in memory the map of the game.
  *
@@ -63,19 +62,15 @@ public class Map {
     protected int[] getPlayersPosition() {
     	return posList.getNearestHuman(new int[]{0,0});
     }
-    
-    protected int[] getPosition(Player player){
-    	return posList.get(player).clone();
+
+    protected int[] getListedTile(int x,int y){
+    	return tileList.get(y*getMapWidth()+x);
     }
     
-    protected int[] getNearestHumanPos(int[] pos){
-    	return posList.getNearestHuman(pos);
-    }
-    
-    protected PosList getPlayerPosList(){
-    	return posList;
-    }
-    
+
+	protected PosList getPosList() {
+		return posList;
+	}
     /**
      * Reads the map from file.
      *
@@ -119,15 +114,6 @@ public class Map {
     			reader.close();
     		}
     	}
-    }
-    protected void generateTileList(){
-    	tileList = new ArrayList<int[]>(getMapHeight()*getMapWidth());
-    	for(int y = 0;y < getMapHeight();++y){
-			for(int x = 0; x< getMapWidth();++x){
-				tileList.add(new int[]{x,y});
-			}
-		}
-		emptyTileList = new ArrayList<int[]>(tileList);    	
     }
 
     /**
@@ -192,7 +178,14 @@ public class Map {
     	}
     	return tileList;
     }       
-    
+	
+    protected void updatePosition(Player player,int[] pos){
+    	int[] newPos = getListedTile(pos[0],pos[1]);
+    	int[] oldPos = posList.update(player,newPos);;
+    	emptyTileList.add(oldPos);    	
+		emptyTileList.remove(newPos);
+    }
+
     protected boolean placePlayer(Player player){
     	Random rand = new Random(System.currentTimeMillis());
     	if(emptyTileList.isEmpty()){
@@ -211,36 +204,6 @@ public class Map {
 		return true;
     }
     
-    protected int[] getListedTile(int x,int y){
-    	return tileList.get(y*getMapWidth()+x);
-    }
-    protected Player getPlayer(int[] pos){
-    	return posList.getFirstIndexedPlayer(pos);
-    }
-    protected void updatePosition(Player player,int[] pos){
-    	int[] newPos = getListedTile(pos[0],pos[1]);
-    	int[] oldPos = posList.update(player,newPos);;
-    	emptyTileList.add(oldPos);    	
-		emptyTileList.remove(newPos);
-    }
-    protected boolean hasOverLap(int[] pos){
-    	return posList.hasOverLap(pos);
-    }
-    //TODO: remove
-    public static String toString(int[] param){
-    	return("("+param[0]+","+param[1]+")");
-    }
-    
-    protected boolean isReady(){
-    	return posList.isReady();
-    }
-
-	protected Player getHumanAt(int[] pos) {
-		return posList.getHumanAt(pos);
-	}
-	protected void remove(Player player){
-		posList.remove(player);
-	}
 	protected void placeCoins(int[] playerPos, int goldCount) {
 		if (getTile(playerPos) == '.' && goldCount > 0) {
 			map[playerPos[0]][playerPos[1]] = 'G';
@@ -275,7 +238,13 @@ public class Map {
 		}
 	}
 
-	public List<Player> getPlayers(int[] pos) {
-		return posList.getPlayers(pos);
-	}
+    protected void generateTileList(){
+    	tileList = new ArrayList<int[]>(getMapHeight()*getMapWidth());
+    	for(int y = 0;y < getMapHeight();++y){
+			for(int x = 0; x< getMapWidth();++x){
+				tileList.add(new int[]{x,y});
+			}
+		}
+		emptyTileList = new ArrayList<int[]>(tileList);    	
+    }
 }

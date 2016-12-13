@@ -44,18 +44,16 @@ public class BotPlayer extends Player{
      * @return :  The direction the agent will move.
      */
     protected char selectMoveDirection(char[][] map) {
-     	int[] start = gameMap.getPosition(this);
-    	int[] goal = gameMap.getNearestHumanPos(start);
+     	int[] start = gameMap.getPosList().get(this);
+    	int[] goal = gameMap.getPosList().getNearestHuman(start);
     	int[] next;
     	PathFinder finder = new PathFinder(gameMap);
     	if(canSeePlayer()){
     		seenPlayer = true;
     	}    	
     	if(seenPlayer & finder.pathFind(start, goal)){//must evaluate both to generate a path 
-    		System.out.println("Pather pathing"+Map.toString(start)+Map.toString(goal));
     		next = finder.findNextStep();			
     	}else{//random pathing
-    		System.out.println("Random pathing"+Map.toString(start)+Map.toString(goal));
 	    	next = finder.randomNextStep();
     	}
 	    return PathFinder.getRelativeDirection(start, next);
@@ -64,8 +62,8 @@ public class BotPlayer extends Player{
      * @return : Can the bot see a human player;
      */
     private boolean canSeePlayer(){
-     	int[] start = gameMap.getPosition(this);
-    	int[] goal = gameMap.getNearestHumanPos(start);
+     	int[] start = gameMap.getPosList().get(this);
+    	int[] goal = gameMap.getPosList().getNearestHuman(start);
     	if(Math.abs(start[0]-goal[0]) <= 2 && Math.abs(start[1] - goal[1]) <= 2){
     		return true;
     	}

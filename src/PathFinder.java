@@ -66,14 +66,13 @@ public class PathFinder {
 			}
 			current=path.get(current);
 		}
-		System.out.println("findNextStep is about to return null"+Map.toString(current)+Map.toString(goal));
+		//TODO:System.out.println("findNextStep is about to return null"+Map.toString(current)+Map.toString(goal));
 		return null;
 	}
 	
 	protected int[] randomNextStep(){
 		List<int[]> neighbours = map.getAdjacentClearTiles(start);
     	if(neighbours.isEmpty()){
-    		System.out.println("bot got stuck at:"+Map.toString(start));
     		return null;//if bot has no where to go
     	}
     	Random rand = new Random(System.currentTimeMillis());

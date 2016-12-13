@@ -21,7 +21,7 @@ public class Console extends JTextArea{
 		super();
 		this.gui = gui;
 		setFont(new Font("monospaced", Font.PLAIN, 12));
-		//setRows(10);
+		setRows(10);
 		initialiseArrowKeys();
 		setCaretPosition(0);
 		addKeyListener(getTextAreaKeyListener());

@@ -33,10 +33,11 @@ public class PaintPanel extends JPanel{
 	private Font defaultFont;
 	private String gameState = "NOTSTARTED";
 	protected String animation = "NONE";
-	private Player current;
-	private Player main;
+	private Player current,main;
 	private boolean showDeath = false;
 	private int centerX,centerY;
+	private PosList posList;
+	private int[] cameraPos = new int[]{0,0};
 
 	
 	public PaintPanel() {
@@ -75,7 +76,7 @@ public class PaintPanel extends JPanel{
 						lastChange = System.currentTimeMillis();
 					}
 					try{
-						update(current);
+						animate(current);
 					}catch(Exception e){
 						e.printStackTrace();
 					}
@@ -94,6 +95,7 @@ public class PaintPanel extends JPanel{
 	
 	protected void setMap(Map map){
 		this.map = map;
+		this.posList = map.getPosList();
 	}
 	protected void setPlayer(Player player, String gameState){
 		this.gameState = gameState;
@@ -130,15 +132,18 @@ public class PaintPanel extends JPanel{
 		centerY = height/2-TILESIZE/2;
 		backGround = drawFullMap();
 		
-		int[] cameraPos = posMap.get(main);
-		drawBG(g2d,cameraPos);
-		drawPlayers(g2d,cameraPos);
-		drawAnimations(g2d, cameraPos);
+		cameraPos = posMap.get(main);
+		if(cameraPos == null){
+			cameraPos = new int[]{0,0};
+		}
+		drawBG(g2d);
+		drawPlayers(g2d);
+		drawAnimations(g2d);
 		
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
 			overlay = getOverlay(width,height);
 		}		
-		g2d.drawImage(overlay, 0, 0, null);	
+		//g2d.drawImage(overlay, 0, 0, null);	
 		
 		drawUI(g2d,width,height);
 	}
@@ -148,30 +153,32 @@ public class PaintPanel extends JPanel{
 	}
 	
 	protected void initialisePos(){
-		PosList mapList = map.getPlayerPosList();
-		for(Player player:mapList){
+		for(Player player:posList){
 			if(!posMap.containsKey(player)){
-				posMap.put(player,mapList.get(player).clone());
+				posMap.put(player,posList.get(player));
 				if(player instanceof HumanPlayer)
 				current = player;
 			}
 		}
 	}
-	private void drawAnimations(Graphics2D g2d,int[] cameraPos){
-		int[] posDif = PosList.subtract(map.getPosition(current),posMap.get(current));
-		int[] camera = PosList.subtract(map.getPosition(current),cameraPos);
+	private void drawAnimations(Graphics2D g2d){
+		int[] posDif = PosList.subtract(posList.get(current),posMap.get(current));
+		int[] camera = PosList.subtract(posList.get(current),cameraPos);
 		int	x = centerX + camera[0] * TILESIZE - posDif[0]*TILESIZE;
 		int y = centerY + camera[1] * TILESIZE - posDif[1]*TILESIZE;
 		if(animation.equals("DEFEAT")){		
 			g2d.drawImage(Sprite.getRow(8)[loseAnimeFrame], x + animeOffSet[0], y + animeOffSet[1], null);
 		}
 	}
-	private void drawPlayers(Graphics2D g2d,int[] cameraPos){
+	private void drawPlayers(Graphics2D g2d){
 		for(Player player:posMap.keySet()){
 			if(player.isMainPlayer){
 				continue;
 			}else{
 				int[] posDif = PosList.subtract(cameraPos,posMap.get(player));
+				if(!isVisible(posMap.get(player))){
+					return;
+				}
 				int x = centerX- posDif[0]*TILESIZE;
 				int y = centerY- posDif[1]*TILESIZE;
 				if(current.isMainPlayer){
@@ -193,14 +200,12 @@ public class PaintPanel extends JPanel{
 					}else{
 						g2d.drawImage(bot,x ,y ,null);
 					}
-				}else{
-					g2d.drawImage(Sprite.get("blood"), x ,y,null);
 				}
 				
 			}
 		}		
 	}
-	private void drawBG(Graphics2D g2d,int[] cameraPos){
+	private void drawBG(Graphics2D g2d){
 		int x = centerX - cameraPos[0] * TILESIZE;
 		int y = centerY - cameraPos[1] * TILESIZE;
 		if (main == current) {
@@ -220,7 +225,6 @@ public class PaintPanel extends JPanel{
 				g2d.drawImage(bot, centerX ,centerY ,null);
 			}
 		} else {
-			g2d.drawImage(Sprite.get("blood"), centerX, centerY, null);
 			showDeath = true;
 		}
 	}
@@ -289,6 +293,13 @@ public class PaintPanel extends JPanel{
 				g2d.drawImage(Sprite.get("floor"), x*TILESIZE, y*TILESIZE, null);
 				g2d.drawImage(tile,  x*TILESIZE, y*TILESIZE, null);
 				
+				for(Player deadPlayer : deadPlayers){
+					int[] pos = posMap.get(deadPlayer);
+					if(pos[0] == x && pos[1] == y){
+						g2d.drawImage(Sprite.get("blood"),  x*TILESIZE, y*TILESIZE, null);
+					}
+				}
+				
 				if(gameState.equals("WON")){
 					g2d.drawImage(Sprite.get("confetti"),x*TILESIZE, y*TILESIZE, null);
 				}
@@ -347,9 +358,9 @@ public class PaintPanel extends JPanel{
 	}
 	
 
-	private void update(Player player){
-		if(!map.isReady())return;
-		int[] pos = map.getPosition(player);
+	private void animate(Player player){
+		if(!posList.isReady())return;
+		int[] pos = posList.get(player);
 		int[] oldPos = posMap.get(player);
 		int[] posDif = PosList.subtract(pos,oldPos);
 		if(!animation.equals("NONE") && !animation.equals("MOVING") && playAnimation(animation,player)){
@@ -357,7 +368,8 @@ public class PaintPanel extends JPanel{
 		}else if(posDif[0] == 0 && posDif[1] == 0){
 			return;
 		}
-		if(Math.abs(offSet[0]) >= TILESIZE || Math.abs(offSet[1]) >= TILESIZE){		
+		if(Math.abs(offSet[0]) >= TILESIZE || Math.abs(offSet[1]) >= TILESIZE
+				|| !isVisible(pos)){
 			posMap.remove(player);
 			posMap.put(player,pos);
 			offSet = new int[]{0,0};
@@ -372,6 +384,14 @@ public class PaintPanel extends JPanel{
 		}		
 	}
 	
+	private boolean isVisible(int[] pos){
+		int[] posDif = PosList.subtract(cameraPos,pos);
+		if(Math.abs(posDif[0]) > 5|| Math.abs(posDif[1]) > 5){
+			return false;
+		}
+		return true;
+	}
+	
 	private boolean playAnimation(String animation,Player player){
 		if(animation.equals("DEFEAT")){
 			return playDefeat(player);
@@ -380,13 +400,13 @@ public class PaintPanel extends JPanel{
 		return true;		
 	}
 	private boolean playDefeat(Player player){
-		int[] pos = map.getPosition(player);
+		int[] pos = posList.get(player);
 		int[] oldPos = posMap.get(player);
 		int[] posDif = PosList.subtract(pos,oldPos);
 
 		if(loseAnimeFrame == 4){
 			animation = "NONE";
-			for(Player playerAtPos:map.getPlayers(pos)){
+			for(Player playerAtPos:posList.getPlayers(pos)){
 				if(playerAtPos != player){
 					deadPlayers.add(playerAtPos);
 				}
