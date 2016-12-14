@@ -45,6 +45,7 @@ public class PaintPanel extends JPanel{
 		setPreferredSize(new Dimension(350,350));
 		bot = Sprite.get("bot");
 		InputStream is = getClass().getResourceAsStream("font.ttf");
+		setFocusable(true);
 		try {
 			defaultFont = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(20f);
 		} catch (FontFormatException |IOException e) {
@@ -143,7 +144,7 @@ public class PaintPanel extends JPanel{
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
 			overlay = getOverlay(width,height);
 		}		
-		//g2d.drawImage(overlay, 0, 0, null);	
+		g2d.drawImage(overlay, 0, 0, null);	
 		
 		drawUI(g2d,width,height);
 	}

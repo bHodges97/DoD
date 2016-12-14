@@ -55,7 +55,7 @@ public class HumanPlayer extends Player{
     protected void selectNextAction() {
     	String input = getInputFromConsole();
     	String output = processCommand(input);
-    	while((output.equals("Invalid") || output.equals("Fail"))||(input.equals("LOOK"))){
+    	while((output.equals("Invalid") || output.equals("Fail"))||(input.equals("LOOK"))||input.equals("HELLO")){
     		gameLogic.console.println(output);
     		input = getInputFromConsole();
     		output = processCommand(input);
@@ -64,9 +64,13 @@ public class HumanPlayer extends Player{
     }    
 
     public static void main(String[] args) {
-    	MyFrame gui = new MyFrame("Dungeon of Doom");
+    	MyFrame gui;
+    	if(args.length > 0){
+    		gui = new MyFrame("Dungeon of Doom",!args[0].equals("TEXT"));
+    	}else{
+    		gui = new MyFrame("Dungeon of Doom",true);
+    	}
     	GameLogic game = new GameLogic(gui);
-		game.addPlayer(new HumanPlayer(game));
 		game.addPlayer(new HumanPlayer(game));
 		game.addPlayer(new BotPlayer(game));
         // RUN FOREST RUN!

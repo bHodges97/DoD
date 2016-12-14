@@ -20,6 +20,10 @@ public class GameLogic {
 	private String gameState = "NOTSTARTED";
 	private PosList posList;
 	
+	/**
+	 * Initialise the game with the given frame
+	 * @param frame The gui frame to display the game with
+	 */
 	public GameLogic(MyFrame frame){
 		this.gui = frame;
 		console = frame.getConsole();
@@ -27,12 +31,16 @@ public class GameLogic {
 		map.readMap("example_map.txt");
 		if(map.getMap()==null){
 			console.println("map load failed: exiting");
+			System.exit(1);
 		}else{
 			gui.setMap(map);
 			posList = map.getPosList();
 		}
 	}
 	
+	/**
+	 * Starts the DoD game;
+	 */
 	protected void startGame(){
 		gameState = "RUNNING";
 		turnCounter = 0;
@@ -47,10 +55,10 @@ public class GameLogic {
 				if(player.lives == 0){
 					continue;
 				}
-				//currentPlayer.isMainPlayer = false;//remove
+				//currentPlayer.isMainPlayer = false;//uncomment these lines to have gui focus on current player
 				//player.isMainPlayer = true;
 				//gui.update(player,gameState);
-
+				
 				currentPlayer = player;
 				player.selectNextAction();
 				if(checkWin() || checkLost()){
@@ -71,8 +79,12 @@ public class GameLogic {
 		quitGame();
 	}
 	
+	/**
+	 * Add a player to the game
+	 * @param player Player to add to the game.
+	 */
 	protected void addPlayer(Player player){ 
-		if(!hasMainPlayer){
+		if(!hasMainPlayer && !player.isMainPlayer){
 			hasMainPlayer = true;
 			player.isMainPlayer = true;
 		}else if(player.isMainPlayer){
@@ -85,6 +97,9 @@ public class GameLogic {
 		map.placePlayer(player);
 	}
 	
+	/**
+	 * @return The map the game is running on
+	 */
 	protected Map getMap(){
 		return map;
 	}
@@ -127,25 +142,22 @@ public class GameLogic {
 			default:
 				return "Fail";
 		}
-		if(map.getTile(playerPos) != '#' ){ 
-			if(posList.getFirstPlayer(playerPos)!= null){
-				if( posList.getFirstPlayer(playerPos) instanceof HumanPlayer){
-					Player target = posList.getFirstPlayer(playerPos);					
-	    			--target.lives;				
-	    			if(target.lives == 0){
-	    				console.println(currentPlayer.name+" has eliminated " + target.name);	    				
-	    				gui.update(currentPlayer, "RUNNING");
-	    				map.updatePosition(currentPlayer,playerPos);
-	    				gui.showFailEvent(currentPlayer);
-	    				map.placeCoins(playerPos,target.getGoldCount());
-	    				posList.remove(target);
-	    				return "Success";
-	    			}	    			
+		if(map.getTile(playerPos) != '#' ){
+			Player targetPlayer = posList.getFirstPlayer(playerPos);
+			if(targetPlayer != null){
+				if(targetPlayer instanceof BotPlayer){
+					return "Fail";//block attacking bot		
+				}else{
+				--targetPlayer.lives;
 				}
-	    		else{
-	    			return "Fail";
-	    		}
 			}
+	    	if(targetPlayer != null && targetPlayer.lives == 0){//remove player from game if lives = 0;
+    			console.println(currentPlayer.name+" has eliminated " + targetPlayer.name);	    				
+    			gui.update(currentPlayer, "RUNNING");
+    			gui.showFailEvent(currentPlayer);
+    			map.placeCoins(playerPos,targetPlayer.getGoldCount());
+    			posList.remove(targetPlayer);
+    		}			
 			map.updatePosition(currentPlayer,playerPos);
 			return "Success";
 		}else{
@@ -161,18 +173,18 @@ public class GameLogic {
     protected String look() {
     	String output = "";
     	int[] playerPos = posList.get(currentPlayer);
-    	playerPos[0] -=2;
+    	playerPos[0] -=2;//start from pos - 2 and go to pos + 2 for all 5 tiles
 		playerPos[1] -=2;
 		for(int y = 0;y<5;++y){
 			for(int x = 0;x<5;++x){
 				int[] currentPos = new int[]{playerPos[0]+x,playerPos[1]+y};
 				Player player = posList.getFirstPlayer(currentPos);
 				if(player instanceof HumanPlayer){
-					output+='P';
+					output+='P';//print P for human
 				}else if (player instanceof BotPlayer){
-					output+='B';
+					output+='B';//print B for bot
 				}else{
-					output+=map.getTile(currentPos);					
+					output+=map.getTile(currentPos);//print whats on the tile otherwise					
 				}
 			}
 			output+="\n";
@@ -201,7 +213,10 @@ public class GameLogic {
     	System.exit(0);
     }
     
-    
+    /**
+     * Check if the game has been won
+     * @return true if game won false otherwise
+     */
     private boolean checkWin(){
     	int[] playerPos = posList.get(currentPlayer);
     	if(map.getTile(playerPos) =='E' 
@@ -213,13 +228,18 @@ public class GameLogic {
 		}
     	return false;
     }
+    
+    /**
+     * Check if the game is over
+     * @return true if lost, false otherwise
+     */
     private boolean checkLost(){
 		for (Player player : players) {
 			if (player instanceof HumanPlayer && player.lives > 0) {
 				return false;
 			}
 			if(player.isMainPlayer && player instanceof BotPlayer){
-				return false;
+				return false;//this is for bot only games
 			}
 		}
 		gameState = "END";

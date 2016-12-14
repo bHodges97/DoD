@@ -17,6 +17,10 @@ public class Console extends JTextArea{
 	private String input;
 	private Set<Integer> arrowKeys = new HashSet<Integer>();
 	
+	/**
+	 * Initialise a console using the given JFrame
+	 * @param gui 
+	 */
 	public Console(MyFrame gui){
 		super();
 		this.gui = gui;
@@ -27,6 +31,10 @@ public class Console extends JTextArea{
 		addKeyListener(getTextAreaKeyListener());
 	}
 	
+	/**
+	 * @return A string that is the next line from System.out or gui
+	 * @throws IOException  If an I/O error occurs
+	 */
 	protected  String readln() throws IOException{
 		input = null;
 		setEditable(true);
@@ -34,8 +42,7 @@ public class Console extends JTextArea{
 		while(buffer.ready()){
 			buffer.readLine();
 		}
-		gui.allowInputs(true);
-		
+		gui.allowInputs(true);//enable gui inputss
 		while(input == null || input.equals("")){				
 			input = gui.getInput();
 			if(buffer.ready()){
@@ -43,30 +50,41 @@ public class Console extends JTextArea{
 				fromGui = false;
 			}
 			try {
-				Thread.sleep(1);
+				Thread.sleep(1);//wait for gui to update
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		gui.allowInputs(false);
-		setEditable(false);
-		if(fromGui){
+		gui.allowInputs(false);//disable gui inputs
+		setEditable(false);//stop user from editing 
+		if(fromGui){//print gui inputs if not enterered manually
 			println(input);
 		}
 		return input;
 	}
 	
+	/**
+	 * Print the line from parameter to console
+	 * @param line: the line to print
+	 */
 	protected void println(String line){
 		line+="\n";
 		print(line);
 	}
+	
+	/**
+	 * Print a string to console
+	 * @param chars: the chars to print
+	 */
 	protected void print(String chars){
 		System.out.print(chars);
 		append(chars);
 		setCaretPosition(getText().length());
 	}	
 	
+	/**
+	 * @return The key listener for this class.
+	 */
 	private KeyListener getTextAreaKeyListener(){
 		KeyListener textAreaListener = new KeyListener() {			
 			@Override
@@ -77,12 +95,12 @@ public class Console extends JTextArea{
 			@Override
 			public void keyReleased(KeyEvent e) {
 			}
-			
+		
 			@Override
 			public void keyPressed(KeyEvent e) {	
 				restrictInput(e);
 			}
-			private void restrictInput(KeyEvent e){
+			private void restrictInput(KeyEvent e){//makes a textarea console like
 				int caretPos = getCaretPosition();
 				try {
 					if(caretPos < getLineStartOffset(getLineCount()-1) && !arrowKeys.contains(e.getKeyCode())){
@@ -92,12 +110,12 @@ public class Console extends JTextArea{
 						int start = getLineStartOffset(getLineCount()-1);
 						int end = getLineEndOffset(getLineCount()-1);
 						input = getText().substring(start,end);
-						setText(getText().substring(0,start));
+						setText(getText().substring(0,start));//remove the line inputed
 						e.consume();
 					}else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V){
 						e.consume();//no pasting
 					}else if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE && caretPos <= getLineStartOffset(getLineCount()-1) ){
-						e.consume();
+						e.consume();//control the backspace button
 					}
 				} catch (BadLocationException exception) {
 					exception.printStackTrace();
@@ -106,7 +124,10 @@ public class Console extends JTextArea{
 		};
 		return textAreaListener;
 	}
-
+	
+	/**
+	 * Add all keys that could change a caret position to the set arrowKeys.
+	 */
 	private void initialiseArrowKeys(){
 		arrowKeys.add(KeyEvent.VK_UP);
 		arrowKeys.add(KeyEvent.VK_KP_UP);

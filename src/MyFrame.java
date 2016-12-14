@@ -6,6 +6,10 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -27,14 +31,15 @@ public class MyFrame extends JFrame{
 	private JButton buttonPickup = new JButton("<html>PICK<br> UP</html>");
 	private JButton buttonHello = new JButton("HELLO");
 	private JButton buttonExit = new JButton("EXIT");
-	private JButton buttonNorth = new JButton("N");
-	private JButton buttonSouth = new JButton("S");
-	private JButton buttonWest = new JButton("W");
-	private JButton buttonEast = new JButton("E");
+	private JButton buttonNorth = new JButton("MOVE N");
+	private JButton buttonSouth = new JButton("MOVE S");
+	private JButton buttonWest = new JButton("MOVE W");
+	private JButton buttonEast = new JButton("MOVE E");
 	private String guiInput = null;
+	private boolean allowInputs = false;
 	
 	
-	public MyFrame(String title){
+	public MyFrame(String title, boolean visible){
 		super(title);
 		this.console = new Console(this);
 		scrollArea = new JScrollPane(this.console);
@@ -42,44 +47,65 @@ public class MyFrame extends JFrame{
 		initialiseLayout();		
 		initialiseButtons();			
 		allowInputs(false);
-		//TODO:setResizable(false);
+		setResizable(false);
+		paintPanel.addMouseListener(getMouseListener());
+		paintPanel.addKeyListener(getKeyListener());
 		pack();
-		setVisible(true);
+		setVisible(visible);
 	}
 	
+	/**
+	 * Update gui with gamestate and current player
+	 * @param player The new current player
+	 * @param gameState The new gamestate
+	 */
 	protected void update(Player player, String gameState){
 		paintPanel.setPlayer(player,gameState);
 		waitForAnimation();
 	}
+	
+	/**
+	 * @param map The map to render;
+	 */
 	protected void setMap(Map map){
 		paintPanel.setMap(map);
 	}
+	
+	/**
+	 * Set if input is enabled or not
+	 * @param mode true if enabled, false otherwise
+	 */
 	protected void allowInputs(boolean mode){
-		if(mode){
-			guiInput = null;
-			for(Component comp:buttonsPanel.getComponents()){
-				if(comp instanceof JButton){
-					((JButton)comp).setEnabled(true);
-				}
-			}
-		}else{
-			for(Component comp:buttonsPanel.getComponents()){
-				if(comp instanceof JButton){
-					((JButton)comp).setEnabled(false);
-				}
+		allowInputs = mode;
+		guiInput = null;
+		for (Component comp : buttonsPanel.getComponents()) {
+			if (comp instanceof JButton) {//iterate through all buttons and disable/enable
+				((JButton) comp).setEnabled(mode);
 			}
 		}
 	}
 	
+	/**
+	 * @return What a player inputted to gui
+	 */
 	protected String getInput(){
 		return guiInput;
 	}
 	
+	/**
+	 * @return The gui console
+	 */
 	protected Console getConsole(){
 		return console;
 	}
-	
+
+	/**
+	 * Wait for paint panel to
+	 */
 	protected void waitForAnimation(){
+		if(!isVisible()){
+			return;//if window is not visible, don't wait
+		}
 		do{
 			try {
 				Thread.sleep(100);
@@ -89,15 +115,27 @@ public class MyFrame extends JFrame{
 		}while(!paintPanel.finishedMove());
 	}
 	
+	/**
+	 * Shows when a player wins
+	 * @param player The player that won
+	 */
 	protected void showWinEvent(Player player){
 		console.println("----****"+player.name+"_WON****----");
 	}
+	
+	/**
+	 * Play when a player is killed
+	 * @param player The player that attacks
+	 */
 	protected void showFailEvent(Player player){
 		paintPanel.animation = "DEFEAT";
 		waitForAnimation();
 		//console.println("----****"+player.name+"_DIED****----");
 	}
 	
+	/**
+	 * Load sprites for the button
+	 */
 	private void loadIcons(){	
 		buttonLook.setIcon(new ImageIcon(Sprite.get("look")));
 		buttonPickup.setIcon(new ImageIcon(Sprite.get("pickup")));
@@ -109,11 +147,14 @@ public class MyFrame extends JFrame{
 		buttonEast.setIcon(new ImageIcon(Sprite.get("arrow")));
 	}
 	
+	/**
+	 * initialise layout for components
+	 */
 	private void initialiseLayout(){
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-				| UnsupportedLookAndFeelException e) {
+		} catch (ClassNotFoundException | InstantiationException 
+				| IllegalAccessException | UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
 		setLayout(new BorderLayout());
@@ -159,6 +200,95 @@ public class MyFrame extends JFrame{
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
+	/**
+	 * Sets up buttons
+	 */
+	private void initialiseButtons(){
+		ActionListener actionListener = getButtonListener();
+		for(Component component : buttonsPanel.getComponents()){
+			if(component instanceof JButton){
+				JButton button = (JButton)component;
+				button.addActionListener(actionListener);
+				button.setPreferredSize(new Dimension(64,64));
+				button.setFont(button.getFont().deriveFont(8.4f));
+				button.setBorder(new EtchedBorder());
+				button.setHorizontalAlignment(JButton.CENTER);
+				button.addKeyListener(getKeyListener());
+				if(button.getIcon()!=null){
+					button.setText("");//if icons loaded clear text
+				}
+			}
+		}
+	}
+	
+	/**
+	 * @return Key listener that map arrow keys to MOVE and space bar to PICKUP
+	 */
+	private KeyListener getKeyListener(){
+		KeyListener keyListener = new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				action(e);
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e) {
+				action(e);
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				action(e);
+			}
+			
+			private void action(KeyEvent e){
+				if(allowInputs == false){
+					return;
+				}
+				if(e.getKeyCode() == KeyEvent.VK_UP){
+					guiInput = "MOVE N";
+				}else if(e.getKeyCode() == KeyEvent.VK_DOWN){
+					guiInput = "MOVE S";
+				}else if(e.getKeyCode() == KeyEvent.VK_LEFT){
+					guiInput = "MOVE W";
+				}else if(e.getKeyCode() == KeyEvent.VK_RIGHT){
+					guiInput = "MOVE E";
+				}else if(e.getKeyCode() == KeyEvent.VK_SPACE){
+					guiInput = "PICKUP";
+				}
+			}
+		};
+		return keyListener;
+	}
+	
+	/**
+	 * @return Mouse Listener that grabs focus for paintpanel
+	 */
+	private MouseListener getMouseListener(){
+		return new MouseListener() {			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+			}			
+			@Override
+			public void mouseExited(MouseEvent e) {
+			}			
+			@Override
+			public void mouseEntered(MouseEvent e) {
+			}			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				paintPanel.requestFocusInWindow();
+				
+			}
+		};		
+	}
+
+	/**
+	 * @return ActionListener that maps button presses to protocol commands
+	 */
 	private ActionListener getButtonListener(){
 		ActionListener listener = new ActionListener(){
 			@Override
@@ -185,20 +315,4 @@ public class MyFrame extends JFrame{
 		return listener;
 	}
 	
-	private void initialiseButtons(){
-		ActionListener actionListener = getButtonListener();
-		for(Component component : buttonsPanel.getComponents()){
-			if(component instanceof JButton){
-				JButton button = (JButton)component;
-				button.addActionListener(actionListener);
-				button.setPreferredSize(new Dimension(64,64));
-				button.setFont(button.getFont().deriveFont(8.4f));
-				button.setBorder(new EtchedBorder());
-				button.setHorizontalAlignment(JButton.CENTER);
-				if(button.getIcon()!=null){
-					button.setText("");
-				}
-			}
-		}
-	}
 }

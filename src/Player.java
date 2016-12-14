@@ -17,11 +17,4 @@ abstract class Player{
     }
 	protected abstract String processCommand(String command);
 	protected abstract void selectNextAction();
-	
-	
-	//TODOLIST
-	//TODO:path finding may be broken?
-	//TODO:Fix issues with resizing
-	//TODO: make big classes smaller
-	//TODO:CARET POS
 }

@@ -58,6 +58,7 @@ public class BotPlayer extends Player{
     	}
 	    return PathFinder.getRelativeDirection(start, next);
     }
+    
     /**
      * @return : Can the bot see a human player;
      */
@@ -72,14 +73,9 @@ public class BotPlayer extends Player{
     
 
     public static void main(String[] args) {
-    	MyFrame gui = new MyFrame("Dungeon of Doom");
+    	MyFrame gui = new MyFrame("Dungeon of Doom",true);
     	GameLogic game = new GameLogic(gui);
 		//game.addPlayer(new HumanPlayer(game));
-		game.addPlayer(new BotPlayer(game));
-		game.addPlayer(new BotPlayer(game));
-		game.addPlayer(new BotPlayer(game));
-		game.addPlayer(new BotPlayer(game));
-		game.addPlayer(new BotPlayer(game));
 		game.addPlayer(new BotPlayer(game));
         // RUN FOREST RUN!
 		game.startGame();
