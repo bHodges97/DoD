@@ -16,8 +16,7 @@ public class Map {
 	private String mapName = "";
 	private int goldRequired = 0;
 	private char[][] map;
-	private List<int[]> tileList;
-	private List<int[]> emptyTileList;
+	private List<int[]> tileList,emptyTileList;
 	private PosList posList = new PosList();
 	
     /**
@@ -62,12 +61,20 @@ public class Map {
     protected int[] getPlayersPosition() {
     	return posList.getNearestHuman(new int[]{0,0});
     }
-
+    
+    /**
+     * Get the tile at the given coordinates
+     * @param x The x position
+     * @param y The y position
+     * @return the tile at the given location
+     */
     protected int[] getListedTile(int x,int y){
     	return tileList.get(y*getMapWidth()+x);
     }
     
-
+    /**
+     * @return Every tile in the map as a list
+     */
 	protected PosList getPosList() {
 		return posList;
 	}
@@ -97,6 +104,7 @@ public class Map {
 				width = bufferMap[i].length>width?bufferMap[i].length:width;
 			}
 			
+			//swap elements in the array so it can be accesses as map[x][y]
 			map = new char[width][bufferMap.length];
 			for(int i = 0;i < bufferMap.length;++i){
 				for(int j = 0; j< bufferMap[i].length;++j){
@@ -151,6 +159,10 @@ public class Map {
     	updatePosition(player, pos);
     }
     
+    /**
+     * @param current The current tile
+     * @return A set of adjacent tiles to current
+     */
     protected Set<int[]>getAdjacentTiles(int[] current){
     	Set<int[]> neighbors = new HashSet<int[]>();
     	if(current[0]-1>=0){
@@ -168,6 +180,10 @@ public class Map {
     	return neighbors;
     }
     
+    /**
+     * @param current The current tiles
+     * @return A list of adjacent tile to current that is not a wall
+     */
     protected List<int[]> getAdjacentClearTiles(int[] current){
     	List<int[]> neighbors = new ArrayList<int[]>(getAdjacentTiles(current));
     	List<int[]> tileList = new ArrayList<int[]>();
@@ -179,13 +195,23 @@ public class Map {
     	return tileList;
     }       
 	
+    /**
+     * Update the position of the player
+     * @param player The player to update
+     * @param pos The new position of the player
+     */
     protected void updatePosition(Player player,int[] pos){
     	int[] newPos = getListedTile(pos[0],pos[1]);
     	int[] oldPos = posList.update(player,newPos);;
     	emptyTileList.add(oldPos);    	
 		emptyTileList.remove(newPos);
     }
-
+    
+    /**
+     * Place a player randomly onto map
+     * @param player The player to place
+     * @return true if placing the player is successful,false otherwise
+     */
     protected boolean placePlayer(Player player){
     	Random rand = new Random(System.currentTimeMillis());
     	if(emptyTileList.isEmpty()){
@@ -204,13 +230,17 @@ public class Map {
 		return true;
     }
     
-	protected void placeCoins(int[] playerPos, int goldCount) {
-		if (getTile(playerPos) == '.' && goldCount > 0) {
-			map[playerPos[0]][playerPos[1]] = 'G';
+    /**
+     * Place coins in and around the given position
+     * @param centerPos The postion to place coins at.
+     * @param goldCount The amount of coins to place.
+     */
+	protected void placeCoins(int[] centerPos, int goldCount) {
+		if (getTile(centerPos) == '.' && goldCount > 0) {
+			map[centerPos[0]][centerPos[1]] = 'G';
 			--goldCount;
 		} else {
-			for (int[] tile : getAdjacentClearTiles(playerPos)) {
-				// TODO: rewrite poslist to remove duplication;
+			for (int[] tile : getAdjacentClearTiles(centerPos)) {
 				if (goldCount > 0) {
 					map[tile[0]][tile[1]] = 'G';
 					--goldCount;
@@ -219,6 +249,11 @@ public class Map {
 		}
 		placeCoins(goldCount);
 	}
+	
+	/**
+	 * Place <b>count</b> amount of coins onto map randomly.
+	 * @param count The amount of coins to add to map
+	 */
 	protected void placeCoins(int count){
 		Random rand = new Random(System.currentTimeMillis());
     	if(emptyTileList.isEmpty()){
@@ -237,7 +272,10 @@ public class Map {
 			--count;
 		}
 	}
-
+	
+	/**
+	 * Turn the stored char array into a list of int[] tiles;
+	 */
     protected void generateTileList(){
     	tileList = new ArrayList<int[]>(getMapHeight()*getMapWidth());
     	for(int y = 0;y < getMapHeight();++y){

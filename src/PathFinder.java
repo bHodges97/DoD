@@ -66,7 +66,6 @@ public class PathFinder {
 			}
 			current=path.get(current);
 		}
-		//TODO:System.out.println("findNextStep is about to return null"+Map.toString(current)+Map.toString(goal));
 		return null;
 	}
 	

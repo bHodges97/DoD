@@ -55,9 +55,9 @@ public class GameLogic {
 				if(player.lives == 0){
 					continue;
 				}
-				//currentPlayer.isMainPlayer = false;//uncomment these lines to have gui focus on current player
-				//player.isMainPlayer = true;
-				//gui.update(player,gameState);
+				currentPlayer.isMainPlayer = false;//uncomment these lines to have gui focus on current player
+				player.isMainPlayer = true;
+				gui.update(player,gameState);
 				
 				currentPlayer = player;
 				player.selectNextAction();
@@ -142,22 +142,25 @@ public class GameLogic {
 			default:
 				return "Fail";
 		}
-		if(map.getTile(playerPos) != '#' ){
-			Player targetPlayer = posList.getFirstPlayer(playerPos);
-			if(targetPlayer != null){
-				if(targetPlayer instanceof BotPlayer){
-					return "Fail";//block attacking bot		
+
+		if(map.getTile(playerPos) != '#' ){ 
+			Player target = posList.getFirstPlayer(playerPos);			
+			if(target != null){
+				if(target instanceof HumanPlayer){			
+	    			--target.lives;				
+	    			if(target.lives == 0){
+	    				console.println(currentPlayer.name+" has eliminated " + target.name);	    				
+	    				gui.update(currentPlayer, "RUNNING");
+	    				map.updatePosition(currentPlayer,playerPos);
+	    				gui.showFailEvent(currentPlayer);
+	    				map.placeCoins(playerPos,target.getGoldCount());
+	    				posList.remove(target);
+	    				return "Success";
+	    			}	    			
 				}else{
-				--targetPlayer.lives;
-				}
+	    			return "Fail";
+	    		}
 			}
-	    	if(targetPlayer != null && targetPlayer.lives == 0){//remove player from game if lives = 0;
-    			console.println(currentPlayer.name+" has eliminated " + targetPlayer.name);	    				
-    			gui.update(currentPlayer, "RUNNING");
-    			gui.showFailEvent(currentPlayer);
-    			map.placeCoins(playerPos,targetPlayer.getGoldCount());
-    			posList.remove(targetPlayer);
-    		}			
 			map.updatePosition(currentPlayer,playerPos);
 			return "Success";
 		}else{

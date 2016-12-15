@@ -38,7 +38,11 @@ public class MyFrame extends JFrame{
 	private String guiInput = null;
 	private boolean allowInputs = false;
 	
-	
+	/**
+	 * Initialise a new frame
+	 * @param title The title text of the frame
+	 * @param visible true if the frame should be visible
+	 */
 	public MyFrame(String title, boolean visible){
 		super(title);
 		this.console = new Console(this);

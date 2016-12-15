@@ -21,6 +21,9 @@ public class Sprite {
 		loadSprites();
 	}
 	
+	/**
+	 * Add sprites to the map
+	 */
 	private static void loadSprites(){
 		sprites.put("bot", getSprite(0,0));
 		sprites.put("bot1", getSprite(1,0));
@@ -42,6 +45,9 @@ public class Sprite {
 		sprites.put("blood", getSprite(0,9));		
 	}
 	
+	/**
+	 * Load a sprite sheet
+	 */
 	private static void loadSpriteSheet(){
 		try {
             spriteSheet = ImageIO.read(Sprite.class.getResource("spritesheet.png"));
@@ -49,7 +55,10 @@ public class Sprite {
             e.printStackTrace();
         }
 	}
-
+	
+	/**
+	 * @return The default image if spritesheet didn't load
+	 */
 	protected static BufferedImage getDefaultImg(){
 		int halfTile = TILESIZE/2;
 		BufferedImage defaultImg = new BufferedImage(TILESIZE,TILESIZE,BufferedImage.TYPE_INT_ARGB);
@@ -65,6 +74,12 @@ public class Sprite {
 		return defaultImg;
 	}
 	
+	/**
+	 * Return the sprite at the location in the sprite sheet.
+	 * @param x The x position of the sprite
+	 * @param y The y position of the sprite
+	 * @return The sprite at the given location.
+	 */
 	protected static BufferedImage getSprite(int x, int y){
 		if(spriteSheet == null){
 			return getDefaultImg();
@@ -77,6 +92,10 @@ public class Sprite {
 		return getDefaultImg();
 	}	  
 	
+	/**	
+	 * @param name Name of the sprite
+	 * @return The sprite with the corresponding name
+	 */
 	protected static BufferedImage get(String name){
 		try{
 			return sprites.get(name);
@@ -86,6 +105,10 @@ public class Sprite {
 		return getDefaultImg();
 	}
 	
+	/**
+	 * @param row The row of sprites to retrieve
+	 * @return every sprite on the given row in an array.
+	 */
 	protected static BufferedImage[] getRow(int row){
 		int sheetWidth = 5;
 		BufferedImage[] sprites = new BufferedImage[sheetWidth];

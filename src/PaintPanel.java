@@ -9,7 +9,6 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,6 +18,7 @@ import javax.swing.JPanel;
 
 public class PaintPanel extends JPanel{
 
+	protected String animation = "NONE";
 	private static final int TILESIZE = 64;
 	
 	private Map map = null;
@@ -27,21 +27,21 @@ public class PaintPanel extends JPanel{
 	private Set<Player> deadPlayers = new HashSet<Player>();
 	private int[] offSet = new int[]{0,0};
 	private int[] animeOffSet = new int[]{0,0};
+	private int[] cameraPos = new int[]{0,0};
 	private int loseAnimeFrame = 0;	
 	private int frame = 0;
 	private int tileFrame = 0;
+	private int centerX,centerY;
+	private boolean showDeath = false;
 	private Font defaultFont;
 	private String gameState = "NOTSTARTED";
-	protected String animation = "NONE";
 	private Player current,main;
-	private boolean showDeath = false;
-	private int centerX,centerY;
 	private PosList posList;
-	private int[] cameraPos = new int[]{0,0};
-
 	
+	/**
+	 * Constructor
+	 */
 	public PaintPanel() {
-		super.repaint();
 		setPreferredSize(new Dimension(350,350));
 		bot = Sprite.get("bot");
 		InputStream is = getClass().getResourceAsStream("font.ttf");
@@ -52,52 +52,24 @@ public class PaintPanel extends JPanel{
 			e.printStackTrace();
 		}
 		
-		Runnable runner = new Runnable(){
-			@Override
-			public void run() {
-				while(map==null || gameState.equals("NOTSTARTED")){
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}			
-				}
-				initialisePos();
-				long lastChange = System.currentTimeMillis();
-				while(true){
-					if(frame > TILESIZE){
-						frame = 0;
-					}
-					++frame;
-					if(tileFrame > 8){
-						tileFrame = 0;
-					}
-					if(System.currentTimeMillis() - lastChange > 2000){
-						++tileFrame;
-						lastChange = System.currentTimeMillis();
-					}
-					try{
-						animate(current);
-					}catch(Exception e){
-						e.printStackTrace();
-					}
-					repaint();
-					try {
-						Thread.sleep(4);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}			
-				}
-			}			
-		};
-		Thread repaintThread = new Thread(runner,"repainter");
+		Thread repaintThread = new Thread(makeRunnable(),"repainter");
 		repaintThread.start();
 	}
 	
+	/**
+	 * Set the map to render
+	 * @param map The map tp render
+	 */
 	protected void setMap(Map map){
 		this.map = map;
 		this.posList = map.getPosList();
 	}
+	
+	/**
+	 * Set the current player
+	 * @param player The current player
+	 * @param gameState The current game state;
+	 */
 	protected void setPlayer(Player player, String gameState){
 		this.gameState = gameState;
 		current = player;
@@ -112,11 +84,10 @@ public class PaintPanel extends JPanel{
 		super.paintComponent(g);
 		Graphics2D g2d = (Graphics2D)g;
 		int width =getWidth();
-		int height = getHeight();
+		int height = getHeight();		
 		
-		
-		g2d.fillRect(0,0 , width, height);
-		if(map==null){
+		g2d.fillRect(0,0 , width, height);//fill background 
+		if(map==null){//don't draw until game is properly loaded
 			g2d.drawString("MAP LOAD FAILED", 0, 20);
 			return;
 		}else if(gameState.equals("NOTSTARTED")){
@@ -125,34 +96,37 @@ public class PaintPanel extends JPanel{
 		}else if(main == null){
 			return;
 		}
-		//defaultFont = new Font("Comic Neue", Font.BOLD, 20);
 		g2d.setFont(defaultFont);
 		height+=g2d.getFontMetrics().getHeight();
-		
 		centerX = width/2-TILESIZE/2;
 		centerY = height/2-TILESIZE/2;
 		backGround = drawFullMap();
 		
 		cameraPos = posMap.get(main);
-		if(cameraPos == null){
+		if(cameraPos == null){//set camera pos
 			cameraPos = new int[]{0,0};
 		}
-		drawBG(g2d);
-		drawPlayers(g2d);
-		drawAnimations(g2d);
+		drawBG(g2d);//draw background
+		drawPlayers(g2d);//draw player sprites
+		drawAnimations(g2d);//draw any animation
 		
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
 			overlay = getOverlay(width,height);
-		}		
+		}//drawing the fog 
 		g2d.drawImage(overlay, 0, 0, null);	
-		
+		//draw the ui
 		drawUI(g2d,width,height);
 	}
-	
+	/**
+	 * @return true If no current animation,false otherwise
+	 */
 	protected boolean finishedMove(){
 		return animation.equals("NONE");
 	}
 	
+	/**
+	 * Initialise the posMap
+	 */
 	protected void initialisePos(){
 		for(Player player:posList){
 			if(!posMap.containsKey(player)){
@@ -162,6 +136,11 @@ public class PaintPanel extends JPanel{
 			}
 		}
 	}
+	
+	/**
+	 * Draw animations
+	 * @param g2d The graphics object to draw onto.
+	 */
 	private void drawAnimations(Graphics2D g2d){
 		int[] posDif = PosList.subtract(posList.get(current),posMap.get(current));
 		int[] camera = PosList.subtract(posList.get(current),cameraPos);
@@ -171,6 +150,11 @@ public class PaintPanel extends JPanel{
 			g2d.drawImage(Sprite.getRow(8)[loseAnimeFrame], x + animeOffSet[0], y + animeOffSet[1], null);
 		}
 	}
+	
+	/**
+	 * Draw the player sprites.
+	 * @param g2d The graphics object to draw onto.
+	 */
 	private void drawPlayers(Graphics2D g2d){
 		for(Player player:posMap.keySet()){
 			if(player.isMainPlayer){
@@ -206,6 +190,11 @@ public class PaintPanel extends JPanel{
 			}
 		}		
 	}
+	
+	/**
+	 * Draw the background
+	 * @param g2d The graphics to draw onto.
+	 */
 	private void drawBG(Graphics2D g2d){
 		int x = centerX - cameraPos[0] * TILESIZE;
 		int y = centerY - cameraPos[1] * TILESIZE;
@@ -213,7 +202,7 @@ public class PaintPanel extends JPanel{
 			x -= offSet[0];
 			y -= offSet[1];
 			if(offSet[0] < 0 && offSet[0] > -64){
-				bot = Sprite.get("bot"); 
+				bot = Sprite.get("bot"); //draw which way the bot is looking
 			}else if(offSet[0] > 1 && offSet[0] < 64){
 				bot = Sprite.get("bot1");
 			}
@@ -229,6 +218,13 @@ public class PaintPanel extends JPanel{
 			showDeath = true;
 		}
 	}
+	
+	/**
+	 * Draw the ui
+	 * @param g2d The graphics object to draw onto.
+	 * @param width The width of the ui
+	 * @param height The height of the ui
+	 */
 	private void drawUI(Graphics2D g2d,int width,int height){		
 		if(gameState.equals("WON")){
 			g2d.setColor(Color.orange);
@@ -267,6 +263,10 @@ public class PaintPanel extends JPanel{
 		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
 	}
 	
+	/**
+	 * Draw the map onto a buffered image
+	 * @return The map as a buffered image
+	 */
 	private BufferedImage drawFullMap(){
 		Set<int[]> wallSet = new HashSet<int[]>();
 		int imageWidth = TILESIZE * map.getMapWidth();
@@ -312,6 +312,11 @@ public class PaintPanel extends JPanel{
 		return image;
 	}
 	
+	/**
+	 * Draw the wall shadows
+	 * @param g2d The graphics object to draw to
+	 * @param wallPos the position of the wall tile
+	 */
 	private void drawWallEdge(Graphics2D g2d,int[] wallPos){
 		g2d.setColor(new Color(0,0,0,100));
 		List<int[]> neighBours = map.getAdjacentClearTiles(wallPos);
@@ -341,6 +346,12 @@ public class PaintPanel extends JPanel{
 		}		
 	}
 	
+	/**
+	 * Render the fog
+	 * @param width width of window
+	 * @param height height of window
+	 * @return The bufferedImage of the drawn overlay.
+	 */
 	private BufferedImage getOverlay(int width,int height){
 		BufferedImage overlay = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);		
 		int tileWidth = 6;
@@ -358,7 +369,10 @@ public class PaintPanel extends JPanel{
 		return overlay;
 	}
 	
-
+	/**
+	 * Animate a player moving
+	 * @param player the player to animate 
+	 */
 	private void animate(Player player){
 		if(!posList.isReady())return;
 		int[] pos = posList.get(player);
@@ -374,8 +388,7 @@ public class PaintPanel extends JPanel{
 			posMap.remove(player);
 			posMap.put(player,pos);
 			offSet = new int[]{0,0};
-			animation = "NONE";
-			//updateOtherPlayers();	
+			animation = "NONE";//animation is completed
 		}else{
 			if(animation.equals("NONE")){
 				animation = "MOVING";
@@ -385,6 +398,11 @@ public class PaintPanel extends JPanel{
 		}		
 	}
 	
+	/**
+	 * Check if the given tile is visible from cameraPos
+	 * @param pos The tile to test
+	 * @return true if tile is visible, false otherwise
+	 */
 	private boolean isVisible(int[] pos){
 		int[] posDif = PosList.subtract(cameraPos,pos);
 		if(Math.abs(posDif[0]) > 5|| Math.abs(posDif[1]) > 5){
@@ -393,6 +411,12 @@ public class PaintPanel extends JPanel{
 		return true;
 	}
 	
+	/**
+	 * Play the animation 
+	 * @param animation The animation to play
+	 * @param player The player to play it on
+	 * @return true if animation is playing
+	 */
 	private boolean playAnimation(String animation,Player player){
 		if(animation.equals("DEFEAT")){
 			return playDefeat(player);
@@ -400,6 +424,12 @@ public class PaintPanel extends JPanel{
 		this.animation = "NONE";
 		return true;		
 	}
+	
+	/**
+	 * The defeat animation of a player
+	 * @param player
+	 * @return true if the animation is playing
+	 */
 	private boolean playDefeat(Player player){
 		int[] pos = posList.get(player);
 		int[] oldPos = posMap.get(player);
@@ -427,5 +457,49 @@ public class PaintPanel extends JPanel{
 			++loseAnimeFrame;
 		}
 		return true;
+	}
+	
+	/**
+	 * @return The runnable for the repaint thread
+	 */
+	private Runnable makeRunnable(){
+		return new Runnable(){
+			@Override
+			public void run() {
+				while(map==null || gameState.equals("NOTSTARTED")){
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}			
+				}
+				initialisePos();
+				long lastChange = System.currentTimeMillis();
+				while(true){
+					if(frame > TILESIZE){
+						frame = 0;
+					}
+					++frame;
+					if(tileFrame > 8){
+						tileFrame = 0;
+					}
+					if(System.currentTimeMillis() - lastChange > 2000){
+						++tileFrame;
+						lastChange = System.currentTimeMillis();
+					}
+					try{
+						animate(current);
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+					repaint();
+					try {
+						Thread.sleep(4);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}			
+				}
+			}			
+		};
 	}
 }

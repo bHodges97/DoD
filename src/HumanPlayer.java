@@ -57,20 +57,22 @@ public class HumanPlayer extends Player{
     	String output = processCommand(input);
     	while((output.equals("Invalid") || output.equals("Fail"))||(input.equals("LOOK"))||input.equals("HELLO")){
     		gameLogic.console.println(output);
-    		input = getInputFromConsole();
+    		input = getInputFromConsole();//keep getting inputs until one is valid
     		output = processCommand(input);
     	}
     	gameLogic.console.println(output);
     }    
-
+    
     public static void main(String[] args) {
     	MyFrame gui;
     	if(args.length > 0){
-    		gui = new MyFrame("Dungeon of Doom",!args[0].equals("TEXT"));
+    		gui = new MyFrame("Dungeon of Doom",!args[0].equals("TEXTONLY"));
     	}else{
     		gui = new MyFrame("Dungeon of Doom",true);
     	}
     	GameLogic game = new GameLogic(gui);
+		game.addPlayer(new HumanPlayer(game));
+
 		game.addPlayer(new HumanPlayer(game));
 		game.addPlayer(new BotPlayer(game));
         // RUN FOREST RUN!
