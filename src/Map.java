@@ -1,6 +1,5 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -88,7 +87,7 @@ public class Map {
     	if(fileName.isEmpty()){
     		return;
     	}
-		File file = new File(fileName).getAbsoluteFile();
+		File file = new File(Map.class.getResource(fileName).getPath());
 		Scanner reader = null;
     	try{
     		reader = new Scanner(file);
@@ -114,7 +113,7 @@ public class Map {
 			}			
 			
 			generateTileList();
-    	}catch(ArrayIndexOutOfBoundsException|NoSuchElementException | FileNotFoundException e){
+    	}catch(FileNotFoundException|NoSuchElementException e){
     		System.out.println("Map load failed");
     		e.printStackTrace();
     		System.exit(1);
