@@ -21,6 +21,10 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
+
+/**
+ * The main gui in which DOD is renderd on
+ */
 public class MyFrame extends JFrame{
 	private Console console;
 	private JScrollPane scrollArea;

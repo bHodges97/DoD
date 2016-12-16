@@ -83,7 +83,7 @@ public class Map {
      *
      * @param : Name of the map's file.
      */
-    protected void readMap(String fileName) {//TODO:safe
+    protected void readMap(String fileName) {
     	if(fileName.isEmpty()){
     		return;
     	}

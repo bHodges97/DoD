@@ -4,15 +4,31 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * PathFinder class, finds a path using the given map. Uses A* or random pathing.
+ *
+ */
 public class PathFinder {
 	private Map map;
     private java.util.Map<int[],int[]> path;
 	private int[] start,goal;
     
+	/**
+	 * Construct a new pathfinder
+	 * @param map The map for which to pathfind on
+	 */
 	public PathFinder(Map map){
 		this.map = map;
 	}
 	
+	/**
+	 * Find a path from the given positions using A*
+	 * pseudocode from wikipedia. 
+	 * @param posA Starting position
+	 * @param posB Ending position
+	 * @see <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">wikipedia a* search</a>
+	 * @return true if successful,false otherwise
+	 */
 	protected boolean  pathFind(int[] posA,int[] posB){	 	
 	    start = map.getListedTile(posA[0],posA[1]);
 	    goal = map.getListedTile(posB[0],posB[1]);
@@ -57,7 +73,10 @@ public class PathFinder {
 	    }
 	   	return false;
 	}
-	
+	/**
+	 * Retrace the route from a successful pathfind
+	 * @return The nexttile to move on to.
+	 */
 	protected int[] findNextStep(){
 		int[] current = map.getListedTile(goal[0],goal[1]);
 		while(!path.isEmpty()){				
@@ -69,6 +88,10 @@ public class PathFinder {
 		return null;
 	}
 	
+	/**
+	 * Find a random adjacent clear tile from starting position
+	 * @return The next tile,null if no adjacent clear tiles exist
+	 */
 	protected int[] randomNextStep(){
 		List<int[]> neighbours = map.getAdjacentClearTiles(start);
     	if(neighbours.isEmpty()){
@@ -78,7 +101,12 @@ public class PathFinder {
     	return neighbours.get(rand.nextInt(neighbours.size()));
 	}
 	
-    
+	/**
+	 * Get the relative direction from start till end
+	 * @param start Starting position
+	 * @param end Ending position
+	 * @return 'N','W','S','E' 
+	 */
     public static char getRelativeDirection(int[] start,int[] end){
 		if(end[1]>start[1]){
     		return 'S';

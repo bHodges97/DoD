@@ -6,6 +6,10 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
+/**
+ * Sprite sheet class
+ *
+ */
 public class Sprite {	
 	
 	private static BufferedImage spriteSheet = null;

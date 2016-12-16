@@ -16,6 +16,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JPanel;
 
+/**
+ * The panel that is use to draw LOOK in terms of graphics
+ *
+ */
 public class PaintPanel extends JPanel{
 
 	protected String animation = "NONE";
@@ -167,7 +171,7 @@ public class PaintPanel extends JPanel{
 				int x = centerX- posDif[0]*TILESIZE;
 				int y = centerY- posDif[1]*TILESIZE;
 				if(current.isMainPlayer){
-					x-=offSet[0];
+					x-=offSet[0];//shift map differently if camera is this player
 					y-=offSet[1];
 				}else if(player == current){
 					x+=offSet[0];
@@ -175,9 +179,9 @@ public class PaintPanel extends JPanel{
 					
 				}
 				if(offSet[0] < 0 && offSet[0] > -64){
-					bot = Sprite.get("bot"); 
+					bot = Sprite.get("bot"); //bot facing left
 				}else if(offSet[0] > 1 && offSet[0] < 64){
-					bot = Sprite.get("bot1");
+					bot = Sprite.get("bot1");//bot facing right
 				}
 				if(!deadPlayers.contains(player)){
 					if(player instanceof HumanPlayer){
@@ -229,28 +233,28 @@ public class PaintPanel extends JPanel{
 		if(gameState.equals("WON")){
 			g2d.setColor(Color.orange);
 			g2d.setFont(defaultFont.deriveFont(32f));
-			int twidth = g2d.getFontMetrics().stringWidth("♪YOU WIN♪");
+			int twidth = g2d.getFontMetrics().stringWidth("♪YOU WIN♪");//WIN SCREEN
 			g2d.drawString("♪YOU WIN♪", (width - twidth )/2,centerY);
 		}else if(gameState.equals("END")){
 			g2d.setColor(Color.red);
 			g2d.setFont(defaultFont.deriveFont(32f));
-			int twidth = g2d.getFontMetrics().stringWidth("GAME OVER");
+			int twidth = g2d.getFontMetrics().stringWidth("GAME OVER");//LOSE SCREEN
 			g2d.drawString("GAME OVER", (width - twidth )/2,centerY);
 		}
 
 		int x = 0;
 		int y = height-TILESIZE -TILESIZE/2;
 		g2d.setColor(Color.white);
-		g2d.drawImage(Sprite.get("gold") ,x,y,TILESIZE/2,TILESIZE/2, null);
+		g2d.drawImage(Sprite.get("gold") ,x,y,TILESIZE/2,TILESIZE/2, null);//draw gold count
 		g2d.drawString(" "+main.getGoldCount() + "/" + map.getGoldRequired(), x + TILESIZE/2, y + TILESIZE/2-8);
 		y+=TILESIZE/2 + 3;
-		g2d.drawImage(Sprite.get("heart"),x,y,TILESIZE/2,TILESIZE/2,null);
+		g2d.drawImage(Sprite.get("heart"),x,y,TILESIZE/2,TILESIZE/2,null);//draw lives count
 		g2d.drawString(" "+main.lives+"/1", x + TILESIZE/2, y + TILESIZE/2-8);
 		
 		if(showDeath){
 			g2d.setColor(Color.orange);
 			g2d.setFont(defaultFont.deriveFont(25f));
-			int twidth = g2d.getFontMetrics().stringWidth("YOU ARE DEAD");
+			int twidth = g2d.getFontMetrics().stringWidth("YOU ARE DEAD");//player death
 			g2d.drawString("YOU ARE DEAD", (width - twidth )/2,centerY+30);		
 		}
 		
@@ -283,16 +287,16 @@ public class PaintPanel extends JPanel{
 				}else if(c == 'G'){
 					tile = Sprite.get("gold");
 				}else if(c == 'E'){
-					tile = Sprite.getRow(4)[tileFrame%4];
+					tile = Sprite.getRow(4)[tileFrame%4];//exit is an animated tile
 				}else if(c == '.'){
-					tile = Sprite.get("floor");
+					tile = Sprite.get("floor");//get the relevant sprites
 				}else if(c == 'X'){
 					continue;
 				}else{
 					tile = Sprite.getDefaultImg();
 				}
-				g2d.drawImage(Sprite.get("floor"), x*TILESIZE, y*TILESIZE, null);
-				g2d.drawImage(tile,  x*TILESIZE, y*TILESIZE, null);
+				g2d.drawImage(Sprite.get("floor"), x*TILESIZE, y*TILESIZE, null);//always draw floor first
+				g2d.drawImage(tile,  x*TILESIZE, y*TILESIZE, null);//then tile other sprites on top
 				
 				for(Player deadPlayer : deadPlayers){
 					int[] pos = posMap.get(deadPlayer);
@@ -342,7 +346,7 @@ public class PaintPanel extends JPanel{
 				sheight = TILESIZE/ 4;
 				sy-=sheight;
 			}
-			g2d.fillRect(sx, sy, swidth, sheight);
+			g2d.fillRect(sx, sy, swidth, sheight);//paint a transparent rectangle as the shadow
 		}		
 	}
 	
@@ -362,7 +366,7 @@ public class PaintPanel extends JPanel{
 			for(int y = 0;y < height;++y){
 				int dist = (int) Point2D.distance(x, y, width/2,height/2);
 				int alpha = dist*ratio > 255?255:(int)(dist*ratio);
-				Color c = new Color(0,0,0,alpha);
+				Color c = new Color(0,0,0,alpha);//becomes more solid black as further from center
 				overlay.setRGB(x, y,c.getRGB());
 			}
 		}
@@ -441,7 +445,7 @@ public class PaintPanel extends JPanel{
 				if(playerAtPos != player){
 					deadPlayers.add(playerAtPos);
 				}
-			}			
+			}			//animating finished
 			loseAnimeFrame = 0;
 			return false;
 		}else if(loseAnimeFrame == 0 && frame >= TILESIZE){
@@ -451,7 +455,7 @@ public class PaintPanel extends JPanel{
 			++loseAnimeFrame;
 			return true;
 		}
-		if(frame >= TILESIZE){
+		if(frame >= TILESIZE){//move sprite across
 			animeOffSet[0]+= TILESIZE  / 4 * posDif[0];
 			animeOffSet[1]+= TILESIZE  / 4 * posDif[1];
 			++loseAnimeFrame;
@@ -484,7 +488,7 @@ public class PaintPanel extends JPanel{
 						tileFrame = 0;
 					}
 					if(System.currentTimeMillis() - lastChange > 2000){
-						++tileFrame;
+						++tileFrame;//for animating tiles
 						lastChange = System.currentTimeMillis();
 					}
 					try{
@@ -493,7 +497,7 @@ public class PaintPanel extends JPanel{
 						e.printStackTrace();
 					}
 					repaint();
-					try {
+					try {//delay for other threads
 						Thread.sleep(4);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
