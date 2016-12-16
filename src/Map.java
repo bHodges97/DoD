@@ -87,10 +87,10 @@ public class Map {
     	if(fileName.isEmpty()){
     		return;
     	}
-		File file = new File(Map.class.getResource(fileName).getPath());
+		//File file = new File(getClass().getResource(fileName).getPath());
 		Scanner reader = null;
     	try{
-    		reader = new Scanner(file);
+    		reader = new Scanner(Map.class.getResourceAsStream(fileName));
 			mapName = reader.nextLine().split("name ")[1];
 			goldRequired = Integer.parseInt(reader.nextLine().split("win ")[1]);
 			ArrayList<char[]> buffer = new ArrayList<char[]>();
@@ -113,7 +113,7 @@ public class Map {
 			}			
 			
 			generateTileList();
-    	}catch(FileNotFoundException|NoSuchElementException e){
+    	}catch(NoSuchElementException e){
     		System.out.println("Map load failed");
     		e.printStackTrace();
     		System.exit(1);
