@@ -87,7 +87,6 @@ public class Map {
     	if(fileName.isEmpty()){
     		return;
     	}
-		//File file = new File(getClass().getResource(fileName).getPath());
 		Scanner reader = null;
     	try{
     		reader = new Scanner(Map.class.getResourceAsStream(fileName));
