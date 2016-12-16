@@ -67,12 +67,11 @@ public class HumanPlayer extends Player{
     	MyFrame gui;
     	if(args.length > 0){
     		gui = new MyFrame("Dungeon of Doom",!args[0].equals("TEXTONLY"));
+    		
     	}else{
     		gui = new MyFrame("Dungeon of Doom",true);
     	}
     	GameLogic game = new GameLogic(gui);
-		game.addPlayer(new HumanPlayer(game));
-
 		game.addPlayer(new HumanPlayer(game));
 		game.addPlayer(new BotPlayer(game));
         // RUN FOREST RUN!

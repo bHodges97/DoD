@@ -48,7 +48,7 @@ public class PaintPanel extends JPanel{
 	public PaintPanel() {
 		setPreferredSize(new Dimension(350,350));
 		bot = Sprite.get("bot");
-		InputStream is = getClass().getResourceAsStream("font.ttf");
+		InputStream is = getClass().getResourceAsStream("font.ttf");//rubberbiscuit font http://dabnotu.tk free for non-commercial use
 		setFocusable(true);
 		try {
 			defaultFont = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(20f);
