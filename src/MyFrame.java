@@ -28,7 +28,7 @@ import javax.swing.border.LineBorder;
 public class MyFrame extends JFrame{
 	private Console console;
 	private JScrollPane scrollArea;
-	private PaintPanel paintPanel = new PaintPanel();
+	private JPanel paintPanel = new JPanel();//TODO:
 	private JPanel controlsPanel = new JPanel(new BorderLayout());
 	private JPanel buttonsPanel = new JPanel(new GridBagLayout());
 	private JButton buttonLook = new JButton("LOOK");
@@ -68,7 +68,7 @@ public class MyFrame extends JFrame{
 	 * @param gameState The new gamestate
 	 */
 	protected void update(Player player, String gameState){
-		paintPanel.setPlayer(player,gameState);
+		//paintPanel.setPlayer(player,gameState);
 		waitForAnimation();
 	}
 	
@@ -76,7 +76,7 @@ public class MyFrame extends JFrame{
 	 * @param map The map to render;
 	 */
 	protected void setMap(Map map){
-		paintPanel.setMap(map);
+		//paintPanel.setMap(map);
 	}
 	
 	/**
@@ -114,6 +114,7 @@ public class MyFrame extends JFrame{
 		if(!isVisible()){
 			return;//if window is not visible, don't wait
 		}
+		/*
 		do{
 			try {
 				Thread.sleep(100);
@@ -121,6 +122,7 @@ public class MyFrame extends JFrame{
 				e.printStackTrace();
 			}
 		}while(!paintPanel.finishedMove());
+		*/
 	}
 	
 	/**
@@ -136,7 +138,7 @@ public class MyFrame extends JFrame{
 	 * @param player The player that attacks
 	 */
 	protected void showFailEvent(Player player){
-		paintPanel.animation = "DEFEAT";
+		//paintPanel.animation = "DEFEAT";
 		waitForAnimation();
 		//console.println("----****"+player.name+"_DIED****----");
 	}

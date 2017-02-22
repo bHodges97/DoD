@@ -12,12 +12,19 @@ import java.util.Set;
  *
  * @author: The unnamed tutor.
  */
-public class Map {	
+public class Map{	
 	private String mapName = "";
 	private int goldRequired = 0;
-	private char[][] map;
-	private List<int[]> tileList,emptyTileList;
-	private PosList posList = new PosList();
+	private List<Tile> tileList;
+	private Set<DroppedItems> droppedItems = new  HashSet<DroppedItems>();
+	private int width = 0,height = 0;
+	private int minx = 0,miny = 0;
+	
+	public Map(){
+		tileList = new ArrayList<Tile>();
+		tileList.add(null);
+	}
+	
 	
     /**
      * @return : Gold required to exit the current map.
@@ -25,20 +32,21 @@ public class Map {
     protected int getGoldRequired() {
         return goldRequired;
     }
-
+    
     /**
      * @return : The map as stored in memory.
+     * @deprecated Use getTileList()
      */
     protected char[][] getMap() {
-        return map;
+        return null;
     }
-    
+
 
     /**
      * @return : The height of the current map.
      */
     protected int getMapHeight() {
-        return map[0].length;
+        return height;
     }
 
     /**
@@ -52,40 +60,30 @@ public class Map {
      * @return : The width of the current map.
      */
     protected int getMapWidth() {
-        return map.length;
+        return width;
     }
 
     /**
      * @return : The position of the player.
+     * @deprecated 
      */
     protected int[] getPlayersPosition() {
-    	return posList.getNearestHuman(new int[]{0,0});
+    	//return posList.getNearestHuman(new int[]{0,0});
+    	return null;
     }
     
-    /**
-     * Get the tile at the given coordinates
-     * @param x The x position
-     * @param y The y position
-     * @return the tile at the given location
-     */
-    protected int[] getListedTile(int x,int y){
-    	return tileList.get(y*getMapWidth()+x);
-    }
-    
-    /**
-     * @return Every tile in the map as a list
-     */
-	protected PosList getPosList() {
-		return posList;
-	}
     /**
      * Reads the map from file.
      *
      * @param : Name of the map's file.
      */
     protected void readMap(String fileName) {
+    	tryReadMap(fileName);
+    }
+    
+    protected boolean tryReadMap(String fileName){
     	if(fileName.isEmpty()){
-    		return;
+    		return false;
     	}
 		File file = new File(getClass().getResource(fileName).getPath());
 		Scanner reader = null;
@@ -93,35 +91,26 @@ public class Map {
     		reader = new Scanner(file);
 			mapName = reader.nextLine().split("name ")[1];
 			goldRequired = Integer.parseInt(reader.nextLine().split("win ")[1]);
-			ArrayList<char[]> buffer = new ArrayList<char[]>();
-			do{//store map contents into a buffer.
-				buffer.add(reader.nextLine().toCharArray());
-			}while(reader.hasNextLine());
-			char[][] bufferMap = new char[buffer.size()][];
-			int width = 0;
-			for(int i =0;i<buffer.size();++i){//transform buffer to char array.
-				bufferMap[i] = buffer.get(i);
-				width = bufferMap[i].length>width?bufferMap[i].length:width;
-			}
-			
-			//swap elements in the array so it can be accesses as map[x][y]
-			map = new char[width][bufferMap.length];
-			for(int i = 0;i < bufferMap.length;++i){
-				for(int j = 0; j< bufferMap[i].length;++j){
-					map[j][i] = bufferMap[i][j];
+			int x = 0, y = 0;
+			do{
+				x = 0;
+				char[] line = reader.nextLine().toCharArray();
+				for(char c:line){					
+					addTile(c,x,y);
+					++x;
 				}
-			}			
-			
-			generateTileList();
+				++y;
+			}while(reader.hasNextLine());
     	}catch(FileNotFoundException|NoSuchElementException e){
     		System.out.println("Map load failed");
     		e.printStackTrace();
-    		System.exit(1);
+    		return false;
     	}finally{
     		if(reader!=null){
     			reader.close();
     		}
     	}
+    	return true;
     }
 
     /**
@@ -129,12 +118,14 @@ public class Map {
      *
      * @param coordinates : Coordinates of the tile as a 2D array.
      * @return : What the tile at the location requested contains.
+     * @deprecated
      */
     protected char getTile(int[] coordinates) {
 		if(coordinates[0] >= getMapWidth() || coordinates[1] >= getMapHeight() || coordinates[0] < 0 || coordinates[1] <0 ){
 	    	return 'X';
 		}
-        return map[coordinates[0]][coordinates[1]];
+		return '.';
+        //return map[coordinates[0]][coordinates[1]];
     }
 
     /**
@@ -142,10 +133,11 @@ public class Map {
      *
      * @param coordinates : The coordinates of the tile to be updated.
      * @param updatedTile : The new tile.
+     * @deprecated
      */
     protected void updateMapLocation(int[] coordinates, char updatedTile) {
     	if(getTile(coordinates)!='X'){
-    		map[coordinates[0]][coordinates[1]] = updatedTile;
+    		//map[coordinates[0]][coordinates[1]] = updatedTile;
     	}
     }
 
@@ -153,136 +145,146 @@ public class Map {
      * Updates the stored in memory location of the player.
      *
      * @param location : New location of the player.
+     * @deprecated
      */
     protected void updatePlayerPosition(int[] pos) {
-    	Player player = posList.getMainPlayer();
-    	updatePosition(player, pos);
+    	//Player player = posList.getMainPlayer();
+    	//updatePosition(player, pos);
     }
     
     /**
      * @param current The current tile
      * @return A set of adjacent tiles to current
      */
-    protected Set<int[]>getAdjacentTiles(int[] current){
-    	Set<int[]> neighbors = new HashSet<int[]>();
-    	if(current[0]-1>=0){
-    		neighbors.add(getListedTile(current[0]-1,current[1]));
-    	}
-    	if(current[0]+1<getMapWidth()){
-    		neighbors.add(getListedTile(current[0]+1,current[1]));
-    	}
-    	if(current[1]-1>=0){
-    		neighbors.add(getListedTile(current[0],current[1]-1));
-    	}
-    	if(current[1]+1<getMapHeight()){
-    		neighbors.add(getListedTile(current[0],current[1]+1));		
+    protected Set<Tile> getAdjacentTiles(Position current){
+    	Set<Tile> neighbors = new HashSet<Tile>();
+    	neighbors.add(getTile(current.getAdjacentTile('N')));
+    	neighbors.add(getTile(current.getAdjacentTile('S')));
+    	neighbors.add(getTile(current.getAdjacentTile('W')));
+    	neighbors.add(getTile(current.getAdjacentTile('E')));
+    	for(Tile tile:neighbors){
+    		if(tile == null){
+    			neighbors.remove(tile);
+    		}
     	}
     	return neighbors;
     }
     
-    /**
-     * @param current The current tiles
-     * @return A list of adjacent tile to current that is not a wall
-     */
-    protected List<int[]> getAdjacentClearTiles(int[] current){
-    	List<int[]> neighbors = new ArrayList<int[]>(getAdjacentTiles(current));
-    	List<int[]> tileList = new ArrayList<int[]>();
-    	for(int[] neighbor:neighbors){
-    		if(map[neighbor[0]][neighbor[1]] != '#'){
-    			tileList.add(neighbor);
+    protected Set<Tile> getAdjacentWalkableTiles(Position current){
+    	Set<Tile> neighbors = getAdjacentTiles(current);
+    	for(Tile tile:neighbors){
+    		if(tile.isPassable() == false){
+    			neighbors.remove(tile);
     		}
     	}
-    	return tileList;
-    }       
-	
-    /**
-     * Update the position of the player
-     * @param player The player to update
-     * @param pos The new position of the player
-     */
-    protected void updatePosition(Player player,int[] pos){
-    	int[] newPos = getListedTile(pos[0],pos[1]);
-    	int[] oldPos = posList.update(player,newPos);;
-    	emptyTileList.add(oldPos);    	
-		emptyTileList.remove(newPos);
+    	return neighbors;
     }
     
-    /**
-     * Place a player randomly onto map
-     * @param player The player to place
-     * @return true if placing the player is successful,false otherwise
-     */
-    protected boolean placePlayer(Player player){
-    	Random rand = new Random(System.currentTimeMillis());
-    	if(emptyTileList.isEmpty()){
-    		return false;
-    	}    	
-    	int[] tempPos = emptyTileList.get(rand.nextInt(emptyTileList.size()));
-		while(getTile(tempPos)!='.'){
-			emptyTileList.remove(tempPos);
-	    	if(emptyTileList.isEmpty()){
-	    		return false;
-	    	}    
-			tempPos = emptyTileList.get(rand.nextInt(emptyTileList.size()));
-		}
-		posList.put(player,tempPos);
-		emptyTileList.remove(tempPos);
-		return true;
-    }
-    
-    /**
-     * Place coins in and around the given position
-     * @param centerPos The postion to place coins at.
-     * @param goldCount The amount of coins to place.
-     */
-	protected void placeCoins(int[] centerPos, int goldCount) {
-		if (getTile(centerPos) == '.' && goldCount > 0) {
-			map[centerPos[0]][centerPos[1]] = 'G';
-			--goldCount;
-		} else {
-			for (int[] tile : getAdjacentClearTiles(centerPos)) {
-				if (goldCount > 0) {
-					map[tile[0]][tile[1]] = 'G';
-					--goldCount;
-				}
-			}
-		}
-		placeCoins(goldCount);
-	}
-	
-	/**
-	 * Place <b>count</b> amount of coins onto map randomly.
-	 * @param count The amount of coins to add to map
-	 */
-	protected void placeCoins(int count){
-		Random rand = new Random(System.currentTimeMillis());
-    	if(emptyTileList.isEmpty()){
-    		return;
+    protected Tile getTile(Position tilePosition){
+    	Tile tile = null;
+    	int index  = (tilePosition.x-minx)+(tilePosition.y-miny)*height;
+    	if(index <= tileList.size()){
+    		 tile = tileList.get(index);
     	}
-		while (count > 0) {
-			int[] tempPos = emptyTileList.get(rand.nextInt(emptyTileList.size()));
-			while (getTile(tempPos) != '.') {
-				emptyTileList.remove(tempPos);
-				if (emptyTileList.isEmpty()) {
-					return;
-				}
-				tempPos = emptyTileList.get(rand.nextInt(emptyTileList.size()));
+    	if(tile != null){
+    		if(tile.pos.equalsto(tilePosition)){
+    			return tile;
+    		}else{
+    			validate();
+    		}
+    	}
+    	for(Tile current: tileList){
+    		if(Position.equals(current.pos, tilePosition)){
+    			return current;
+    		}
+    	}
+    	
+    	return null;
+    }
+
+	protected Set<Tile> findEmptyTiles(Set<Position> usedPositions) {
+		Set<Tile> emptyTiles = new HashSet<Tile>();
+		for(Tile tile:tileList){
+			if(tile == null){
+				continue;
 			}
-			map[tempPos[0]][tempPos[1]] = 'G';
-			--count;
+			if(tile.isPassable()){
+				boolean canPlaceHere = true;
+				for(Position pos:usedPositions){
+					if(Position.equals(pos, tile.pos)){
+						canPlaceHere = false;
+						break;
+					}
+				}
+				if(canPlaceHere){
+					emptyTiles.add(tile);
+				}	
+			}
 		}
+		return emptyTiles;
+		
+	}
+	protected char getItemCharAt(Position pos){
+		for(DroppedItems droppedItem : droppedItems){
+			if(droppedItem.position.equals(pos)){
+				return droppedItem.inventory.getDisplayChar();
+			}
+		}
+		throw new IllegalArgumentException("No items at "+pos.toString());
+	}
+	protected boolean getIsTileEmpty(Position pos){
+		for(DroppedItems droppedItem : droppedItems){
+			if(droppedItem.position.equals(pos)){
+				return false;
+			}
+		}
+		return true;
 	}
 	
-	/**
-	 * Turn the stored char array into a list of int[] tiles;
-	 */
-    protected void generateTileList(){
-    	tileList = new ArrayList<int[]>(getMapHeight()*getMapWidth());
-    	for(int y = 0;y < getMapHeight();++y){
-			for(int x = 0; x< getMapWidth();++x){
-				tileList.add(new int[]{x,y});
-			}
-		}
-		emptyTileList = new ArrayList<int[]>(tileList);    	
+    private void addTile(char c,int x, int y){
+    	Position pos = new Position(x,y);
+    	int index;
+    	if(x > width-minx){
+    		width = x-minx;
+    	}
+    	if(y > height-miny){
+    		height = y-miny;
+    	}
+    	if(x < minx){
+    		width += x-minx;
+    		minx = x;
+    	}
+    	if(y < miny){
+    		height += y-miny;
+    		miny = y;
+    	}
+    	index = (x-minx)+(y-miny)*height;
+    	if(c == '#'){
+    		tileList.add(new TileWall(pos));
+    	}else if( c == 'E'){
+    		tileList.add(new TileExit(pos));
+    	}else{
+    		tileList.add(new TileFloor(pos));
+    	}
+    	validate();
     }
+    
+    private void validate(){
+    	List<Tile> holder = new ArrayList<Tile>();
+    	for(Tile tile:tileList){
+    		if(tile != null){
+    			holder.add(tile);//TODO: optimise?
+    		}
+    		tile = null;
+    	}
+    	while(tileList.size()<=(width+1)*(height+1)){
+    		tileList.add(null);
+    	}
+    	for(Tile current:holder){
+    		int index = (current.pos.x - minx) + (current.pos.y-miny) * width;
+    		tileList.set(index,current);
+    		System.out.println("holder adding"+current.toString()+"----"+index);
+    	}
+    }
+
 }

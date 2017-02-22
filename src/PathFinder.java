@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,8 +11,8 @@ import java.util.Set;
  */
 public class PathFinder {
 	private Map map;
-    private java.util.Map<int[],int[]> path;
-	private int[] start,goal;
+    private java.util.Map<Tile,Tile> path;
+	private Tile start,goal;
     
 	/**
 	 * Construct a new pathfinder
@@ -29,22 +30,20 @@ public class PathFinder {
 	 * @see <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">wikipedia a* search</a>
 	 * @return true if successful,false otherwise
 	 */
-	protected boolean  pathFind(int[] posA,int[] posB){	 	
-	    start = map.getListedTile(posA[0],posA[1]);
-	    goal = map.getListedTile(posB[0],posB[1]);
-	    Set<int[]> closedSet = new HashSet<int[]>();
-	    Set<int[]> openSet = new HashSet<int[]>();
+	protected boolean  pathFind(Tile start,Tile goal){	 	
+	    Set<Tile> closedSet = new HashSet<Tile>();
+	    Set<Tile> openSet = new HashSet<Tile>();
 	    openSet.add(start);
-	    java.util.Map<int[],int[]> cameFrom = new HashMap<int[],int[]> ();
-	    java.util.Map<int[],Integer> gScore = new HashMap<int[],Integer>();
-	    java.util.Map<int[],Integer> fScore = new HashMap<int[],Integer>();
+	    java.util.Map<Tile,Tile> cameFrom = new HashMap<Tile,Tile> ();
+	    java.util.Map<Tile,Integer> gScore = new HashMap<Tile,Integer>();
+	    java.util.Map<Tile,Integer> fScore = new HashMap<Tile,Integer>();
 	    gScore.put(start, 0);
 	    fScore.put(start,estimateDistance(start,goal));
 	    path = cameFrom;
 	    while(!openSet.isEmpty()){ 
-	    	int[] current = {0,0};
+	    	Tile current = null;
 	    	int score = Integer.MAX_VALUE;
-	    	for(int[] node:openSet){
+	    	for(Tile node:openSet){
 	    		int newScore = fScore.get(node);
 	    		if( newScore < score){
 	    			score = newScore;
@@ -56,7 +55,7 @@ public class PathFinder {
 	    	}
 	    	openSet.remove(current);
 	    	closedSet.add(current);
-	    	for(int[] neighbor:map.getAdjacentClearTiles(current)){
+	    	for(Tile neighbor: map.getAdjacentWalkableTiles(current.pos)){
 	    		if(closedSet.contains(neighbor)){
 	    			continue;
 	    		}
@@ -77,13 +76,13 @@ public class PathFinder {
 	 * Retrace the route from a successful pathfind
 	 * @return The nexttile to move on to.
 	 */
-	protected int[] findNextStep(){
-		int[] current = map.getListedTile(goal[0],goal[1]);
+	protected Tile findNextStep(){
+		Tile step = goal;
 		while(!path.isEmpty()){				
-			if(path.get(current)==start){
-				return current;
+			if(path.get(step)==start){
+				return step;
 			}
-			current=path.get(current);
+			step=path.get(step);
 		}
 		return null;
 	}
@@ -92,8 +91,8 @@ public class PathFinder {
 	 * Find a random adjacent clear tile from starting position
 	 * @return The next tile,null if no adjacent clear tiles exist
 	 */
-	protected int[] randomNextStep(){
-		List<int[]> neighbours = map.getAdjacentClearTiles(start);
+	protected Tile randomNextStep(){
+		List<Tile> neighbours = new ArrayList<Tile>(map.getAdjacentWalkableTiles(start.pos));
     	if(neighbours.isEmpty()){
     		return null;//if bot has no where to go
     	}
@@ -107,14 +106,14 @@ public class PathFinder {
 	 * @param end Ending position
 	 * @return 'N','W','S','E' 
 	 */
-    public static char getRelativeDirection(int[] start,int[] end){
-		if(end[1]>start[1]){
+    public static char getRelativeDirection(Position start,Position end){
+		if(end.y>start.y){
     		return 'S';
-    	}else if(end[1]<start[1]){
+    	}else if(end.y<start.y){
     		return 'N';
-    	}else if(end[0]>start[0]){
+    	}else if(end.x>start.x){
     		return 'E';
-    	}else if(end[0]<start[0]){
+    	}else if(end.x<start.x){
     		return 'W';
     	}else{
     		throw new IllegalArgumentException("start is same as end");
@@ -127,7 +126,7 @@ public class PathFinder {
      * @param b Position b
      * @return Distance from a to b
      */
-    public static int estimateDistance(int[] a,int[] b){
-    	return Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1]);
+    public static int estimateDistance(Tile a,Tile b){
+    	return Math.abs(a.pos.x-b.pos.x)+Math.abs(a.pos.y-b.pos.y);
     }
 }

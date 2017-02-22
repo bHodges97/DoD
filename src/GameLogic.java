@@ -1,6 +1,10 @@
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Contains the main logic part of the game, as it processes.
@@ -9,16 +13,15 @@ import java.util.ArrayList;
  */
 public class GameLogic {
 
-	private boolean running = true;
+	
 	private Map map;
 	private List<Player> players = new ArrayList<Player>();
-	private Player currentPlayer; 
+	private List<Thread> threads = new ArrayList<Thread>();
 	protected Console console;
 	private MyFrame gui;
 	private int turnCounter;
-	private boolean hasMainPlayer = false;
-	private String gameState = "NOTSTARTED";
-	private PosList posList;
+	private int playerCount = 0;
+	private GameState gameState = GameState.NOTSTARTED;
 	
 	/**
 	 * Initialise the game with the given frame
@@ -28,13 +31,11 @@ public class GameLogic {
 		this.gui = frame;
 		console = frame.getConsole();
 		map = new Map();
-		map.readMap("example_map.txt");
-		if(map.getMap()==null){
+		if(!map.tryReadMap("example_map.txt")){
 			console.println("map load failed: exiting");
 			System.exit(1);
 		}else{
 			gui.setMap(map);
-			posList = map.getPosList();
 		}
 	}
 	
@@ -42,11 +43,31 @@ public class GameLogic {
 	 * Starts the DoD game;
 	 */
 	protected void startGame(){
-		gameState = "RUNNING";
 		turnCounter = 0;
-		while(players.isEmpty()){
-			
+		if(players.isEmpty()){
+			return;
 		}
+		for(Player player:players){
+			Thread thread = new Thread(new PlayerLogicThread(player,this));
+			threads.add(thread);
+		}
+		for(Thread thread:threads){
+			thread.start();
+		}
+		while(gameState != GameState.STOPPED){
+			if(players.isEmpty()){
+				break;
+			}
+			try {
+				Thread.sleep(1000l);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println("Game ended. Server is shutting down");
+		System.exit(0);
+		
+		/*
 		currentPlayer = players.get(0);
 		gui.update(currentPlayer,gameState);
 		while(running){
@@ -69,14 +90,8 @@ public class GameLogic {
 			++turnCounter;
 		}
 		gui.update(currentPlayer,gameState);
-		try {
-			while(!console.readln().equals("QUIT")){
-				console.println("GAME OVER(type QUIT to exit)");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		quitGame();
+		*/
+		
 	}
 	
 	/**
@@ -84,17 +99,21 @@ public class GameLogic {
 	 * @param player Player to add to the game.
 	 */
 	protected void addPlayer(Player player){ 
-		if(!hasMainPlayer && !player.isMainPlayer){
-			hasMainPlayer = true;
-			player.isMainPlayer = true;
-		}else if(player.isMainPlayer){
-			console.println("Only one main player can exist");
-			return;
-		}
-		players.add(player);
-		player.name+="("+players.size()+")";
+		
+		
+		player.name+="("+player.id+")";
 		player.setGameLogic(this);
-		map.placePlayer(player);
+		Random rand = new Random(System.currentTimeMillis());
+		Set<Position> usedPositions = new HashSet<Position>();
+		for(Player loadedPlayer:players){
+			usedPositions.add(loadedPlayer.position);
+		}
+		List<Tile> emptyTiles = new ArrayList<Tile>(map.findEmptyTiles(usedPositions));
+		int randomNum = rand.nextInt(emptyTiles.size());
+		player.position  = new Position(emptyTiles.get(randomNum).pos);
+		
+		player.id = ++playerCount;
+		players.add(player);
 	}
 	
 	/**
@@ -104,12 +123,6 @@ public class GameLogic {
 		return map;
 	}
 	
-    /**
-     * @return if the game is running.
-     */
-    protected boolean gameRunning() {
-        return running;
-    }
 
     /**
      * @return : Returns back gold player requires to exit the Dungeon.
@@ -124,44 +137,28 @@ public class GameLogic {
      * @param direction : The direction of the movement.
      * @return : Protocol if success or not.
      */
-    protected String move(char direction) {
-    	int[] playerPos = posList.get(currentPlayer);
+    protected synchronized String move(Player currentPlayer,char direction) {
+    	Position playerPos = currentPlayer.position;
+    	Position playerNewPos = new Position(playerPos);
 		switch(direction){
 			case 'N':
-				--playerPos[1];
+				--playerNewPos.y;
 				break;
 			case 'S':
-				++playerPos[1];
+				++playerNewPos.y;
 				break;
 			case 'W':
-				--playerPos[0];
+				--playerNewPos.x;
 				break;
 			case 'E':
-				++playerPos[0];
+				++playerNewPos.x;
 				break;
 			default:
 				return "Fail";
 		}
 
-		if(map.getTile(playerPos) != '#' ){ 
-			Player target = posList.getFirstPlayer(playerPos);			
-			if(target != null){
-				if(target instanceof HumanPlayer){			
-	    			--target.lives;				
-	    			if(target.lives == 0){
-	    				console.println(currentPlayer.name+" has eliminated " + target.name);	    				
-	    				gui.update(currentPlayer, "RUNNING");
-	    				map.updatePosition(currentPlayer,playerPos);
-	    				gui.showFailEvent(currentPlayer);
-	    				map.placeCoins(playerPos,target.getGoldCount());
-	    				posList.remove(target);
-	    				return "Success";
-	    			}	    			
-				}else{
-	    			return "Fail";
-	    		}
-			}
-			map.updatePosition(currentPlayer,playerPos);
+		if(map.getTile(playerNewPos).isPassable() ){ 
+			playerPos = playerNewPos;
 			return "Success";
 		}else{
 			return "Fail";
@@ -173,22 +170,22 @@ public class GameLogic {
      *
      * @return : A String representation of the game map.
      */
-    protected String look() {
+    protected synchronized String look(Player currentPlayer) {
     	String output = "";
-    	int[] playerPos = posList.get(currentPlayer);
-    	playerPos[0] -=2;//start from pos - 2 and go to pos + 2 for all 5 tiles
-		playerPos[1] -=2;
-		for(int y = 0;y<5;++y){
-			for(int x = 0;x<5;++x){
-				int[] currentPos = new int[]{playerPos[0]+x,playerPos[1]+y};
-				Player player = posList.getFirstPlayer(currentPos);
-				if(player instanceof HumanPlayer){
-					output+='P';//print P for human
-				}else if (player instanceof BotPlayer){
-					output+='B';//print B for bot
-				}else{
-					output+=map.getTile(currentPos);//print whats on the tile otherwise					
+    	Position playerPos = new Position(currentPlayer.position);
+		for(int y = -2;y<2;++y){
+			for(int x = -2;x<2;++x){
+				Position drawingPos = new Position(playerPos.x+x,playerPos.y+y);
+				char displayChar = map.getTile(drawingPos).getDisplayChar();
+				for(Player player:players){
+					if(Position.equals(player.position, drawingPos)){
+						displayChar = player.getDisplayChar();
+					}
 				}
+				if(!map.getIsTileEmpty(playerPos)){
+					displayChar = map.getItemCharAt(playerPos);
+				}
+				output+=displayChar;
 			}
 			output+="\n";
 		}
@@ -200,53 +197,15 @@ public class GameLogic {
      *
      * @return If the player successfully picked-up gold or not.
      */
-    protected String pickup() {
-    	int[] playerPos = posList.get(currentPlayer);
-		if(map.getTile(playerPos) == 'G'){
-			map.updateMapLocation(playerPos,'.');
-			currentPlayer.addGold(1);
-		}
-		return ("You have "+currentPlayer.getGoldCount()+" gold!");    	
+    protected synchronized String pickup(Player currentPlayer) {
+    	return ("You have "+currentPlayer.getGoldCount()+" gold!"); 
     }
 
     /**
      * Quits the game, shutting down the application.
      */
-    protected void quitGame() {
-    	System.exit(0);
+    protected synchronized void quitGame() {
+    	System.exit(0);//todo: change it
     }
-    
-    /**
-     * Check if the game has been won
-     * @return true if game won false otherwise
-     */
-    private boolean checkWin(){
-    	int[] playerPos = posList.get(currentPlayer);
-    	if(map.getTile(playerPos) =='E' 
-    			&& currentPlayer.getGoldCount() >= map.getGoldRequired()){
-			gameState = "WON";
-			gui.showWinEvent(currentPlayer);
-			running = false;
-			return true;
-		}
-    	return false;
-    }
-    
-    /**
-     * Check if the game is over
-     * @return true if lost, false otherwise
-     */
-    private boolean checkLost(){
-		for (Player player : players) {
-			if (player instanceof HumanPlayer && player.lives > 0) {
-				return false;
-			}
-			if(player.isMainPlayer && player instanceof BotPlayer){
-				return false;//this is for bot only games
-			}
-		}
-		gameState = "END";
-		running = false;
-		return true;
-    }
+
 }

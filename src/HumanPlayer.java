@@ -6,10 +6,22 @@ import java.io.IOException;
  * @author : The underwhelmed tutor.
  */
 public class HumanPlayer extends Player{	
+
+	private static final char displayChar = 'P';
+	
 	
 	public HumanPlayer(GameLogic gameLogic){
-		strength = 1;
 		this.gameLogic = gameLogic;
+	}
+	
+	@Override
+	public char getDisplayChar() {
+		return displayChar;
+	}
+	
+	@Override
+	protected boolean isImmortal(){
+		return false;
 	}
 	
     /**
@@ -25,29 +37,7 @@ public class HumanPlayer extends Player{
 		}
 		return "";
     }
-
-    /**
-     * Processes the command. It should return a reply in form of a String, as the protocol dictates.
-     * Otherwise it should return the string "Invalid".
-     *
-     * @param command : Input entered by the user.
-     * @return : Processed output or Invalid if the @param command is wrong.
-     */
-	protected String processCommand(String command) {
-		String output = "Invalid";
-		if(command.equals("HELLO")){
-			output = gameLogic.hello();
-		}else if(command.equals("PICKUP")){
-			output = gameLogic.pickup();
-		}else if(command.equals("LOOK")){
-			output = gameLogic.look();
-		}else if(command.equals("QUIT")){
-			gameLogic.quitGame();
-		}else if(command.length() == 6 && command.substring(0,5).equals("MOVE ")){
-			output = gameLogic.move(command.charAt(5));
-	    }
-	    return output;
-    }
+    
     /**
      * Uses getInputFromConsole() to read from console, processCommand() to process the reading,
      * and then displays in console the final answer.
@@ -78,4 +68,16 @@ public class HumanPlayer extends Player{
         // RUN FOREST RUN!
 		game.startGame();
     }
+
+	@Override
+	public String getSummaryShort() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getSummaryLong() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
