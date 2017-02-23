@@ -47,7 +47,7 @@ public class Position {
 		case 'S':
 			return new Position(x,y-1);
 		default:
-			throw new IllegalArgumentException("Not a valid direction :"+direction+". Valid directions are N,W,E,S");
+			return null;
 		}
 	}
 	

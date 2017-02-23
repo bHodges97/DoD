@@ -3,12 +3,19 @@
  */
 abstract class Player extends Thing{
 	protected GameLogic gameLogic = null;
-	protected int goldCount = 0;
-	protected boolean isMainPlayer = false;
 	protected int lives = 1;
 	protected String name = "PLAYER";
 	protected int id;
 	protected Position position;
+	protected Inventory inventory = new Inventory();
+	protected Controller controller;
+	
+	public String getSummaryShort(){
+		return name+","+id+","+getGoldCount();
+	}
+	public String getSummaryLong(){
+		return getSummaryShort()+","+position+inventory.toString();
+	}
 	
 	
 	/**
@@ -21,14 +28,14 @@ abstract class Player extends Thing{
      * @return Player gold count
      */
     protected int getGoldCount(){
-    	return goldCount;
+    	return inventory.getItemCount("Gold");
     }
     /**
      * Add i amount of gold to player
      * @param i the amount of gold to add
      */
     protected void addGold(int i){
-    	goldCount+=i;
+    	inventory.getItemStack("Gold").add(i);
     }
 	protected String processCommand(String command){
 		String output = "Invalid";
@@ -45,6 +52,21 @@ abstract class Player extends Thing{
 	    }
 	    return output;
 	}
-	protected abstract void selectNextAction();
+	 
+    /**
+     * Uses getInputFromConsole() to read from console, processCommand() to process the reading,
+     * and then displays in console the final answer.
+     */
+    protected void selectNextAction() {
+    	String input,output = "Invalid";
+    	//keep getting inputs until one is valid
+    	do{
+    		input = controller.getInput();
+    		controller.sendOutput(processCommand(input));
+    	}while((output.equals("Invalid") || output.equals("Fail"))||(input.equals("LOOK"))||input.equals("HELLO"));
+    } 
+    
 	protected abstract boolean isImmortal();
+	
+	
 }

@@ -28,15 +28,4 @@ public class BotPlayer extends Player{
 		return true;
 	}
 
-	@Override
-	public String getSummaryShort() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getSummaryLong() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

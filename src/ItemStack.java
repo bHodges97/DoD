@@ -16,4 +16,11 @@ public class ItemStack {
 	public char getDisplayChar(){
 		return item.getDisplayChar();
 	}
+	
+	public void add(int count){
+		this.count+=count;
+	}
+	public String getName() {
+		return item.getName();
+	}
 }

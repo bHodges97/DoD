@@ -37,21 +37,7 @@ public class HumanPlayer extends Player{
 		}
 		return "";
     }
-    
-    /**
-     * Uses getInputFromConsole() to read from console, processCommand() to process the reading,
-     * and then displays in console the final answer.
-     */
-    protected void selectNextAction() {
-    	String input = getInputFromConsole();
-    	String output = processCommand(input);
-    	while((output.equals("Invalid") || output.equals("Fail"))||(input.equals("LOOK"))||input.equals("HELLO")){
-    		gameLogic.console.println(output);
-    		input = getInputFromConsole();//keep getting inputs until one is valid
-    		output = processCommand(input);
-    	}
-    	gameLogic.console.println(output);
-    }    
+      
     
     public static void main(String[] args) {
     	MyFrame gui;
@@ -69,15 +55,4 @@ public class HumanPlayer extends Player{
 		game.startGame();
     }
 
-	@Override
-	public String getSummaryShort() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getSummaryLong() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

@@ -26,7 +26,7 @@ import javax.swing.border.LineBorder;
  * The main gui in which DOD is renderd on
  */
 public class MyFrame extends JFrame{
-	private Console console;
+	Console console;
 	private JScrollPane scrollArea;
 	private JPanel paintPanel = new JPanel();//TODO:
 	private JPanel controlsPanel = new JPanel(new BorderLayout());

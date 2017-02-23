@@ -95,8 +95,12 @@ public class Map{
 			do{
 				x = 0;
 				char[] line = reader.nextLine().toCharArray();
-				for(char c:line){					
-					addTile(c,x,y);
+				for(char c:line){
+					if(c == 'G'){
+						droppedItems.add(new DroppedItems(new ItemGold(),1,x,y));
+					}else{
+						addTile(c,x,y);
+					}
 					++x;
 				}
 				++y;
@@ -232,18 +236,21 @@ public class Map{
 		}
 		throw new IllegalArgumentException("No items at "+pos.toString());
 	}
-	protected boolean getIsTileEmpty(Position pos){
+	protected boolean isTileEmpty(Position pos){
+		return getDroppedItemsAt(pos) == null;
+	}
+	
+	protected DroppedItems getDroppedItemsAt(Position pos){
 		for(DroppedItems droppedItem : droppedItems){
 			if(droppedItem.position.equals(pos)){
-				return false;
+				return droppedItem;
 			}
 		}
-		return true;
+		return null;
 	}
 	
     private void addTile(char c,int x, int y){
     	Position pos = new Position(x,y);
-    	int index;
     	if(x > width-minx){
     		width = x-minx;
     	}
@@ -258,13 +265,14 @@ public class Map{
     		height += y-miny;
     		miny = y;
     	}
-    	index = (x-minx)+(y-miny)*height;
     	if(c == '#'){
     		tileList.add(new TileWall(pos));
     	}else if( c == 'E'){
     		tileList.add(new TileExit(pos));
-    	}else{
+    	}else if( c == '.'){
     		tileList.add(new TileFloor(pos));
+    	}else{
+    		throw new IllegalArgumentException("Unrecognised tile type:"+c);
     	}
     	validate();
     }
@@ -286,5 +294,12 @@ public class Map{
     		System.out.println("holder adding"+current.toString()+"----"+index);
     	}
     }
+
+
+	public Inventory removeItemsAt(Position position) {
+		DroppedItems toBeRemoved = getDroppedItemsAt(position);
+		droppedItems.remove(toBeRemoved);
+		return toBeRemoved.inventory;
+	}
 
 }

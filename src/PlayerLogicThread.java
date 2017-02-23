@@ -16,7 +16,9 @@ public class PlayerLogicThread implements Runnable{
 	
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		while(true){
+			player.selectNextAction();
+		}
 		
 	}
 

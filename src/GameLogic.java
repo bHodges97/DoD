@@ -139,25 +139,8 @@ public class GameLogic {
      */
     protected synchronized String move(Player currentPlayer,char direction) {
     	Position playerPos = currentPlayer.position;
-    	Position playerNewPos = new Position(playerPos);
-		switch(direction){
-			case 'N':
-				--playerNewPos.y;
-				break;
-			case 'S':
-				++playerNewPos.y;
-				break;
-			case 'W':
-				--playerNewPos.x;
-				break;
-			case 'E':
-				++playerNewPos.x;
-				break;
-			default:
-				return "Fail";
-		}
-
-		if(map.getTile(playerNewPos).isPassable() ){ 
+    	Position playerNewPos = playerPos.getAdjacentTile(direction);
+		if(playerNewPos != null && map.getTile(playerNewPos).isPassable() ){ 
 			playerPos = playerNewPos;
 			return "Success";
 		}else{
@@ -176,13 +159,14 @@ public class GameLogic {
 		for(int y = -2;y<2;++y){
 			for(int x = -2;x<2;++x){
 				Position drawingPos = new Position(playerPos.x+x,playerPos.y+y);
-				char displayChar = map.getTile(drawingPos).getDisplayChar();
+				Tile tile = map.getTile(drawingPos);
+				char displayChar = tile == null? '#':tile.getDisplayChar() ;
 				for(Player player:players){
 					if(Position.equals(player.position, drawingPos)){
 						displayChar = player.getDisplayChar();
 					}
 				}
-				if(!map.getIsTileEmpty(playerPos)){
+				if(!map.isTileEmpty(playerPos)){
 					displayChar = map.getItemCharAt(playerPos);
 				}
 				output+=displayChar;
@@ -198,6 +182,11 @@ public class GameLogic {
      * @return If the player successfully picked-up gold or not.
      */
     protected synchronized String pickup(Player currentPlayer) {
+    	Position playerPosition = currentPlayer.position;
+    	if(!map.isTileEmpty(playerPosition)){
+    		Inventory.transfer(map.removeItemsAt(playerPosition),currentPlayer.inventory);
+    	}
+    	
     	return ("You have "+currentPlayer.getGoldCount()+" gold!"); 
     }
 
