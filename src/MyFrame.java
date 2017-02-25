@@ -23,7 +23,7 @@ import javax.swing.border.LineBorder;
 
 
 /**
- * The main gui in which DOD is renderd on
+ * The main gui in which DOD is rendered on
  */
 public class MyFrame extends JFrame{
 	Console console;

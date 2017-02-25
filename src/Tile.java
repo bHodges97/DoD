@@ -12,6 +12,8 @@ public abstract class Tile extends Thing {
 
 	protected abstract boolean isPassable();
 	
+	public void onSteppedOn(Player player){};
+	
 	public String toString(){
 		return getDisplayChar()+pos.toString();
 	}

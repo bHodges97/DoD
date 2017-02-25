@@ -9,6 +9,7 @@ abstract class Player extends Thing{
 	protected Position position;
 	protected Inventory inventory = new Inventory();
 	protected Controller controller;
+	protected PlayerState state;
 	
 	public String getSummaryShort(){
 		return name+","+id+","+getGoldCount();
@@ -67,6 +68,12 @@ abstract class Player extends Thing{
     } 
     
 	protected abstract boolean isImmortal();
+	public void tryEscape() {
+		int goldCount = Integer.valueOf(gameLogic.hello().split("HELLO :")[0]);
+		if(this.getGoldCount() >= goldCount){
+			this.state = PlayerState.ESCAPED;
+		}
+	}
 	
 	
 }

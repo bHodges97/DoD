@@ -18,24 +18,14 @@ public class GameLogic {
 	private List<Player> players = new ArrayList<Player>();
 	private List<Thread> threads = new ArrayList<Thread>();
 	protected Console console;
-	private MyFrame gui;
-	private int turnCounter;
 	private int playerCount = 0;
 	private GameState gameState = GameState.NOTSTARTED;
 	
-	/**
-	 * Initialise the game with the given frame
-	 * @param frame The gui frame to display the game with
-	 */
-	public GameLogic(MyFrame frame){
-		this.gui = frame;
-		console = frame.getConsole();
+	public GameLogic(){
 		map = new Map();
 		if(!map.tryReadMap("example_map.txt")){
 			console.println("map load failed: exiting");
 			System.exit(1);
-		}else{
-			gui.setMap(map);
 		}
 	}
 	
@@ -43,7 +33,6 @@ public class GameLogic {
 	 * Starts the DoD game;
 	 */
 	protected void startGame(){
-		turnCounter = 0;
 		if(players.isEmpty()){
 			return;
 		}
@@ -127,7 +116,7 @@ public class GameLogic {
     /**
      * @return : Returns back gold player requires to exit the Dungeon.
      */
-    protected String hello() {
+    protected synchronized String hello() {
 		return ("GOLD: "+map.getGoldRequired());
     }
 
@@ -195,6 +184,10 @@ public class GameLogic {
      */
     protected synchronized void quitGame() {
     	System.exit(0);//todo: change it
+    }
+    
+    protected GameState getGameState(){
+    	return gameState;
     }
 
 }

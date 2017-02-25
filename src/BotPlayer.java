@@ -6,17 +6,11 @@
 public class BotPlayer extends Player{
 	private static final char displayChar = 'B';
 	
-	public BotPlayer(GameLogic logic){
-		name = "bot";
+	public BotPlayer(GameLogic gameLogic, Controller controller){
+		this.gameLogic = gameLogic;
+		this.controller = controller;
+		controller.player = this;
 	}
-
-    /**
-     * Selects the next action the bot will perform. Outputs in gameLogic.getConsole() the final result.
-     */
-    public void selectNextAction() {
-    	String output = processCommand("LOOK");
-    	
-    }	
     
     @Override
 	public char getDisplayChar() {

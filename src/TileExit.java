@@ -17,4 +17,9 @@ public class TileExit extends Tile {
 	protected boolean isPassable() {
 		return passable;
 	}
+	
+	@Override
+	public void onSteppedOn(Player player){
+		player.tryEscape();
+	}
 }

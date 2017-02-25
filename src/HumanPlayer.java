@@ -1,5 +1,3 @@
-import java.io.IOException;
-
 /**
  * Runs the game with a human player and contains code needed to read inputs.
  *
@@ -10,8 +8,10 @@ public class HumanPlayer extends Player{
 	private static final char displayChar = 'P';
 	
 	
-	public HumanPlayer(GameLogic gameLogic){
+	public HumanPlayer(GameLogic gameLogic, Controller controller){
 		this.gameLogic = gameLogic;
+		this.controller = controller;
+		controller.player = this;
 	}
 	
 	@Override
@@ -23,36 +23,5 @@ public class HumanPlayer extends Player{
 	protected boolean isImmortal(){
 		return false;
 	}
-	
-    /**
-    * Reads player's to the console.
-    * <p>
-    * @return : A string containing the input the player entered.
-    */
-    protected String getInputFromConsole() {
-		try {
-			return gameLogic.console.readln();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return "";
-    }
-      
-    
-    public static void main(String[] args) {
-    	MyFrame gui;
-    	if(args.length > 0){
-    		gui = new MyFrame("Dungeon of Doom",!args[0].equals("TEXTONLY"));
-    	}else{
-    		gui = new MyFrame("Dungeon of Doom",true);
-    	}
-    	GameLogic game = new GameLogic(gui);
-		game.addPlayer(new HumanPlayer(game));
-
-		game.addPlayer(new HumanPlayer(game));
-		game.addPlayer(new BotPlayer(game));
-        // RUN FOREST RUN!
-		game.startGame();
-    }
 
 }

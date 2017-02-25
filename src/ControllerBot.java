@@ -1,6 +1,9 @@
 
 public class ControllerBot extends Controller{
 
+	private String output = "START";
+	
+
 	@Override
 	public String getInput() {
 		return "PICKUP";
@@ -8,6 +11,6 @@ public class ControllerBot extends Controller{
 
 	@Override
 	public void sendOutput(String output) {
-		
+		this.output = output;
 	}
 }

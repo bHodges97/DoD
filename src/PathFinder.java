@@ -100,25 +100,6 @@ public class PathFinder {
     	return neighbours.get(rand.nextInt(neighbours.size()));
 	}
 	
-	/**
-	 * Get the relative direction from start till end
-	 * @param start Starting position
-	 * @param end Ending position
-	 * @return 'N','W','S','E' 
-	 */
-    public static char getRelativeDirection(Position start,Position end){
-		if(end.y>start.y){
-    		return 'S';
-    	}else if(end.y<start.y){
-    		return 'N';
-    	}else if(end.x>start.x){
-    		return 'E';
-    	}else if(end.x<start.x){
-    		return 'W';
-    	}else{
-    		throw new IllegalArgumentException("start is same as end");
-    	}
-    }   
 	
     /**
      * Manhattan block distance from a to b

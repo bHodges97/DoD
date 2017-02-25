@@ -3,8 +3,8 @@ import java.io.IOException;
 public class ControllerHuman extends Controller{
 	private MyFrame gui;
 	
-	public ControllerHuman(Player player,MyFrame gui){
-		this.player = player;
+	public ControllerHuman(MyFrame gui){
+		//this.player = player;
 		this.gui = gui;
 	}
 	
