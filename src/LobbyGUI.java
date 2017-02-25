@@ -30,12 +30,14 @@ public class LobbyGUI extends JFrame{
 	JButton sendButton = new JButton("SEND");
 	JPanel chatPanel = new JPanel(new BorderLayout());
 	JButton startGame = new JButton("START GAME");
+	Client client;
 	
 	public static void main(String[] args){
-		new LobbyGUI();
+		new LobbyGUI(null);
 	}
 	
-	public LobbyGUI(){
+	public LobbyGUI(Client client){
+		this.client = client;
 		setTitle("Dungeon of Doom: Game Lobby");
 		add(connectionsPanel,BorderLayout.CENTER);
 		add(sidePanel,BorderLayout.EAST);

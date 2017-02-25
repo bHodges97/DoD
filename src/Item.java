@@ -1,15 +1,15 @@
 import java.awt.Image;
 
-public abstract class Item extends Thing{
+public abstract class Item implements Messageable,Displayable{
 
 
 	@Override
-	public String getSummaryShort() {
+	public String getSummary() {
 		return getName();
 	}
 
 	@Override
-	public String getSummaryLong() {
+	public String getFullInfo() {
 		return getName()+","+getDescription();
 	}
 

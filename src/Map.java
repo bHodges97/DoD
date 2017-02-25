@@ -291,7 +291,6 @@ public class Map{
     	for(Tile current:holder){
     		int index = (current.pos.x - minx) + (current.pos.y-miny) * width;
     		tileList.set(index,current);
-    		System.out.println("holder adding"+current.toString()+"----"+index);
     	}
     }
 

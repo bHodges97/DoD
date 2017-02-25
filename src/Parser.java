@@ -6,80 +6,83 @@ public class Parser {
 	 * @param args
 	 */
 	public static void main(String[] args){
-		new Parser().parse("<player><name>hello</name><id>2</id></player>").print(0);;
+		//parse("<player><name>hello</name><id>2</id></player>").print(0);;
+		parse("<LOBBYPLAYER><BOT>false</BOT><READY>false<READY></LOBBYPLAYER>").print(0);
+		//parse("<ID></ID>").print(0);
+		parse("<><><<<");
 	}
 	
 	
 	/**
-	 * Basic parser for XML like structure used in my DOD for communication
+	 * Basic parser for XML like structure used in my DOD for communication.
+	 * May not safely parse erroneous inputs
 	 * 
 	 * @param in
 	 * @return
 	 */
-	public Element parse(String in){
+	public static Element parse(String in){
 		//validate
 		if(in.length() <= 2 || in.charAt(0) != '<' || in.charAt(1) == '/'){
 			System.out.println("Could not be parsed:"+in);
 			return null;
 		}
-		
-		char[] chars = in.toCharArray();
+		//awful way of handling strings such as "<<<<<"
+		char[] chars = (in+" ").toCharArray();
 		Stack<Element> stack = new Stack<Element>();
-    	String nameBuilder = "";
+    	String tagBuilder = "";
     	String valueBuilder = "";
-    	boolean buildName = false;
-    	boolean buildNameEnd = false;
+    	boolean buildTag = false;
+    	boolean buildTagEnd = false;
     	
     	for(int i = 0;i < chars.length;++i){
     		if(chars[i]== '<' && chars[i+1] != '/'){
     			//start of a tag, start building name
-    			buildName = true;
+    			buildTag = true;
     			valueBuilder = "";
-    			nameBuilder = "";
+    			tagBuilder = "";
     		}else if(chars[i]== '<' && chars[i+1] == '/'){
     			//end of a tag stop building value and start building name
     			++i;
-    			buildName = true;
-    			buildNameEnd = true;
+    			buildTag = true;
+    			buildTagEnd = true;
     			stack.peek().value = valueBuilder;
     			valueBuilder = "";
-    		}else if(chars[i] == '>'){
-    			if(buildNameEnd){ 
-    				//if this is not root element move it from stack to its parent
-    				Element current = stack.peek();
-    				if(stack.size()>1){
-    					stack.pop();
-    					stack.peek().nodes.add(current);
-    				}
-    				buildNameEnd = false;    				
-    				
-    				//Validation
-    				if(!current.name.equals(nameBuilder)){
-    					System.out.println("Could not be parsed(Invalid closing tag!):"+in);
-    					return null;
-    				}
-    			}else{
-    				//Add new element
-    				stack.add(new Element(nameBuilder));	
-    			}
-    			nameBuilder = "";
-    			buildName = false;
-    		}else if(buildName){
+    		}else if(chars[i] == '>' && buildTagEnd){
+    			//if this is not root element move it from stack to its parent
+				Element current = stack.pop();
+				//Validation
+				if(!current.tag.equals(tagBuilder)){
+					System.out.println("Could not be parsed(Invalid closing tag!):"+in);
+					return null;
+				}
+				
+				//move element to parent or if no parent return element
+				if(stack.size() > 0){
+					stack.peek().children.add(current);
+				}else{
+					return current;
+				}
+				buildTagEnd = false;
+    			buildTag = false;  
+				tagBuilder = "";	
+    		}else if(chars[i] == '>' && !buildTagEnd){
+    			//Add new element
+    			stack.add(new Element(tagBuilder));	
+    			tagBuilder = "";
+    			buildTag = false;
+    		}else if(buildTag){
     			//build name
-    			nameBuilder+=chars[i];
+    			tagBuilder+=chars[i];
     		}else{
     			//build value
     			valueBuilder+=chars[i];
     		}
     	}
-    	//make sure there is only one element
-    	if(stack.size()!=1){
-			System.out.println("Could not be parsed(Tag is not closed!):"+in);
-    		return null;
-    	}
-    	//return root element
-    	return stack.pop();
+    	//correctly formatted string should not reach this stage
+		System.out.println("Could not be parsed(Tag is not closed!):"+in);
+    	return null;    	
 	}
-
+	
+	
 
 }

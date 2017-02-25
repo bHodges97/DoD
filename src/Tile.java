@@ -1,5 +1,5 @@
 
-public abstract class Tile extends Thing {
+public abstract class Tile implements Displayable,Messageable {
 	protected final Position pos;
 	
 	private Tile(){
@@ -19,10 +19,10 @@ public abstract class Tile extends Thing {
 	}
 	
 
-	public String getSummaryShort(){
+	public String getSummary(){
 		return toString();
 	}
-	public String getSummaryLong(){
+	public String getFullInfo(){
 		return toString()+","+isPassable();
 	}
 }

@@ -8,12 +8,6 @@ public class HumanPlayer extends Player{
 	private static final char displayChar = 'P';
 	
 	
-	public HumanPlayer(GameLogic gameLogic, Controller controller){
-		this.gameLogic = gameLogic;
-		this.controller = controller;
-		controller.player = this;
-	}
-	
 	@Override
 	public char getDisplayChar() {
 		return displayChar;

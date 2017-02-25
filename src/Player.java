@@ -1,7 +1,9 @@
+import java.awt.Color;
+
 /**
  * Abstract player class
  */
-abstract class Player extends Thing{
+abstract class Player implements Messageable,Displayable{
 	protected GameLogic gameLogic = null;
 	protected int lives = 1;
 	protected String name = "PLAYER";
@@ -10,12 +12,13 @@ abstract class Player extends Thing{
 	protected Inventory inventory = new Inventory();
 	protected Controller controller;
 	protected PlayerState state;
+	protected Color color;
 	
-	public String getSummaryShort(){
+	public String getSummary(){
 		return name+","+id+","+getGoldCount();
 	}
-	public String getSummaryLong(){
-		return getSummaryShort()+","+position+inventory.toString();
+	public String getFullInfo(){
+		return getSummary()+","+position+inventory.toString();
 	}
 	
 	

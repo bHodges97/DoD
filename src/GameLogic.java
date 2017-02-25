@@ -18,7 +18,6 @@ public class GameLogic {
 	private List<Player> players = new ArrayList<Player>();
 	private List<Thread> threads = new ArrayList<Thread>();
 	protected Console console;
-	private int playerCount = 0;
 	private GameState gameState = GameState.NOTSTARTED;
 	
 	public GameLogic(){
@@ -88,9 +87,6 @@ public class GameLogic {
 	 * @param player Player to add to the game.
 	 */
 	protected void addPlayer(Player player){ 
-		
-		
-		player.name+="("+player.id+")";
 		player.setGameLogic(this);
 		Random rand = new Random(System.currentTimeMillis());
 		Set<Position> usedPositions = new HashSet<Position>();
@@ -100,8 +96,6 @@ public class GameLogic {
 		List<Tile> emptyTiles = new ArrayList<Tile>(map.findEmptyTiles(usedPositions));
 		int randomNum = rand.nextInt(emptyTiles.size());
 		player.position  = new Position(emptyTiles.get(randomNum).pos);
-		
-		player.id = ++playerCount;
 		players.add(player);
 	}
 	

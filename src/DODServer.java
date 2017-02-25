@@ -4,7 +4,9 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,13 +23,15 @@ public class DODServer {
 	GameLogic game;
 	private int connectionsCounter = 0;
 	private boolean shouldGameStart = false;
-    List<OutputStream> outputStreams = new ArrayList<OutputStream>();
-    List<Player> players = new ArrayList<Player>();
+    List<PrintWriter> writers = new ArrayList<PrintWriter>();
+	List<Socket> sockets = new ArrayList<Socket>();
+	List<ServerReadThread> readThreads = new ArrayList<ServerReadThread>();
+    List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
 	
 	
     public static void main(String[] args) {
-    	int port = 0;
-    	if(args.length != 1){
+    	int port = 38983;//TODO:set this back to zero after testing. Java will generate a random valid port number if this is 0.
+    	if(args.length == 1){
     		try{
     		port = Integer.valueOf(args[0]);
     		if(port > 65535 || port < 0){
@@ -39,7 +43,6 @@ public class DODServer {
     		}
     	}else{
     		System.out.println("Please specify a port number. Defaulting.");
-    		port = 0;
     	}
     	DODServer server = new DODServer(port);
     	
@@ -71,63 +74,31 @@ public class DODServer {
     }
     
     public synchronized void processInput(String input,int id){
-    	char[] chars = input.toCharArray();
-    	Stack<String> types = new Stack<String>();
-    	Stack<String> contents = new Stack<String>();
-    	String nameBuilder = "";
-    	String contentBuilder = "";
-    	int counter = 0;
-    	boolean buildName = false;
-    	boolean buildEnd = false;
-    	for(int i = 0;i < chars.length;++i){
-    		if(chars[i]== '<' && chars[i] != '\\'){
-    			buildName = true;
-    			if(!nameBuilder.isEmpty()){
-    				types.add(nameBuilder);
-    			}
-    			if(!contentBuilder.isEmpty()){
-    				contents.add(contentBuilder);
-    			}
-    			contentBuilder = "";
-    			nameBuilder = "";
-    		}else if(chars[i] == '>'){
-    			buildName = false;
-    			if(buildEnd){
-    				String name = types.pop();
-    				if(name.equals(nameBuilder)){
-    					
-    				}
-    			}
-    			types.add(nameBuilder);
-    		}else if(chars[i]== '<' && chars[i] == '\\'){
-    			++i;
-    			buildName = true;
-    			buildEnd = true;
-    		}else if(buildName){
-    			nameBuilder+=chars[i];
-    		}else{
-    			contentBuilder+=chars[i];
-    		}
+    	Element message = Parser.parse(input);
+    	System.out.println("Received input from " + id);
+    	if(message == null){
+    		return;
     	}
-    	
+    	message.print(0);
+    	if(game.getGameState() ==  GameState.NOTSTARTED){
+    		handlePreGame(message,id);
+    	}else{
+    		handleDuringGame(message,id);
+    	}
     }
     
-    private synchronized void parse(String name,String contents){
+
+	public synchronized void send(String input,int id){
+    	PrintWriter writer = writers.get(id);
+    	writer.println(input);
+    	writer.flush();
     	
-    }
-    
-    public synchronized void send(String input,int id){
-    	OutputStream out = outputStreams.get(id);
-    	try(PrintWriter writer = new PrintWriter(out)){
-			writer.println(input);
-		}
-    }
+	}
     
     public synchronized void sendToAll(String input){
-    	for(OutputStream out : outputStreams){
-    		try(PrintWriter writer = new PrintWriter(out)){
-    			writer.println(input);
-    		}
+    	for(PrintWriter writer : writers){
+    		writer.println(input);
+    		writer.flush();
     	}
     }
     
@@ -138,12 +109,22 @@ public class DODServer {
 			try{
 				Socket clientSocket = serverSocket.accept();
 				if(game.getGameState() != GameState.NOTSTARTED){
+					System.out.println("Slow way of closing");
 					clientSocket.close();
 					break;
 				}
-				new ServerReadThread(clientSocket, this, connectionsCounter).run();
+				
+				
+				LobbyPlayer player = new LobbyPlayer();
+				lobbyPlayers.add(player);
+				player.id = connectionsCounter;
+				System.out.println("Client "+connectionsCounter+" connected.");
+				ServerReadThread thread = new ServerReadThread(clientSocket, this, connectionsCounter);
+				thread.start();
 				OutputStream out = clientSocket.getOutputStream();
-				outputStreams.add(out);
+				writers.add(new PrintWriter(out));
+				sockets.add(clientSocket);
+				readThreads.add(thread);
 				++connectionsCounter;
 			}catch(Exception e){
 				e.printStackTrace();
@@ -152,4 +133,47 @@ public class DODServer {
     	//TODO: can close blocking socket with close experiment later
     }
     
+    private void handleDuringGame(Element message,int id) {
+    	String name = message.tag;
+    	
+	}
+
+	private void handlePreGame(Element message, int id) {
+		String tag = message.tag;
+		String value = message.value;
+		LobbyPlayer player = lobbyPlayers.get(id);
+		if(tag.equals("START")){
+			tryStartGame();
+		}else if(tag.equals("LOBBYPLAYER")){
+			message.toLobbyPlayer(player);
+		}else if(tag.equals("GETID")){
+			send("<ID>"+id+"</ID>",id);
+		}
+		informCLients();
+	}
+    private void informCLients() {
+    	for(LobbyPlayer player:lobbyPlayers){
+    		sendToAll(player.getFullInfo());
+    	}
+		
+	}
+
+	private void tryStartGame(){
+    	boolean ready = true;
+		for(LobbyPlayer connectedPlayer: lobbyPlayers){
+			if(!connectedPlayer.ready){
+				ready = false;
+				break;
+			}
+		}
+		if(!ready){
+			return;
+		}
+		for(LobbyPlayer lobbyPlayer : lobbyPlayers){
+			Player player = lobbyPlayer.toPlayer();
+			game.addPlayer(player);
+			//TODO: add controller and gameLogic to player;
+		}
+		
+    }
 }
