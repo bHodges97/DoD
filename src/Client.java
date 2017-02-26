@@ -1,4 +1,6 @@
-import java.io.OutputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -11,7 +13,10 @@ public abstract class Client {
 	PrintWriter writer;
 	Socket socket;
 	int id;
-	List<LobbyPlayer> players = new ArrayList<LobbyPlayer>();
+	List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
+	LobbyPlayer clientPlayer = new LobbyPlayer();
+	volatile boolean gameStarted = false;
+	
 	
 	public Client(String[] args){
 		if(!validateParams(args)){
@@ -23,11 +28,24 @@ public abstract class Client {
 		}else{
 			System.out.println("Successfully connected!");
 		}
-		send("<ID></ID>");
+		send("<GETID></GETID>");
 		run();
 	}
 	
 	public abstract void run();
+	public abstract void print(int id,String string);
+	public void updateLobbyInfo(){
+    	System.out.println(lobbyPlayers.size()+" players currently connected:");
+    	for(LobbyPlayer player:lobbyPlayers){
+    		if(id == player.id){
+    			clientPlayer = player;
+    			System.out.print("you|");
+    		}else{
+    			System.out.print("---|");
+    		}
+    		System.out.println(player.toString());
+    	}
+	}
 	
 	protected boolean validateParams(String[] args){ 
 		if(args.length == 2){	
@@ -55,7 +73,7 @@ public abstract class Client {
 			if(!socket.isConnected()){
 				return false;
 			}
-			ClientReadThread readThread = new ClientReadThread(socket,this);
+			ClientReadThread readThread = new ClientReadThread(socket.getInputStream(),this);
 			readThread.start();
 			writer = new PrintWriter(socket.getOutputStream());
 		} catch (Exception e) {
@@ -70,46 +88,114 @@ public abstract class Client {
 		writer.println(string);
 		writer.flush();
 	}
+
 	
 
 
 	public synchronized void processInput(String line) {
-		Element e = Parser.parse(line);
-		if(e.tag.equals("ID")){
-			if(e.isInt()){
-				id = e.toInt();
-			}else{
-				//try request id again
-				send("<ID></ID>");
-			}
-		}else if(e.tag.equals("LOBBYPLAYER")){
-			updateLobby(e);
+		Element element = Parser.parse(line);
+		if(!gameStarted){
+			processPreGame(element);
+		}else{
+			processDuringGame(element);
 		}
-		
 	}
 	
-	private void updateLobby(Element e){
-		int id = -1;
+	public void processPreGame(Element element){
+		String tag = element.tag;
+		String value = element.value;
+		if(tag.equals("ID")){
+			if(element.isInt()){
+				id = element.toInt();
+			}else{
+				//try request id again
+				send("<GETID></GETID>");
+			}
+		}else if(tag.equals("LOBBY")){
+			//since children is type Set the updates are not in order
+			//so lobbyplayers aren't displayed in order either
+			for(Element child:element.children){
+				updateLobby(child);
+			}
+			updateLobbyInfo();
+		}else if(tag.equals("SHOUT")){
+			int id = -1;
+			String message = null;
+			for(Element child:element.children){
+				if(child.tag.equals("ID")&&child.isInt()){
+					id = child.toInt();
+				}else if(child.tag.equals("MESSAGE")){
+					message = child.value;
+				}else{
+					return;
+				}
+				if(id != -1 && message != null){
+					print(id,message);
+				}
+			}
+		}else if(tag.equals("GAMESTART")){
+			gameStarted = true;
+		}	
+	}
+	public void processDuringGame(Element element){
+		String tag = element.tag;
+		String value = element.value;
+		if(tag.equals("OUT")){
+			System.out.println(value);
+		}
+	}
+	
+	protected void updateLobby(Element e){
+		int playerID = -1;
+		
 		for(Element child: e.children){
 			if(child.tag.equals("ID") && child.isInt()){
-				id = child.toInt();
+				playerID = child.toInt();
 			}
 		}
-		if(id == -1){
+		if(playerID == -1){
 			System.out.println("Cannot update lobby with follwing element:");
 			e.print(0);
 			return;
 		}
-		LobbyPlayer player;
 		
-		for(LobbyPlayer iterator:players){
-			if(iterator.id == id){
-				player = iterator;
-				break;
+		
+		for(LobbyPlayer known:lobbyPlayers){
+			if(known.id == playerID){
+				e.toLobbyPlayer(known);
+				return;
 			}
 		}
-		player = new LobbyPlayer();
-		players.add(player);
+		LobbyPlayer player = new LobbyPlayer();
+		lobbyPlayers.add(player);
 		e.toLobbyPlayer(player);
+		print(-1,"Player "+player.id+" joined.");
 	}
+	
+	protected String readFromConsole(){
+		BufferedReader in;
+		try {
+			in = new BufferedReader(new InputStreamReader(System.in));
+			String line;
+			while((line = in.readLine()) != null){
+				return line;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+	
+
+
+	protected synchronized void processUserInput(String input) {
+		if(input.equals("READY")){
+			clientReady = !clientReady;
+			send("<LOBBYPLAYER><READY>"+clientReady+"</READY></LOBBYPLAYER>");
+		}else if(input.contains(" ")){
+			String[] msg = input.split(" ", 2);
+			send("<INPUT><"+msg[0]+">"+msg[1]+"</"+msg[0]+"></INPUT>");
+		}
+	}
+	
 }

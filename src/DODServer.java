@@ -11,6 +11,8 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.text.html.HTML.Tag;
+
 public class DODServer {
 	
 	//TODO todo list
@@ -18,16 +20,17 @@ public class DODServer {
 	//TODO bot handler/huuman handler interligent path
 	//TODO tile triggered events
 	//TODO rewrite ui intergration
+	//TODO minute timer if all players ready.
 
-	ServerSocket serverSocket;
-	GameLogic game;
+	private ServerSocket serverSocket;
+	private GameLogic game;
 	private int connectionsCounter = 0;
 	private boolean shouldGameStart = false;
-    List<PrintWriter> writers = new ArrayList<PrintWriter>();
-	List<Socket> sockets = new ArrayList<Socket>();
-	List<ServerReadThread> readThreads = new ArrayList<ServerReadThread>();
-    List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
-	
+   	private List<PrintWriter> writers = new ArrayList<PrintWriter>();
+   	private List<Socket> sockets = new ArrayList<Socket>();
+	private List<ServerReadThread> readThreads = new ArrayList<ServerReadThread>();
+    private List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
+	private List<Controller> controllers = new ArrayList<Controller>();
 	
     public static void main(String[] args) {
     	int port = 38983;//TODO:set this back to zero after testing. Java will generate a random valid port number if this is 0.
@@ -75,11 +78,10 @@ public class DODServer {
     
     public synchronized void processInput(String input,int id){
     	Element message = Parser.parse(input);
-    	System.out.println("Received input from " + id);
     	if(message == null){
+    		System.out.println("Invalid Message from" + id);
     		return;
     	}
-    	message.print(0);
     	if(game.getGameState() ==  GameState.NOTSTARTED){
     		handlePreGame(message,id);
     	}else{
@@ -89,16 +91,17 @@ public class DODServer {
     
 
 	public synchronized void send(String input,int id){
-    	PrintWriter writer = writers.get(id);
-    	writer.println(input);
-    	writer.flush();
-    	
+		if(id < 0 || sockets.get(id) == null){
+			return;
+		}
+	    PrintWriter writer = writers.get(id);
+	    writer.println(input);
+	    writer.flush();
 	}
     
     public synchronized void sendToAll(String input){
-    	for(PrintWriter writer : writers){
-    		writer.println(input);
-    		writer.flush();
+    	for(int i = 0;i < connectionsCounter;++i){
+    		send(input,i);
     	}
     }
     
@@ -112,8 +115,7 @@ public class DODServer {
 					System.out.println("Slow way of closing");
 					clientSocket.close();
 					break;
-				}
-				
+				}				
 				
 				LobbyPlayer player = new LobbyPlayer();
 				lobbyPlayers.add(player);
@@ -134,8 +136,11 @@ public class DODServer {
     }
     
     private void handleDuringGame(Element message,int id) {
-    	String name = message.tag;
-    	
+    	String tag = message.tag;
+    	String value = message.value;
+    	if(tag.equals("INPUT")){
+    		controllers.get(id).setInput(value); 
+    	}
 	}
 
 	private void handlePreGame(Element message, int id) {
@@ -146,34 +151,69 @@ public class DODServer {
 			tryStartGame();
 		}else if(tag.equals("LOBBYPLAYER")){
 			message.toLobbyPlayer(player);
+			//just making sure client doesn't get to change their id.
+			player.id = id;
 		}else if(tag.equals("GETID")){
 			send("<ID>"+id+"</ID>",id);
+		}else if(tag.equals("INPUT")){
+			for(Element child:message.children){
+				if(child.tag.equals("SHOUT")){
+					sendToAll("<SHOUT><ID>"+id+"</ID><MESSAGE>"+child.value+"</MESSAGE></SHOUT>");
+				}
+			}
 		}
 		informCLients();
 	}
     private void informCLients() {
+    	System.out.println();
+    	System.out.println(lobbyPlayers.size()+" players currently connected:");
+    	String msg = "<LOBBY>";
     	for(LobbyPlayer player:lobbyPlayers){
-    		sendToAll(player.getFullInfo());
-    	}
-		
+    		System.out.println("---"+player.toString());
+    		msg+=player.getFullInfo();
+    	}   	
+		sendToAll(msg+"</LOBBY>");
 	}
-
-	private void tryStartGame(){
-    	boolean ready = true;
+    
+    private boolean checkAllPlayersReady(){
 		for(LobbyPlayer connectedPlayer: lobbyPlayers){
 			if(!connectedPlayer.ready){
-				ready = false;
-				break;
+				return false;
 			}
 		}
-		if(!ready){
+		return true;
+    }
+
+	private void tryStartGame(){
+		if(checkAllPlayersReady()){
 			return;
 		}
 		for(LobbyPlayer lobbyPlayer : lobbyPlayers){
 			Player player = lobbyPlayer.toPlayer();
 			game.addPlayer(player);
+			player.gameLogic = game;
+			int id = player.id;
+			if(lobbyPlayer.isBot){
+				player.controller = new ControllerBot(this,id,player);
+			}else{
+				player.controller = new ControllerHuman(this,id,player);
+			}
+			controllers.add(player.controller);
 			//TODO: add controller and gameLogic to player;
 		}
-		
+		System.out.println("Game has begun, notifying all players.");
+		sendToAll("<GAMESTART></GAMESTART>");
+		game.startGame();
     }
+	
+	void close(int id){
+		try {
+			sockets.get(id).close();
+			sockets.set(id,null);
+			System.out.println(id + "lost connection");
+			lobbyPlayers.set(id,null);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

@@ -1,5 +1,6 @@
 
 
+import java.awt.Color;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -56,25 +57,23 @@ public class Element {
 			String tag = child.tag;
 			String value = child.value;
 			if(tag.equals("READY")){
-				if(isBoolean()){	
-					player.ready = toBoolean();
+				if(child.isBoolean()){
+					player.ready = child.toBoolean();
 				}
-				return;
 			}else if(tag.equals("NAME")){
 				player.name = value;
-				return;
 			}else if(tag.equals("COLOR")){
-				//TODO:
+				if(child.isInt()){
+					player.color = new Color(child.toInt());
+				}
 			}else if(tag.equals("BOT")){
-				if(isBoolean()){
-					player.isBot = toBoolean();
+				if(child.isBoolean()){
+					player.isBot = child.toBoolean();
 				}
-				return;
 			}else if(tag.equals("ID")){
-				if(isInt()){
-					player.id = toInt();
+				if(child.isInt()){
+					player.id = child.toInt();
 				}
-				return;
 			}
 		}	
 	}

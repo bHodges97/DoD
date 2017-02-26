@@ -1,14 +1,15 @@
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
 public class ClientReadThread extends Thread {
-	private Socket socket;
+	private InputStream stream;
 	private Client client;
 	
-	public ClientReadThread(Socket socket,Client client){
-		this.socket = socket;
+	public ClientReadThread(InputStream stream,Client client){
+		this.stream = stream;
 		this.client = client;
 	}
 	
@@ -16,7 +17,7 @@ public class ClientReadThread extends Thread {
 	public void run(){
 		BufferedReader in;
 		try {
-			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			in = new BufferedReader(new InputStreamReader(stream));
 			String line;
 			while((line = in.readLine()) != null){
 				client.processInput(line);

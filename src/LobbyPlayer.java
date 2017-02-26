@@ -3,8 +3,8 @@ import java.awt.Color;
 public class LobbyPlayer implements Messageable{
 	public boolean ready = false;
 	public boolean isBot = false;
-	public String name = "";
-	public Color color;
+	public String name = "New Player";
+	public Color color = new Color(0, 0, 0, 0);//transparent i think havent tested it yet
 	public int id;
 	
 	
@@ -18,7 +18,7 @@ public class LobbyPlayer implements Messageable{
 		if(!name.isEmpty()){
 			player.name = name;
 		}else{
-			player.name = "PLAYER "+id;
+			player.name = "Player "+id;
 		}
 		if(color != null){
 			player.color = color;
@@ -43,6 +43,12 @@ public class LobbyPlayer implements Messageable{
 					+ "<ISBOT>"+isBot+"</ISBOT>"
 					+ "<COLOR>"+color.getRGB()+"</COLOR>"
 				+"</LOBBYPLAYER>";
+	}
+	
+	@Override
+	public String toString(){
+		return "ID:"+id+", Name:"+name+", Bot:"+isBot+", Ready:"+ready;
+		
 	}
 
 }

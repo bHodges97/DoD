@@ -6,6 +6,9 @@ public class Parser {
 	 * @param args
 	 */
 	public static void main(String[] args){
+		String[] ffs = " ".split(" ",2);
+		System.out.println(ffs[0]);
+		System.out.println(ffs[1]);
 		//parse("<player><name>hello</name><id>2</id></player>").print(0);;
 		parse("<LOBBYPLAYER><BOT>false</BOT><READY>false<READY></LOBBYPLAYER>").print(0);
 		//parse("<ID></ID>").print(0);

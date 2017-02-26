@@ -1,27 +1,27 @@
-import java.io.IOException;
 
 public class ControllerHuman extends Controller{
-	private MyFrame gui;
 	
-	public ControllerHuman(MyFrame gui){
-		//this.player = player;
-		this.gui = gui;
+	public ControllerHuman(DODServer dodServer, int id,Player player) {
+		super(dodServer,id,player);
 	}
-	
+
 	@Override
-	public String getInput() {
-		try {
-			return gui.console.readln();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return "";
+	public synchronized String getInput() {
+
+        while(input.isEmpty()) {
+            try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+        }
+        String holder = input;
+        input = "";
+        return holder;
 	}
 
 	@Override
 	public void sendOutput(String output) {
-		gui.console.println(output);
-	}    
-    
-
+		server.processInput("<OUT>"+ output + "</OUT>", id);
+	}   
 }

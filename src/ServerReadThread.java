@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class ServerReadThread extends Thread{
 	
@@ -24,10 +25,13 @@ public class ServerReadThread extends Thread{
 			while((line = in.readLine()) != null){
 				server.processInput(line,id);
 			}
-		} catch (IOException e) {
+		} catch(SocketException e){
+			server.close(id);
+			return;
+		}catch (IOException e) {
 			e.printStackTrace();
 			return;
-		}
+		} 
 	}
 	
 	

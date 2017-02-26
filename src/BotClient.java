@@ -13,6 +13,13 @@ public class BotClient extends Client {
 
 	@Override
 	public void run(){
+		send("<LOBBYPLAYER><BOT>true/BOT><READY>true</READY></LOBBYPLAYER>");
+		
+	}
+
+	@Override
+	public void print(int id,String string) {
+		// TODO Auto-generated method stub
 		
 	}
 	

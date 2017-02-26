@@ -1,35 +1,39 @@
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
+import javax.swing.border.Border;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
 
 public class LobbyGUI extends JFrame{
 	JPanel connectionsPanel = new JPanel(new BorderLayout());
 	JPanel sidePanel = new JPanel(new BorderLayout());
 	JPanel playerSettingsPanel = new JPanel();
 	JScrollPane scrollPane = new JScrollPane();
-	JPanel controls = new JPanel();
+	JPanel controls = new JPanel(new FlowLayout());
 	JTextPane chatPane = new JTextPane();
-	JTextField chatField = new JTextField(15);
-	JTextField nameField = new JTextField(10);
+	JTextField chatField = new JTextField(25);
+	JButton nameButton = new JButton("NAME");
 	JToggleButton readyButton = new JToggleButton("READY");
 	JButton sendButton = new JButton("SEND");
 	JPanel chatPanel = new JPanel(new BorderLayout());
-	JButton startGame = new JButton("START GAME");
+	JButton startButton = new JButton("START GAME");
+	JButton colorButton = new JButton("COLOR");
 	Client client;
 	
 	public static void main(String[] args){
@@ -39,38 +43,35 @@ public class LobbyGUI extends JFrame{
 	public LobbyGUI(Client client){
 		this.client = client;
 		setTitle("Dungeon of Doom: Game Lobby");
+		JPanel southPanel = new JPanel(new BorderLayout());
 		add(connectionsPanel,BorderLayout.CENTER);
-		add(sidePanel,BorderLayout.EAST);
-		connectionsPanel.add(scrollPane, BorderLayout.CENTER);
+		add(southPanel,BorderLayout.SOUTH);
+		southPanel.add(controls,BorderLayout.NORTH);
+		southPanel.add(chatPanel,BorderLayout.CENTER);
 		
-		sidePanel.add(chatPanel, BorderLayout.NORTH);
-		sidePanel.add(controls,BorderLayout.SOUTH);
-
+		connectionsPanel.add(scrollPane);	
+		
+		//Set up chat room
 		chatPanel.add(new JScrollPane(chatPane),BorderLayout.CENTER);
 		JPanel sendmsgPanel = new JPanel();
 		chatPanel.add(sendmsgPanel,BorderLayout.SOUTH);
 		sendmsgPanel.add(chatField);
 		sendmsgPanel.add(sendButton);
-		sendButton.setPreferredSize(new Dimension(80,chatField.getPreferredSize().height));
+		sendButton.setPreferredSize(new Dimension(75,18));
+		//Set up controls
+		controls.add(new JLabel("OPTIONS",JLabel.LEFT));
+		controls.add(nameButton);
+		controls.add(colorButton);
+		controls.add(readyButton);
+		controls.add(startButton);
+
+		startButton.setEnabled(false);
+		colorButton.setPreferredSize(new Dimension(90, 18));
+		nameButton.setPreferredSize(new Dimension(90, 18));
+		readyButton.setPreferredSize(new Dimension(90, 18));
+		startButton.setPreferredSize(new Dimension(120, 18));
 		
-		controls.setBorder(BorderFactory.createLoweredBevelBorder());;
-		controls.setLayout(new GridBagLayout());
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.anchor = GridBagConstraints.EAST;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		controls.add(new JLabel("Name:",JLabel.LEFT),gbc);
-		gbc.gridx = 1;
-		gbc.gridy = 0;
-		controls.add(nameField,gbc);
-		gbc.gridx = 1;
-		gbc.gridy = 2;
-		controls.add(readyButton,gbc);
-		gbc.gridx = 1;
-		gbc.gridy = 3;
-		controls.add(startGame,gbc);
-		
+		addActionListeners();
 		chatPane.setText("Dungeon Of Doom Lobby Chat Room");
 		chatPane.setEditable(false);
 		chatPane.setPreferredSize(new Dimension(200,150));
@@ -79,13 +80,60 @@ public class LobbyGUI extends JFrame{
 		setResizable(false);
 		setVisible(true);
 		pack();
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 	}
 	
-	private void addMessageToChat(String msg)
-    {
-        StyleContext style = StyleContext.getDefaultStyleContext();
+	public void addMessageToChat(String string,Color color)
+    {	
+		System.out.println("HELLO");
+		StyledDocument document = chatPane.getStyledDocument();
+		try {
+			document.insertString(document.getLength(), "\n"+string, null);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
         
     }
+	
+	private void addActionListeners(){
+		readyButton.addActionListener(new ActionListener() {			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				LobbyGUI.this.client.send("<LOBBYPLAYER><READY>"+readyButton.isSelected()+"</READY></LOBBYPLAYER>");
+				
+			}
+		});
+		nameButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String output = JOptionPane.showInputDialog(LobbyGUI.this,"Enter a new name");
+				if(output != null && !output.isEmpty()){
+					LobbyGUI.this.client.send("<LOBBYPLAYER><NAME>"+output+"</NAME></LOBBYPLAYER>");
+				}
+				
+			}
+		});
+		colorButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Color newColor = JColorChooser.showDialog(
+	                     LobbyGUI.this,
+	                     "Choose your color",
+	                   	 client.clientPlayer.color);
+				if(newColor != null){
+					LobbyGUI.this.client.send("<LOBBYPLAYER><COLOR>"+newColor.getRGB()+"</COLOR></LOBBYPLAYER>");
+				}
+			}
+		});
+		ActionListener sendMessageAction = new ActionListener() {			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				LobbyGUI.this.client.processUserInput("SHOUT "+LobbyGUI.this.chatField.getText());
+				chatField.setText("");
+			}
+		};
+		chatField.setText("");
+		sendButton.addActionListener(sendMessageAction);
+		chatField.addActionListener(sendMessageAction);
+	}
 }
