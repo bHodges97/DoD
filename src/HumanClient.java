@@ -13,7 +13,7 @@ public class HumanClient extends Client{
 	
 	LobbyGUI lobbygui;
 	GameGUI gamegui;
-	Console console = new Console(null);
+	Console console;
 	
 	
 	public static void main(String[] args) {
@@ -29,6 +29,8 @@ public class HumanClient extends Client{
 	@Override
 	public void run(){
 		lobbygui = new LobbyGUI(this);
+		gamegui = new GameGUI("DUNGEON OF DOOM",false);;
+		console  = new Console(gamegui);
 		while(true){
 			String input = "";
 			try {
@@ -43,7 +45,7 @@ public class HumanClient extends Client{
 	protected void startGameAction() {
 		lobbygui.setEnabled(false);
 		lobbygui.dispose();
-		gamegui = new GameGUI("DUNGEON OF DOOM");
+		gamegui.setVisible(true);
 	}
 
 	@Override
@@ -54,6 +56,7 @@ public class HumanClient extends Client{
 				if(id == player.id){
 					color = player.color;
 					string="["+id+"]"+player.name+":"+string;
+					System.out.println(string);
 				}
 			}
 		}

@@ -6,6 +6,7 @@ public class LobbyPlayer implements Messageable{
 	public String name = "New Player";
 	public Color color = new Color(0, 0, 0, 0);//transparent i think havent tested it yet
 	public int id;
+	public boolean connected = true;
 	
 	
 	public Player toPlayer(){
@@ -42,12 +43,13 @@ public class LobbyPlayer implements Messageable{
 					+ "<READY>"+ready+"</READY>"
 					+ "<ISBOT>"+isBot+"</ISBOT>"
 					+ "<COLOR>"+color.getRGB()+"</COLOR>"
+					+ "<CONNECTED>"+connected+"</CONNECTED>"
 				+"</LOBBYPLAYER>";
 	}
 	
 	@Override
 	public String toString(){
-		return "ID:"+id+", Name:"+name+", Bot:"+isBot+", Ready:"+ready;
+		return "ID:"+id+", Name:"+name+", Bot:"+isBot+", Ready:"+ready+", Connected"+connected;
 		
 	}
 

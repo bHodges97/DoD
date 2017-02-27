@@ -85,7 +85,6 @@ public class LobbyGUI extends JFrame{
 	
 	public void addMessageToChat(String string,Color color)
     {	
-		System.out.println("HELLO");
 		StyledDocument document = chatPane.getStyledDocument();
 		try {
 			document.insertString(document.getLength(), "\n"+string, null);
@@ -96,11 +95,17 @@ public class LobbyGUI extends JFrame{
     }
 	
 	private void addActionListeners(){
+		startButton.addActionListener(new ActionListener() {			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				LobbyGUI.this.client.processInput("START");
+				
+			}
+		});
 		readyButton.addActionListener(new ActionListener() {			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				LobbyGUI.this.client.send("<LOBBYPLAYER><READY>"+readyButton.isSelected()+"</READY></LOBBYPLAYER>");
-				
+				LobbyGUI.this.client.send("<LOBBYPLAYER><READY>"+readyButton.isSelected()+"</READY></LOBBYPLAYER>");				
 			}
 		});
 		nameButton.addActionListener(new ActionListener() {

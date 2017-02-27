@@ -70,6 +70,10 @@ public class Element {
 				if(child.isBoolean()){
 					player.isBot = child.toBoolean();
 				}
+			}else if(tag.equals("CONNECTED")){
+				if(child.isBoolean()){
+					player.connected = child.toBoolean();
+				}
 			}else if(tag.equals("ID")){
 				if(child.isInt()){
 					player.id = child.toInt();

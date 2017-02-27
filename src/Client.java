@@ -198,7 +198,10 @@ public abstract class Client {
 		}else if(input.equals("READY")){
 			clientReady = !clientReady;
 			send("<LOBBYPLAYER><READY>"+clientReady+"</READY></LOBBYPLAYER>");
+		}else if(input.equals("START")){
+			send("<LOBBYPLAYER><START>true</START></LOBBYPLAYER>");
 		}else if(input.contains(" ")){
+			
 			String[] msg = input.split(" ", 2);
 			send("<INPUT><"+msg[0]+">"+msg[1]+"</"+msg[0]+"></INPUT>");
 		}

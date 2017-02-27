@@ -213,7 +213,7 @@ public class DODServer {
 			sockets.get(id).close();
 			sockets.set(id,null);
 			System.out.println(id + "lost connection");
-			lobbyPlayers.set(id,null);
+			lobbyPlayers.get(id).connected = false;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

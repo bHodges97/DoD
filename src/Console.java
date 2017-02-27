@@ -36,34 +36,22 @@ public class Console extends JTextArea{
 	 * @throws IOException  If an I/O error occurs
 	 */
 	protected  String readln() throws IOException{
-		input = null;
-		setEditable(true);
-		boolean fromGui = true;
-		while(buffer.ready()){
-			buffer.readLine();
-		}
-		if(gui == null){
-			return input;
-		}
-		gui.allowInputs(true);//enable gui inputss
-		while(input == null || input.equals("")){				
-			input = gui.getInput();
-			if(buffer.ready()){
-				input=buffer.readLine();
-				fromGui = false;
+		gui.allowInputs(true);
+		String line;
+		try {;
+			 line = buffer.readLine();
+			while(line == null || line.isEmpty()){
+				line = buffer.readLine();
+				String holder = gui.getInput();
+				line = holder.isEmpty()?line:holder;
 			}
-			try {
-				Thread.sleep(1);//wait for gui to update
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			line = "";
 		}
-		gui.allowInputs(false);//disable gui inputs
-		setEditable(false);//stop user from editing 
-		if(fromGui){//print gui inputs if not enterered manually
-			println(input);
-		}
-		return input;
+		gui.allowInputs(false);
+		return line;
 	}
 	
 	/**

@@ -18,11 +18,12 @@ public class Parser {
 	
 	
 	public static String sanitise(String input){
-		
+		if(input == null || input.isEmpty()){
+			return "";
+		}
 		input = input.replaceAll("/", "//");
 		input = input.replaceAll(">", "/>");
 		input = input.replaceAll("<", "/<");		
-		
 		return input;
 	}
 	

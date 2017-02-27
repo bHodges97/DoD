@@ -48,7 +48,7 @@ public class GameGUI extends JFrame{
 	 * @param title The title text of the frame
 	 * @param visible true if the frame should be visible
 	 */
-	public GameGUI(String title){
+	public GameGUI(String title,boolean visible){
 		super(title);
 		this.console = new Console(this);
 		scrollArea = new JScrollPane(this.console);
@@ -60,7 +60,7 @@ public class GameGUI extends JFrame{
 		paintPanel.addMouseListener(getMouseListener());
 		paintPanel.addKeyListener(getKeyListener());
 		pack();
-		setVisible(true);
+		setVisible(false);
 	}
 	
 	/**
@@ -97,7 +97,7 @@ public class GameGUI extends JFrame{
 	/**
 	 * @return What a player inputted to gui
 	 */
-	protected String getInput(){
+	protected synchronized String getInput(){
 		return guiInput;
 	}
 	
