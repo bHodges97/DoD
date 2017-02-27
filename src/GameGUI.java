@@ -25,7 +25,7 @@ import javax.swing.border.LineBorder;
 /**
  * The main gui in which DOD is rendered on
  */
-public class MyFrame extends JFrame{
+public class GameGUI extends JFrame{
 	Console console;
 	private JScrollPane scrollArea;
 	private JPanel paintPanel = new JPanel();//TODO:
@@ -42,12 +42,13 @@ public class MyFrame extends JFrame{
 	private String guiInput = null;
 	private boolean allowInputs = false;
 	
+	
 	/**
 	 * Initialise a new frame
 	 * @param title The title text of the frame
 	 * @param visible true if the frame should be visible
 	 */
-	public MyFrame(String title, boolean visible){
+	public GameGUI(String title){
 		super(title);
 		this.console = new Console(this);
 		scrollArea = new JScrollPane(this.console);
@@ -59,7 +60,7 @@ public class MyFrame extends JFrame{
 		paintPanel.addMouseListener(getMouseListener());
 		paintPanel.addKeyListener(getKeyListener());
 		pack();
-		setVisible(visible);
+		setVisible(true);
 	}
 	
 	/**

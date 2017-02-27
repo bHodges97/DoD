@@ -135,8 +135,12 @@ public abstract class Client {
 			}
 		}else if(tag.equals("GAMESTART")){
 			gameStarted = true;
+			System.out.println("Dungeon of DOOM has started");
+			startGameAction();
 		}	
 	}
+	
+	
 	public void processDuringGame(Element element){
 		String tag = element.tag;
 		String value = element.value;
@@ -189,7 +193,9 @@ public abstract class Client {
 
 
 	protected synchronized void processUserInput(String input) {
-		if(input.equals("READY")){
+		if(input.isEmpty()){
+			return;
+		}else if(input.equals("READY")){
 			clientReady = !clientReady;
 			send("<LOBBYPLAYER><READY>"+clientReady+"</READY></LOBBYPLAYER>");
 		}else if(input.contains(" ")){
@@ -197,5 +203,7 @@ public abstract class Client {
 			send("<INPUT><"+msg[0]+">"+msg[1]+"</"+msg[0]+"></INPUT>");
 		}
 	}
+	
+	protected abstract void startGameAction();
 	
 }

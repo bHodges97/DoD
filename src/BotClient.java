@@ -22,5 +22,10 @@ public class BotClient extends Client {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	protected void startGameAction() {
+		
+	}
 	
 }

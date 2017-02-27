@@ -12,7 +12,7 @@ import javax.swing.text.BadLocationException;
 
 public class Console extends JTextArea{
 	
-	private MyFrame gui ;
+	private GameGUI gui ;
 	private BufferedReader buffer=new BufferedReader(new InputStreamReader(System.in));
 	private String input;
 	private Set<Integer> arrowKeys = new HashSet<Integer>();
@@ -21,7 +21,7 @@ public class Console extends JTextArea{
 	 * Initialise a console using the given JFrame
 	 * @param gui 
 	 */
-	public Console(MyFrame gui){
+	public Console(GameGUI gui){
 		super();
 		this.gui = gui;
 		setFont(new Font("monospaced", Font.PLAIN, 12));
@@ -41,6 +41,9 @@ public class Console extends JTextArea{
 		boolean fromGui = true;
 		while(buffer.ready()){
 			buffer.readLine();
+		}
+		if(gui == null){
+			return input;
 		}
 		gui.allowInputs(true);//enable gui inputss
 		while(input == null || input.equals("")){				

@@ -6,13 +6,24 @@ public class Parser {
 	 * @param args
 	 */
 	public static void main(String[] args){
+		System.out.println(sanitise("hello // // <> /<>"));
 		String[] ffs = " ".split(" ",2);
 		System.out.println(ffs[0]);
 		System.out.println(ffs[1]);
-		//parse("<player><name>hello</name><id>2</id></player>").print(0);;
-		parse("<LOBBYPLAYER><BOT>false</BOT><READY>false<READY></LOBBYPLAYER>").print(0);
+		parse("<player><name>he/<//name/>llo</name><id>2</id></player>").print(0);;
+	//	parse("<LOBBYPLAYER><BOT>false</BOT><READY>false<READY></LOBBYPLAYER>").print(0);
 		//parse("<ID></ID>").print(0);
-		parse("<><><<<");
+		//parse("<><><<<");
+	}
+	
+	
+	public static String sanitise(String input){
+		
+		input = input.replaceAll("/", "//");
+		input = input.replaceAll(">", "/>");
+		input = input.replaceAll("<", "/<");		
+		
+		return input;
 	}
 	
 	
@@ -32,29 +43,28 @@ public class Parser {
 		//awful way of handling strings such as "<<<<<"
 		char[] chars = (in+" ").toCharArray();
 		Stack<Element> stack = new Stack<Element>();
-    	String tagBuilder = "";
-    	String valueBuilder = "";
-    	boolean buildTag = false;
+    	String builder = "";
     	boolean buildTagEnd = false;
     	
     	for(int i = 0;i < chars.length;++i){
-    		if(chars[i]== '<' && chars[i+1] != '/'){
+    		
+    		if(chars[i] == '/' && (chars[i+1] == '<' || chars[i+1] == '>' || chars[i+1] == '/')){
+    			++i;
+    			builder += chars[i];
+    		}else if(chars[i]== '<' && chars[i+1] != '/'){
     			//start of a tag, start building name
-    			buildTag = true;
-    			valueBuilder = "";
-    			tagBuilder = "";
+    			builder = "";
     		}else if(chars[i]== '<' && chars[i+1] == '/'){
     			//end of a tag stop building value and start building name
     			++i;
-    			buildTag = true;
     			buildTagEnd = true;
-    			stack.peek().value = valueBuilder;
-    			valueBuilder = "";
+    			stack.peek().value = builder;
+    			builder = "";
     		}else if(chars[i] == '>' && buildTagEnd){
     			//if this is not root element move it from stack to its parent
 				Element current = stack.pop();
 				//Validation
-				if(!current.tag.equals(tagBuilder)){
+				if(!current.tag.equals(builder)){
 					System.out.println("Could not be parsed(Invalid closing tag!):"+in);
 					return null;
 				}
@@ -66,19 +76,13 @@ public class Parser {
 					return current;
 				}
 				buildTagEnd = false;
-    			buildTag = false;  
-				tagBuilder = "";	
+				builder = "";	
     		}else if(chars[i] == '>' && !buildTagEnd){
     			//Add new element
-    			stack.add(new Element(tagBuilder));	
-    			tagBuilder = "";
-    			buildTag = false;
-    		}else if(buildTag){
-    			//build name
-    			tagBuilder+=chars[i];
+    			stack.add(new Element(builder));	
+    			builder = "";
     		}else{
-    			//build value
-    			valueBuilder+=chars[i];
+    			builder+=chars[i];
     		}
     	}
     	//correctly formatted string should not reach this stage

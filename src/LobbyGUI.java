@@ -108,7 +108,7 @@ public class LobbyGUI extends JFrame{
 			public void actionPerformed(ActionEvent e) {
 				String output = JOptionPane.showInputDialog(LobbyGUI.this,"Enter a new name");
 				if(output != null && !output.isEmpty()){
-					LobbyGUI.this.client.send("<LOBBYPLAYER><NAME>"+output+"</NAME></LOBBYPLAYER>");
+					LobbyGUI.this.client.send("<LOBBYPLAYER><NAME>"+Parser.sanitise(output)+"</NAME></LOBBYPLAYER>");
 				}
 				
 			}
@@ -128,7 +128,8 @@ public class LobbyGUI extends JFrame{
 		ActionListener sendMessageAction = new ActionListener() {			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				LobbyGUI.this.client.processUserInput("SHOUT "+LobbyGUI.this.chatField.getText());
+				String input = LobbyGUI.this.chatField.getText();
+				LobbyGUI.this.client.processUserInput("SHOUT "+ Parser.sanitise(input));
 				chatField.setText("");
 			}
 		};

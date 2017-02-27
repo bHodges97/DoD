@@ -140,6 +140,8 @@ public class DODServer {
     	String value = message.value;
     	if(tag.equals("INPUT")){
     		controllers.get(id).setInput(value); 
+    	}else if(tag.equals("OUTPUT")){
+    		send("<OUTPUT>"+message.value+"</OUTPUT>", id);
     	}
 	}
 

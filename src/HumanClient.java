@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -10,7 +11,11 @@ import javax.swing.text.Document;
 
 public class HumanClient extends Client{
 	
-	LobbyGUI gui;
+	LobbyGUI lobbygui;
+	GameGUI gamegui;
+	Console console = new Console(null);
+	
+	
 	public static void main(String[] args) {
 		HumanClient client = new HumanClient(args);		
 	}
@@ -23,11 +28,22 @@ public class HumanClient extends Client{
 	
 	@Override
 	public void run(){
-		gui = new LobbyGUI(this);
+		lobbygui = new LobbyGUI(this);
 		while(true){
-			String input = readFromConsole();
-			processUserInput(input);
+			String input = "";
+			try {
+				input = console.readln();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			processUserInput(Parser.sanitise(input));
 		}
+	}
+	
+	protected void startGameAction() {
+		lobbygui.setEnabled(false);
+		lobbygui.dispose();
+		gamegui = new GameGUI("DUNGEON OF DOOM");
 	}
 
 	@Override
@@ -41,24 +57,24 @@ public class HumanClient extends Client{
 				}
 			}
 		}
-		if(gui != null){
-			gui.addMessageToChat(string, color);
+		if(lobbygui != null){
+			lobbygui.addMessageToChat(string, color);
 		}
 	}
 
 	@Override
 	public void updateLobbyInfo() {
 		super.updateLobbyInfo();
-		if(gui == null){
+		if(lobbygui == null){
 			return;
 		}
 		for(LobbyPlayer player:lobbyPlayers){
 			if(!player.ready){
-				gui.startButton.setEnabled(false);
+				lobbygui.startButton.setEnabled(false);
 				return;
 			}
 		}
-		gui.startButton.setEnabled(true);
+		lobbygui.startButton.setEnabled(true);
 		//TODO; and then added panels
 	}
 	

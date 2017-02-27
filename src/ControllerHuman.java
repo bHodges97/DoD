@@ -22,6 +22,7 @@ public class ControllerHuman extends Controller{
 
 	@Override
 	public void sendOutput(String output) {
+		output = Parser.sanitise(output);
 		server.processInput("<OUT>"+ output + "</OUT>", id);
 	}   
 }
