@@ -2,7 +2,7 @@
 public class FightResolver {
 	Player[] players = new Player[2];
 	String[] playerActions = new String[2];
-	String ROCK = "ROCK",SCIZZORS = "SCIZZORS",PAPER = "PAPER";
+	String ROCK = "ROCK",SCISSORS = "SCISSORS",PAPER = "PAPER";
 	volatile boolean resolved = false;
 	long startTime;
 	int timer = 10;
@@ -21,8 +21,8 @@ public class FightResolver {
 					try {
 						
 						Thread.sleep(1000);
-						if(!resolved){
-							messageAllPlayers("Type "+ROCK+", "+PAPER+" OR "+SCIZZORS+". You have "+i+" seconds remaining");
+						if(!resolved && i == timer/2){
+							messageAllPlayers("Type "+ROCK+", "+PAPER+" OR "+SCISSORS+". You have "+i+" seconds remaining");
 						}
 						--i;
 					} catch (InterruptedException e) {
@@ -39,8 +39,8 @@ public class FightResolver {
 	
 	public String handle(String input,Player player){
 		int id = player == players[0]?0:1;
-		if(input != ROCK || input != PAPER || input != SCIZZORS || input != "SURRENDER"){
-			return "Invalid command, Accepted are "+ROCK+", "+PAPER+" or "+SCIZZORS;
+		if( !input.equals(ROCK) && !input.equals(PAPER) && !input.equals(SCISSORS) && !input.equals("SURRENDER")){
+			return "Invalid command, Accepted are "+ROCK+", "+PAPER+" or "+SCISSORS;
 		}
 		playerActions[id] = input;
 		
@@ -53,20 +53,21 @@ public class FightResolver {
 	}
 	
 	private void resolveCombat(){
-		for(int i = 0;i < 1;++i){
-			if(playerActions[i].equals(ROCK) && playerActions[1-i].equals(SCIZZORS)){
+		for(int i = 0;i < 2;++i){
+			if(playerActions[i].equals(ROCK) && playerActions[1-i].equals(SCISSORS)){
 				winner = i;
 				break;
 			}else if(playerActions[i].equals(PAPER) && playerActions[1-i].equals(ROCK)){
 				winner = i;
 				break;
-			}else if(playerActions[i].equals(SCIZZORS) && playerActions[1-i].equals(PAPER)){
+			}else if(playerActions[i].equals(SCISSORS) && playerActions[1-i].equals(PAPER)){
 				winner = i;
 				break;
 			}else if(!playerActions[i].equals("SURRENDER") && playerActions[1-i].equals("SURRENDER")){
 				winner = i;
 				break;
 			}
+			System.out.println(i+" "+ winner+" "+playerActions[0] +" , "+playerActions[1]);
 		}
 		if(winner > -1){
 			players[1-winner].lostCombat();

@@ -14,7 +14,7 @@ public abstract class Client {
 	Socket socket;
 	int id;
 	List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
-	LobbyPlayer clientPlayer = new LobbyPlayer();
+	LobbyPlayer clientPlayer = new LobbyPlayer(0);
 	volatile boolean gameStarted = false;
 	
 	
@@ -138,7 +138,7 @@ public abstract class Client {
 			}
 		}else if(tag.equals("GAMESTART")){
 			gameStarted = true;
-			System.out.println("Dungeon of DOOM has started");
+			print(-1,"Dungeon of DOOM has started");
 			startGameAction();
 		}	
 	}
@@ -148,7 +148,7 @@ public abstract class Client {
 		String tag = element.tag;
 		String value = element.value;
 		if(tag.equals("OUTPUT")){
-			System.out.println(Parser.convertToMultiLine(value));
+			print(-1,Parser.convertToMultiLine(value));
 		}
 	}
 	
@@ -173,7 +173,7 @@ public abstract class Client {
 				return;
 			}
 		}
-		LobbyPlayer player = new LobbyPlayer();
+		LobbyPlayer player = new LobbyPlayer(playerID);
 		lobbyPlayers.add(player);
 		e.toLobbyPlayer(player);
 		print(-1,"Player "+player.id+" joined.");

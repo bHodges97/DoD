@@ -9,6 +9,10 @@ public class LobbyPlayer implements Messageable{
 	public boolean connected = true;
 	
 	
+	public LobbyPlayer(int connectionsCounter) {
+		name = "Player "+connectionsCounter;
+	}
+
 	public Player toPlayer(){
 		Player player;
 		if(isBot){

@@ -81,11 +81,11 @@ abstract class Player implements Messageable,Displayable{
     
 	protected abstract boolean isImmortal();
 	public void tryEscape() {
-		int goldCount = getGoldCount();
+		int goldCount = Integer.valueOf(processCommand("HELLO").split("GOLD: ")[1]);
 		if(this.getGoldCount() >= goldCount){
 			this.state = PlayerState.ESCAPED;
+			controller.sendOutput("ESCAPED");
 		}
-		controller.sendOutput("ESCAPED");
 		//TODO: make this fancier?/
 	}
 	public boolean isInGame() {

@@ -115,7 +115,7 @@ public class GameLogic {
     	}
     	Player player = getPlayerAt(playerNewPos);
     	if(player != null){
-    		if(player.isImmortal()){
+    		if(player.isImmortal() || player.fightResolver != null){
     			return "FAIL";
     		}else if(currentPlayer.isImmortal()){
     			kill(player);
@@ -123,8 +123,8 @@ public class GameLogic {
     			player.fightResolver = new FightResolver(currentPlayer, player);
     			currentPlayer.fightResolver = player.fightResolver;
     			currentPlayer.controller.sendOutput("You attacked "+player.name);
-    			currentPlayer.controller.sendOutput(currentPlayer.name + "attacked you!");
-    			String output = "Time to fight!\n Type ROCK, PAPER or SCIZORS";
+    			currentPlayer.controller.sendOutput(currentPlayer.name + " attacked you!");
+    			String output = "Time to fight!\n Type ROCK, PAPER or SCISSORS";
     			player.controller.sendOutput(output);
     			return output;
     		}

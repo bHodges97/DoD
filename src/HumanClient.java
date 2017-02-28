@@ -29,9 +29,9 @@ public class HumanClient extends Client{
 	@Override
 	public void run(){
 		lobbygui = new LobbyGUI(this);		
-		gamegui = new GameGUI("DUNGEON OF DOOM",false);
 		console  = new Console(gamegui);
-		gamegui.console = console;
+		gamegui = new GameGUI("DUNGEON OF DOOM",false,console);
+		console.gui = gamegui;
 		while(true){
 			String input = "";
 			try {
@@ -46,6 +46,7 @@ public class HumanClient extends Client{
 	protected void startGameAction() {
 		lobbygui.setEnabled(false);
 		lobbygui.dispose();
+		lobbygui = null;
 		//TODO: game gui was null here once havent reproduced it yet
 		gamegui.setVisible(true);
 	}
@@ -57,13 +58,17 @@ public class HumanClient extends Client{
 			for(LobbyPlayer player:lobbyPlayers){
 				if(id == player.id){
 					color = player.color;
-					string="["+id+"]"+player.name+":"+string;
-					System.out.println(string);
+					string="["+id+"]"+player.name+":"+string;					
+					break;
 				}
 			}
 		}
+		System.out.println(string);
 		if(lobbygui != null){
 			lobbygui.addMessageToChat(string, color);
+		}
+		if(console != null){
+			gamegui.console.println(string);
 		}
 	}
 

@@ -12,7 +12,7 @@ import javax.swing.text.BadLocationException;
 
 public class Console extends JTextArea{
 	
-	private GameGUI gui ;
+	protected GameGUI gui ;
 	private BufferedReader buffer=new BufferedReader(new InputStreamReader(System.in));
 	private String input;
 	private Set<Integer> arrowKeys = new HashSet<Integer>();
@@ -72,7 +72,6 @@ public class Console extends JTextArea{
 	 * @param chars: the chars to print
 	 */
 	protected void print(String chars){
-		System.out.print(chars);
 		append(chars);
 		setCaretPosition(getText().length());
 	}	

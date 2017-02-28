@@ -75,20 +75,6 @@ public class DODServer {
 		
     }
     
-    public synchronized void processInput(String input,int id){
-    	Element message = Parser.parse(input);
-    	if(message == null){
-    		System.out.println("Invalid Message from" + id);
-    		return;
-    	}
-
-    	if(game.getGameState() ==  GameState.NOTSTARTED){
-    		handlePreGame(message,id);
-    	}else{
-    		handleDuringGame(message,id);
-    	}
-    }
-    
 
 	public synchronized void send(String input,int id){
 		if(id < 0 || sockets.isEmpty() || sockets.get(id) == null){
@@ -107,34 +93,30 @@ public class DODServer {
     }
     
     
-    private void acceptConnections(){
-    	System.out.println("Looking for connections");
-    	while(game.getGameState() == GameState.NOTSTARTED){
-			try{
-				Socket clientSocket = serverSocket.accept();
-				if(game.getGameState() != GameState.NOTSTARTED){
-					System.out.println("Slow way of closing");
-					clientSocket.close();
-					break;
-				}				
-				LobbyPlayer player = new LobbyPlayer();
-				lobbyPlayers.add(player);
-				player.id = connectionsCounter;
-				System.out.println("Client "+connectionsCounter+" connected.");
-				ServerReadThread thread = new ServerReadThread(clientSocket, this, connectionsCounter);
-				thread.start();
-				OutputStream out = clientSocket.getOutputStream();
-				writers.add(new PrintWriter(out));
-				sockets.add(clientSocket);
-				readThreads.add(thread);
-				++connectionsCounter;
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-		}
-    	//TODO: can close blocking socket with close experiment later
-    }
+
+
     
+    public synchronized void processInput(String input,int id){
+    	Element message = Parser.parse(input);
+    	if(message == null){
+    		System.out.println("Invalid Message from" + id);
+    		return;
+    	}
+    	if(message.tag.equals("INPUT")){
+			if(message.value.startsWith("SHOUT ")){
+				String shout = message.value.split("SHOUT ")[1];
+				System.out.println(id+":"+shout);
+				sendToAll("<SHOUT><ID>"+id+"</ID><MESSAGE>"+Parser.sanitise(shout)+"</MESSAGE></SHOUT>");
+				return;
+			}
+		}	    	
+    	
+    	if(game.getGameState() ==  GameState.NOTSTARTED){
+    		handlePreGame(message,id);
+    	}else{
+    		handleDuringGame(message,id);
+    	}
+    }
     private void handleDuringGame(Element message,int id) {
     	String tag = message.tag;
     	String value = message.value;
@@ -159,13 +141,7 @@ public class DODServer {
 			//just making sure client doesn't get to change their id.
 			player.id = id;
 		}else if(tag.equals("GETID")){
-			send("<ID>"+id+"</ID>",id);
-		}else if(tag.equals("INPUT")){
-			if(value.startsWith("SHOUT ")){
-				value = value.split("SHOUT ")[1];
-				System.out.println(id+":"+value);
-				sendToAll("<SHOUT><ID>"+id+"</ID><MESSAGE>"+Parser.sanitise(value)+"</MESSAGE></SHOUT>");
-			}			
+			send("<ID>"+id+"</ID>",id);		
 		}else{
 			System.out.println("Unrecognised lobby command");
 			message.print(0);
@@ -218,6 +194,34 @@ public class DODServer {
 				game.startGame();
 			}
 		}.start();
+    }
+	
+    private void acceptConnections(){
+    	System.out.println("Looking for connections");
+    	while(game.getGameState() == GameState.NOTSTARTED){
+			try{
+				Socket clientSocket = serverSocket.accept();
+				if(game.getGameState() != GameState.NOTSTARTED){
+					System.out.println("Slow way of closing");
+					clientSocket.close();
+					break;
+				}				
+				LobbyPlayer player = new LobbyPlayer(connectionsCounter);
+				lobbyPlayers.add(player);
+				player.id = connectionsCounter;
+				System.out.println("Client "+connectionsCounter+" connected.");
+				ServerReadThread thread = new ServerReadThread(clientSocket, this, connectionsCounter);
+				thread.start();
+				OutputStream out = clientSocket.getOutputStream();
+				writers.add(new PrintWriter(out));
+				sockets.add(clientSocket);
+				readThreads.add(thread);
+				++connectionsCounter;
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+    	//TODO: can close blocking socket with close experiment later
     }
 	
 	void close(int id){

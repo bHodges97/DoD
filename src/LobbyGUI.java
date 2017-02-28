@@ -15,8 +15,11 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
 import javax.swing.border.Border;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
@@ -80,14 +83,18 @@ public class LobbyGUI extends JFrame{
 		setResizable(false);
 		setVisible(true);
 		pack();
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
 	
 	public void addMessageToChat(String string,Color color)
     {	
 		StyledDocument document = chatPane.getStyledDocument();
+		StyleContext sc = StyleContext.getDefaultStyleContext();
+	    AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY,
+	                                        StyleConstants.Foreground, color);
+	   
 		try {
-			document.insertString(document.getLength(), "\n"+string, null);
+			document.insertString(document.getLength(), "\n"+string, aset);
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}

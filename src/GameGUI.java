@@ -48,9 +48,9 @@ public class GameGUI extends JFrame{
 	 * @param title The title text of the frame
 	 * @param visible true if the frame should be visible
 	 */
-	public GameGUI(String title,boolean visible){
+	public GameGUI(String title,boolean visible,Console console){
 		super(title);
-		this.console = new Console(this);
+		this.console = console;
 		scrollArea = new JScrollPane(this.console);
 		loadIcons();
 		initialiseLayout();		
@@ -329,5 +329,5 @@ public class GameGUI extends JFrame{
 		};
 		return listener;
 	}
-	
+
 }
