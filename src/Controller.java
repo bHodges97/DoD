@@ -16,8 +16,5 @@ public abstract class Controller {
 	
 	
 	public abstract void sendOutput(String output);
-	public synchronized void setInput(String string) {
-		input = string;
-	}
 
 }

@@ -15,7 +15,7 @@ import java.util.Set;
 public class Map{	
 	private String mapName = "";
 	private int goldRequired = 0;
-	private List<Tile> tileList;
+	public List<Tile> tileList;//TODO: private
 	private Set<DroppedItems> droppedItems = new  HashSet<DroppedItems>();
 	private int width = 0,height = 0;
 	private int minx = 0,miny = 0;
@@ -98,9 +98,8 @@ public class Map{
 				for(char c:line){
 					if(c == 'G'){
 						droppedItems.add(new DroppedItems(new ItemGold(),1,x,y));
-					}else{
-						addTile(c,x,y);
-					}
+					}					
+					addTile(c,x,y);
 					++x;
 				}
 				++y;
@@ -185,10 +184,16 @@ public class Map{
     }
     
     protected Tile getTile(Position tilePosition){
+    	if(tilePosition == null){
+    		return null;
+    	}
     	Tile tile = null;
     	int index  = (tilePosition.x-minx)+(tilePosition.y-miny)*height;
-    	if(index <= tileList.size()){
+    	
+    	if(index < tileList.size() && index >= 0){
     		 tile = tileList.get(index);
+    	}else{
+    		return null;
     	}
     	if(tile != null){
     		if(tile.pos.equalsto(tilePosition)){
@@ -198,7 +203,7 @@ public class Map{
     		}
     	}
     	for(Tile current: tileList){
-    		if(Position.equals(current.pos, tilePosition)){
+    		if(current != null && Position.equals(current.pos, tilePosition)){
     			return current;
     		}
     	}
@@ -229,12 +234,7 @@ public class Map{
 		
 	}
 	protected char getItemCharAt(Position pos){
-		for(DroppedItems droppedItem : droppedItems){
-			if(droppedItem.position.equals(pos)){
-				return droppedItem.inventory.getDisplayChar();
-			}
-		}
-		throw new IllegalArgumentException("No items at "+pos.toString());
+		return getDroppedItemsAt(pos).inventory.getDisplayChar();
 	}
 	protected boolean isTileEmpty(Position pos){
 		return getDroppedItemsAt(pos) == null;
@@ -242,8 +242,10 @@ public class Map{
 	
 	protected DroppedItems getDroppedItemsAt(Position pos){
 		for(DroppedItems droppedItem : droppedItems){
-			if(droppedItem.position.equals(pos)){
+			if(droppedItem.position.equalsto(pos)){
 				return droppedItem;
+			}else{
+				
 			}
 		}
 		return null;
@@ -251,11 +253,11 @@ public class Map{
 	
     private void addTile(char c,int x, int y){
     	Position pos = new Position(x,y);
-    	if(x > width-minx){
-    		width = x-minx;
+    	if(x >= width-minx){
+    		width = x-minx+1;
     	}
-    	if(y > height-miny){
-    		height = y-miny;
+    	if(y >= height-miny){
+    		height = y-miny+1;
     	}
     	if(x < minx){
     		width += x-minx;
@@ -269,6 +271,8 @@ public class Map{
     		tileList.add(new TileWall(pos));
     	}else if( c == 'E'){
     		tileList.add(new TileExit(pos));
+    	}else if( c == 'G'){
+    		tileList.add(new TileFloor(pos));
     	}else if( c == '.'){
     		tileList.add(new TileFloor(pos));
     	}else{

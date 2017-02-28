@@ -35,13 +35,22 @@ public class GameLogic {
 		if(players.isEmpty()){
 			return;
 		}
+		gameState = GameState.RUNNING;
 		for(Player player:players){
 			Thread thread = new Thread(new PlayerLogicThread(player,this));
+			thread.start();
 			threads.add(thread);
 		}
-		for(Thread thread:threads){
-			thread.start();
+		
+		for(int y = 0; y< map.getMapHeight();++y){
+			for(int x = 0; x < map.getMapWidth();++x){
+				System.out.print(map.getTile(new Position(x,y)).getDisplayChar());
+			}
+			System.out.print("\n");
 		}
+		
+		
+		
 		while(gameState != GameState.STOPPED){
 			if(players.isEmpty()){
 				break;
@@ -54,31 +63,6 @@ public class GameLogic {
 		}
 		System.out.println("Game ended. Server is shutting down");
 		System.exit(0);
-		
-		/*
-		currentPlayer = players.get(0);
-		gui.update(currentPlayer,gameState);
-		while(running){
-			console.println("Turn "+turnCounter);
-			for(Player player: players){
-				if(player.lives == 0){
-					continue;
-				}
-				currentPlayer.isMainPlayer = false;//uncomment these lines to have gui focus on current player
-				player.isMainPlayer = true;
-				gui.update(player,gameState);
-				
-				currentPlayer = player;
-				player.selectNextAction();
-				if(checkWin() || checkLost()){
-					break;
-				}
-				gui.update(player,gameState);
-			}				
-			++turnCounter;
-		}
-		gui.update(currentPlayer,gameState);
-		*/
 		
 	}
 	
@@ -96,6 +80,7 @@ public class GameLogic {
 		List<Tile> emptyTiles = new ArrayList<Tile>(map.findEmptyTiles(usedPositions));
 		int randomNum = rand.nextInt(emptyTiles.size());
 		player.position  = new Position(emptyTiles.get(randomNum).pos);
+		player.state = PlayerState.PLAYING;
 		players.add(player);
 	}
 	
@@ -123,12 +108,32 @@ public class GameLogic {
     protected synchronized String move(Player currentPlayer,char direction) {
     	Position playerPos = currentPlayer.position;
     	Position playerNewPos = playerPos.getAdjacentTile(direction);
-		if(playerNewPos != null && map.getTile(playerNewPos).isPassable() ){ 
-			playerPos = playerNewPos;
-			return "Success";
-		}else{
-			return "Fail";
-		}
+    	if(playerNewPos == null || !map.getTile(playerNewPos).isPassable() ){
+    		return "Fail";
+    	}else if(currentPlayer.state != PlayerState.PLAYING){
+    		return "Fail";
+    	}
+    	Player player = getPlayerAt(playerNewPos);
+    	if(player != null){
+    		if(player.isImmortal()){
+    			return "FAIL";
+    		}else if(currentPlayer.isImmortal()){
+    			kill(player);
+    		}else{
+    			player.fightResolver = new FightResolver(currentPlayer, player);
+    			currentPlayer.fightResolver = player.fightResolver;
+    			currentPlayer.controller.sendOutput("You attacked "+player.name);
+    			currentPlayer.controller.sendOutput(currentPlayer.name + "attacked you!");
+    			String output = "Time to fight!\n Type ROCK, PAPER or SCIZORS";
+    			player.controller.sendOutput(output);
+    			return output;
+    		}
+    	}
+    	
+    	
+		currentPlayer.position = playerNewPos;
+		map.getTile(playerNewPos).onSteppedOn(currentPlayer);
+		return "Success";
     }
 
     /**
@@ -136,21 +141,20 @@ public class GameLogic {
      *
      * @return : A String representation of the game map.
      */
-    protected synchronized String look(Player currentPlayer) {
+    protected synchronized String look(Player currentPlayer) {   	
     	String output = "";
     	Position playerPos = new Position(currentPlayer.position);
-		for(int y = -2;y<2;++y){
-			for(int x = -2;x<2;++x){
+		for(int y = -2;y<=2;++y){
+			for(int x = -2;x<=2;++x){
 				Position drawingPos = new Position(playerPos.x+x,playerPos.y+y);
 				Tile tile = map.getTile(drawingPos);
-				char displayChar = tile == null? '#':tile.getDisplayChar() ;
-				for(Player player:players){
-					if(Position.equals(player.position, drawingPos)){
-						displayChar = player.getDisplayChar();
-					}
+				char displayChar = (tile == null? '#':tile.getDisplayChar());
+				if(!map.isTileEmpty(drawingPos)){
+					displayChar = map.getItemCharAt(drawingPos);
 				}
-				if(!map.isTileEmpty(playerPos)){
-					displayChar = map.getItemCharAt(playerPos);
+				Player tempPlayer = getPlayerAt(drawingPos);
+				if(tempPlayer!=null){
+					displayChar = tempPlayer.getDisplayChar();
 				}
 				output+=displayChar;
 			}
@@ -182,6 +186,24 @@ public class GameLogic {
     
     protected GameState getGameState(){
     	return gameState;
+    }
+    
+    protected Player getPlayerAt(Position position){
+    	for(Player player:players){
+			if(player.isInGame() && Position.equals(player.position, position)){
+				return player;
+			}
+		}
+    	return null;
+    }
+    
+    private void kill(Player player){
+    	player.state = PlayerState.DEAD;
+    	if(player.inventory.isEmpty()){
+    		DroppedItems dropped = new DroppedItems(player.inventory,player.position);
+    	}
+    	player.inventory.empty();
+    	player.controller.sendOutput("You have died!");
     }
 
 }

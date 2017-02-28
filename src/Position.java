@@ -1,6 +1,6 @@
 
 
-public class Position {
+public class Position implements Messageable{
 	int x = 0;
 	int y = 0;
 	
@@ -27,9 +27,9 @@ public class Position {
 			return 'E';
 		}else if(pos.x < x){
 			return 'W';
-		}else if(pos.y < y){
-			return 'S';
 		}else if(pos.y > y){
+			return 'S';
+		}else if(pos.y < y){
 			return 'N';
 		}else{
 			throw new IllegalArgumentException("Position overlaps current position");
@@ -39,15 +39,15 @@ public class Position {
 	public Position getAdjacentTile(char direction){
 		switch(direction){
 		case 'N':
-			return new Position(x,y+1);
-		case 'W':
-			return new Position(x+1,y);
-		case 'E':
-			return new Position(x-1,y);
-		case 'S':
 			return new Position(x,y-1);
+		case 'W':
+			return new Position(x-1,y);
+		case 'E':
+			return new Position(x+1,y);
+		case 'S':
+			return new Position(x,y+1);
 		default:
-			return null;
+			throw new IllegalArgumentException("Unexpected direction" + direction);
 		}
 	}
 	
@@ -57,6 +57,11 @@ public class Position {
 	
 	public String toString(){
 		return x+","+y;
+	}
+
+	@Override
+	public String getInfo() {
+		return "<POSITION><X>"+x+"</X><Y>"+y+"</Y><POSITION>";
 	}
 	
 }

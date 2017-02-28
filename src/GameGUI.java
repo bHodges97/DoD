@@ -60,6 +60,7 @@ public class GameGUI extends JFrame{
 		paintPanel.addMouseListener(getMouseListener());
 		paintPanel.addKeyListener(getKeyListener());
 		pack();
+		allowInputs(true);
 		setVisible(false);
 	}
 	
@@ -92,13 +93,16 @@ public class GameGUI extends JFrame{
 				((JButton) comp).setEnabled(mode);
 			}
 		}
+		
 	}
 	
 	/**
 	 * @return What a player inputted to gui
 	 */
 	protected synchronized String getInput(){
-		return guiInput;
+		String in = guiInput;
+		guiInput = null;
+		return in;
 	}
 	
 	/**

@@ -12,4 +12,9 @@ public class DroppedItems {
 		this.inventory = new Inventory();
 		inventory.addItemStack(new ItemStack(item,count));
 	}
+
+	public DroppedItems(Inventory inventory, Position position) {
+		this.inventory = inventory;
+		this.position = new Position(position);
+	}
 }

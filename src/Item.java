@@ -3,14 +3,10 @@ import java.awt.Image;
 public abstract class Item implements Messageable,Displayable{
 
 
-	@Override
-	public String getSummary() {
-		return getName();
-	}
 
 	@Override
-	public String getFullInfo() {
-		return getName()+","+getDescription();
+	public String getInfo() {
+		return "<ITEM><NAME>"+getName()+"</NAME><DESCRIPTION>"+getDescription()+"</DESCRIPTION></ITEM>";
 	}
 
 	public abstract String getName();

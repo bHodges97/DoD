@@ -6,14 +6,18 @@ public class Parser {
 	 * @param args
 	 */
 	public static void main(String[] args){
-		System.out.println(sanitise("hello // // <> /<>"));
-		String[] ffs = " ".split(" ",2);
-		System.out.println(ffs[0]);
-		System.out.println(ffs[1]);
-		parse("<player><name>he/<//name/>llo</name><id>2</id></player>").print(0);;
+		String x = "hello\nworld";
+		String x1 = Parser.convertFromMultiLine(x);
+		System.out.println(x1);
+		String x2 = Parser.convertToMultiLine(x1);
+		System.out.println(x2);
+		
+		System.out.println(sanitise("<tag>"));
+		parse("<GAMESTART></GAMESTART>").print(0);;
 	//	parse("<LOBBYPLAYER><BOT>false</BOT><READY>false<READY></LOBBYPLAYER>").print(0);
 		//parse("<ID></ID>").print(0);
 		//parse("<><><<<");
+		
 	}
 	
 	
@@ -23,9 +27,16 @@ public class Parser {
 		}
 		input = input.replaceAll("/", "//");
 		input = input.replaceAll(">", "/>");
-		input = input.replaceAll("<", "/<");		
+		input = input.replaceAll("<", "/<");	
 		return input;
 	}
+	
+	public static String convertToMultiLine(String string){
+		return (string.replaceAll("\\\\n","\n"));
+	}	
+	public static String convertFromMultiLine(String input){
+		return  (input.replaceAll("\\n", "\\\\n"));	
+	}	
 	
 	
 	/**

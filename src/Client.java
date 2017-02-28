@@ -94,6 +94,9 @@ public abstract class Client {
 
 	public synchronized void processInput(String line) {
 		Element element = Parser.parse(line);
+		if(element == null){
+			return;
+		}
 		if(!gameStarted){
 			processPreGame(element);
 		}else{
@@ -144,8 +147,8 @@ public abstract class Client {
 	public void processDuringGame(Element element){
 		String tag = element.tag;
 		String value = element.value;
-		if(tag.equals("OUT")){
-			System.out.println(value);
+		if(tag.equals("OUTPUT")){
+			System.out.println(Parser.convertToMultiLine(value));
 		}
 	}
 	
@@ -199,11 +202,15 @@ public abstract class Client {
 			clientReady = !clientReady;
 			send("<LOBBYPLAYER><READY>"+clientReady+"</READY></LOBBYPLAYER>");
 		}else if(input.equals("START")){
-			send("<LOBBYPLAYER><START>true</START></LOBBYPLAYER>");
-		}else if(input.contains(" ")){
-			
-			String[] msg = input.split(" ", 2);
-			send("<INPUT><"+msg[0]+">"+msg[1]+"</"+msg[0]+"></INPUT>");
+			send("<GAMESTART></GAMESTART>");
+		}else if(input.startsWith("NAME")){
+			send("<LOBBYPLAYER><NAME>"+Parser.sanitise(input.split("NAME ")[1])+"</NAME></LOBBYPLAYER>");
+		}else if(input.startsWith("QUIT")){
+			send("<EXIT></EXIT");//TODO:
+			System.exit(0);
+		}else{
+			input = Parser.sanitise(input);
+			send("<INPUT>"+input+"</INPUT>");
 		}
 	}
 	

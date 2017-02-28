@@ -1,5 +1,5 @@
 
-public class ItemStack {
+public class ItemStack implements Messageable{
 	private Item item;
 	public int count;
 
@@ -22,5 +22,9 @@ public class ItemStack {
 	}
 	public String getName() {
 		return item.getName();
+	}
+	@Override
+	public String getInfo() {
+		return "<ITEMSTACK>"+item.getInfo()+"<COUNT>"+count+"</COUNT></ITEMSTACK>";
 	}
 }

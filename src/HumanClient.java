@@ -28,9 +28,10 @@ public class HumanClient extends Client{
 	
 	@Override
 	public void run(){
-		lobbygui = new LobbyGUI(this);
-		gamegui = new GameGUI("DUNGEON OF DOOM",false);;
+		lobbygui = new LobbyGUI(this);		
+		gamegui = new GameGUI("DUNGEON OF DOOM",false);
 		console  = new Console(gamegui);
+		gamegui.console = console;
 		while(true){
 			String input = "";
 			try {
@@ -45,6 +46,7 @@ public class HumanClient extends Client{
 	protected void startGameAction() {
 		lobbygui.setEnabled(false);
 		lobbygui.dispose();
+		//TODO: game gui was null here once havent reproduced it yet
 		gamegui.setVisible(true);
 	}
 

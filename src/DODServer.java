@@ -18,7 +18,6 @@ public class DODServer {
 	//TODO todo list
 	//TODO handle pvp note: immortal bot, janken boy for player
 	//TODO bot handler/huuman handler interligent path
-	//TODO tile triggered events
 	//TODO rewrite ui intergration
 	//TODO minute timer if all players ready.
 
@@ -82,6 +81,7 @@ public class DODServer {
     		System.out.println("Invalid Message from" + id);
     		return;
     	}
+
     	if(game.getGameState() ==  GameState.NOTSTARTED){
     		handlePreGame(message,id);
     	}else{
@@ -91,9 +91,10 @@ public class DODServer {
     
 
 	public synchronized void send(String input,int id){
-		if(id < 0 || sockets.get(id) == null){
+		if(id < 0 || sockets.isEmpty() || sockets.get(id) == null){
 			return;
 		}
+		input = Parser.convertFromMultiLine(input);
 	    PrintWriter writer = writers.get(id);
 	    writer.println(input);
 	    writer.flush();
@@ -116,7 +117,6 @@ public class DODServer {
 					clientSocket.close();
 					break;
 				}				
-				
 				LobbyPlayer player = new LobbyPlayer();
 				lobbyPlayers.add(player);
 				player.id = connectionsCounter;
@@ -139,17 +139,20 @@ public class DODServer {
     	String tag = message.tag;
     	String value = message.value;
     	if(tag.equals("INPUT")){
-    		controllers.get(id).setInput(value); 
+    		controllers.get(id).input = (value); 
     	}else if(tag.equals("OUTPUT")){
     		send("<OUTPUT>"+message.value+"</OUTPUT>", id);
+    	}else{
+    		System.out.println("Unrecognised game command");
+    		message.print(0);
     	}
-	}
-
+    }
+    
 	private void handlePreGame(Element message, int id) {
 		String tag = message.tag;
 		String value = message.value;
 		LobbyPlayer player = lobbyPlayers.get(id);
-		if(tag.equals("START")){
+		if(tag.equals("GAMESTART")){
 			tryStartGame();
 		}else if(tag.equals("LOBBYPLAYER")){
 			message.toLobbyPlayer(player);
@@ -158,28 +161,33 @@ public class DODServer {
 		}else if(tag.equals("GETID")){
 			send("<ID>"+id+"</ID>",id);
 		}else if(tag.equals("INPUT")){
-			for(Element child:message.children){
-				if(child.tag.equals("SHOUT")){
-					sendToAll("<SHOUT><ID>"+id+"</ID><MESSAGE>"+child.value+"</MESSAGE></SHOUT>");
-				}
-			}
+			if(value.startsWith("SHOUT ")){
+				value = value.split("SHOUT ")[1];
+				System.out.println(id+":"+value);
+				sendToAll("<SHOUT><ID>"+id+"</ID><MESSAGE>"+Parser.sanitise(value)+"</MESSAGE></SHOUT>");
+			}			
+		}else{
+			System.out.println("Unrecognised lobby command");
+			message.print(0);
+			return;
 		}
-		informCLients();
+		
+		informClients();
 	}
-    private void informCLients() {
+    private void informClients() {
     	System.out.println();
     	System.out.println(lobbyPlayers.size()+" players currently connected:");
     	String msg = "<LOBBY>";
     	for(LobbyPlayer player:lobbyPlayers){
     		System.out.println("---"+player.toString());
-    		msg+=player.getFullInfo();
+    		msg+=player.getInfo();
     	}   	
 		sendToAll(msg+"</LOBBY>");
 	}
     
     private boolean checkAllPlayersReady(){
 		for(LobbyPlayer connectedPlayer: lobbyPlayers){
-			if(!connectedPlayer.ready){
+			if(!connectedPlayer.ready && connectedPlayer.connected){
 				return false;
 			}
 		}
@@ -187,7 +195,7 @@ public class DODServer {
     }
 
 	private void tryStartGame(){
-		if(checkAllPlayersReady()){
+		if(!checkAllPlayersReady()){
 			return;
 		}
 		for(LobbyPlayer lobbyPlayer : lobbyPlayers){
@@ -201,11 +209,15 @@ public class DODServer {
 				player.controller = new ControllerHuman(this,id,player);
 			}
 			controllers.add(player.controller);
-			//TODO: add controller and gameLogic to player;
 		}
 		System.out.println("Game has begun, notifying all players.");
 		sendToAll("<GAMESTART></GAMESTART>");
-		game.startGame();
+		new Thread("Game Logic Thread"){
+			@Override
+			public void run(){
+				game.startGame();
+			}
+		}.start();
     }
 	
 	void close(int id){
@@ -217,5 +229,12 @@ public class DODServer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		for(Socket socket:sockets){
+			if(socket != null){
+				return;
+			}
+		}
+		//no clients
+		System.exit(0);
 	}
 }

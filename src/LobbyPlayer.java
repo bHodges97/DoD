@@ -28,15 +28,8 @@ public class LobbyPlayer implements Messageable{
 		return player;
 	}
 
-
 	@Override
-	public String getSummary() {
-		return "<LOBBYPLAYER><NAME>"+name+"</NAME><ID>"+id+"</ID></LOBBYPLAYER>";
-	}
-
-
-	@Override
-	public String getFullInfo() {
+	public String getInfo() {
 		return  "<LOBBYPLAYER>"
 					+ "<NAME>"+name+"</NAME>"
 					+ "<ID>"+id+"</ID>"
@@ -49,7 +42,7 @@ public class LobbyPlayer implements Messageable{
 	
 	@Override
 	public String toString(){
-		return "ID:"+id+", Name:"+name+", Bot:"+isBot+", Ready:"+ready+", Connected"+connected;
+		return "ID: "+id+", Name: "+name+", Bot: "+isBot+", Ready: "+ready+", Connected: "+connected+".";
 		
 	}
 

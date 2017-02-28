@@ -18,11 +18,8 @@ public abstract class Tile implements Displayable,Messageable {
 		return getDisplayChar()+pos.toString();
 	}
 	
-
-	public String getSummary(){
-		return toString();
-	}
-	public String getFullInfo(){
-		return toString()+","+isPassable();
+	
+	public String getInfo(){
+		return "<TILE><CHAR>"+getDisplayChar()+"</CHAR>"+pos.getInfo()+"</TILE>";
 	}
 }

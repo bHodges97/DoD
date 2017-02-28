@@ -13,12 +13,11 @@ abstract class Player implements Messageable,Displayable{
 	protected Controller controller;
 	protected PlayerState state;
 	protected Color color;
+	protected FightResolver fightResolver = null;
 	
-	public String getSummary(){
-		return name+","+id+","+getGoldCount();
-	}
-	public String getFullInfo(){
-		return getSummary()+","+position+inventory.toString();
+	
+	public String getInfo(){
+		return "<PLAYER><NAME>"+name+"</NAME><ID>"+"</ID>"+position.getInfo()+inventory.getInfo()+"</PLAYER>";
 	}
 	
 	
@@ -42,15 +41,25 @@ abstract class Player implements Messageable,Displayable{
     	inventory.getItemStack("Gold").add(i);
     }
 	protected String processCommand(String command){
+		if(state == PlayerState.ESCAPED){
+			return "You have escaped type QUIT to stop playing";
+		}else if(state == PlayerState.DEAD){
+			return "You are dead type QUIT to stop playing";
+		}else if(state == PlayerState.STUNNED){
+			return "You are stunned";//TODO:
+		}		
 		String output = "Invalid";
+		if(fightResolver != null){
+			return fightResolver.handle(command,this);
+		}
+		
+		
 		if(command.equals("HELLO")){
 			output = gameLogic.hello();
 		}else if(command.equals("PICKUP")){
 			output = gameLogic.pickup(this);
 		}else if(command.equals("LOOK")){
 			output = gameLogic.look(this);
-		}else if(command.equals("QUIT")){
-			gameLogic.quitGame();
 		}else if(command.length() == 6 && command.substring(0,5).equals("MOVE ")){
 			output = gameLogic.move(this,command.charAt(5));
 	    }
@@ -72,10 +81,24 @@ abstract class Player implements Messageable,Displayable{
     
 	protected abstract boolean isImmortal();
 	public void tryEscape() {
-		int goldCount = Integer.valueOf(gameLogic.hello().split("HELLO :")[0]);
+		int goldCount = getGoldCount();
 		if(this.getGoldCount() >= goldCount){
 			this.state = PlayerState.ESCAPED;
 		}
+		controller.sendOutput("ESCAPED");
+		//TODO: make this fancier?/
+	}
+	public boolean isInGame() {
+		if(state == PlayerState.PLAYING || state == PlayerState.STUNNED){
+			return true;
+		}
+		return false;
+	}
+
+
+	public void lostCombat() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	

@@ -98,14 +98,14 @@ public class LobbyGUI extends JFrame{
 		startButton.addActionListener(new ActionListener() {			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				LobbyGUI.this.client.processInput("START");
+				LobbyGUI.this.client.processUserInput("START");
 				
 			}
 		});
 		readyButton.addActionListener(new ActionListener() {			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				LobbyGUI.this.client.send("<LOBBYPLAYER><READY>"+readyButton.isSelected()+"</READY></LOBBYPLAYER>");				
+				LobbyGUI.this.client.processUserInput("READY");				
 			}
 		});
 		nameButton.addActionListener(new ActionListener() {
@@ -113,7 +113,7 @@ public class LobbyGUI extends JFrame{
 			public void actionPerformed(ActionEvent e) {
 				String output = JOptionPane.showInputDialog(LobbyGUI.this,"Enter a new name");
 				if(output != null && !output.isEmpty()){
-					LobbyGUI.this.client.send("<LOBBYPLAYER><NAME>"+Parser.sanitise(output)+"</NAME></LOBBYPLAYER>");
+					LobbyGUI.this.client.processUserInput("NAME "+ output);
 				}
 				
 			}
@@ -134,7 +134,7 @@ public class LobbyGUI extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String input = LobbyGUI.this.chatField.getText();
-				LobbyGUI.this.client.processUserInput("SHOUT "+ Parser.sanitise(input));
+				LobbyGUI.this.client.processUserInput("SHOUT "+ input);
 				chatField.setText("");
 			}
 		};
