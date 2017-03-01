@@ -1,13 +1,20 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +37,10 @@ public class DODServer {
 	private List<ServerReadThread> readThreads = new ArrayList<ServerReadThread>();
     private List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
 	private List<Controller> controllers = new ArrayList<Controller>();
+	private  PrintWriter chatlog;
+	private Date date = new Date();
+	DateFormat longDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+	DateFormat shortDateFormat = new SimpleDateFormat("HH:mm");
 	
     public static void main(String[] args) {
     	int port = 38983;//TODO:set this back to zero after testing. Java will generate a random valid port number if this is 0.
@@ -59,12 +70,23 @@ public class DODServer {
 			e.printStackTrace();
 			return;
 		}
+
+		try {
+			FileWriter fileWriter = new FileWriter("log.txt",true); 
+		    chatlog = new PrintWriter(new BufferedWriter(fileWriter),true);	
+		    chatlog.println("<"+longDateFormat.format(date)+">"+" NEW GAME");
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+		
 		new Thread(){
 			@Override
 			public void run() {
 				acceptConnections();
 			}
 		}.run();
+		
+		 
 		while(shouldGameStart){
 			try {
 				Thread.sleep(10);
@@ -103,14 +125,42 @@ public class DODServer {
     		return;
     	}
     	if(message.tag.equals("INPUT")){
-			if(message.value.startsWith("SHOUT ")){
-				String shout = message.value.split("SHOUT ")[1];
-				System.out.println(id+":"+shout);
-				sendToAll("<SHOUT><ID>"+id+"</ID><MESSAGE>"+Parser.sanitise(shout)+"</MESSAGE></SHOUT>");
+			chatlog.print("<"+shortDateFormat.format(date)+">");
+			String log = "["+id+"]"+lobbyPlayers.get(id).name+":"+message.value;
+			chatlog.println(log);
+			System.out.println(log);
+			if(message.value.startsWith("SHOUT ") || message.value.startsWith("WHISPER ")){
+				String[] components = Parser.splitMessageToComponents(message.value);
+				String output =  "<MESSAGE><FROM>"+id+"</FROM><CONTENT>"+components[1]+"</CONTENT>";
+				if(components[0].equals("WHISPER")){
+					int target = -1;
+					if(components[2].matches("\\d+")){
+						target = Integer.parseInt(components[2]);
+					}else{
+						for(LobbyPlayer player:lobbyPlayers){
+							if(player.name.equals(components[2])){
+								target = player.id;
+								break;
+							}
+						}
+					}
+					if(target == id){
+						send("<OUTPUT>Note to self:"+components[1]+"</OUTPUT>",id);
+						return;
+					}else if(target > -1 && target < connectionsCounter){
+						output+="<TO>"+target+"</TO></MESSAGE>";
+						send(output,id);
+						send(output,target);					
+					}else{
+						send("<OUTPUT>Can not be found:"+components[2]+"</OUTPUT>",id);
+					}						
+				}else if(components[0].equals("SHOUT")){
+					output+="</MESSAGE>";
+					sendToAll(output);
+				}
 				return;
 			}
-		}	    	
-    	
+    	}    	
     	if(game.getGameState() ==  GameState.NOTSTARTED){
     		handlePreGame(message,id);
     	}else{
@@ -126,6 +176,7 @@ public class DODServer {
     		send("<OUTPUT>"+message.value+"</OUTPUT>", id);
     	}else{
     		System.out.println("Unrecognised game command");
+			send("<OUTPUT>Unrecognised game command type \"HELP\" for avaliable commands</OUTPUT>",id);
     		message.print(0);
     	}
     }
@@ -144,6 +195,7 @@ public class DODServer {
 			send("<ID>"+id+"</ID>",id);		
 		}else{
 			System.out.println("Unrecognised lobby command");
+			send("<OUTPUT>Unrecognised game command type \"HELP\" for avaliable commands</OUTPUT>",id);
 			message.print(0);
 			return;
 		}

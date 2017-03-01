@@ -33,7 +33,7 @@ public abstract class Client {
 	}
 	
 	public abstract void run();
-	public abstract void print(int id,String string);
+	public abstract void print(Element message);
 	public void updateLobbyInfo(){
     	System.out.println(lobbyPlayers.size()+" players currently connected:");
     	for(LobbyPlayer player:lobbyPlayers){
@@ -97,14 +97,6 @@ public abstract class Client {
 		if(element == null){
 			return;
 		}
-		if(!gameStarted){
-			processPreGame(element);
-		}else{
-			processDuringGame(element);
-		}
-	}
-	
-	public void processPreGame(Element element){
 		String tag = element.tag;
 		String value = element.value;
 		if(tag.equals("ID")){
@@ -121,34 +113,14 @@ public abstract class Client {
 				updateLobby(child);
 			}
 			updateLobbyInfo();
-		}else if(tag.equals("SHOUT")){
-			int id = -1;
-			String message = null;
-			for(Element child:element.children){
-				if(child.tag.equals("ID")&&child.isInt()){
-					id = child.toInt();
-				}else if(child.tag.equals("MESSAGE")){
-					message = child.value;
-				}else{
-					return;
-				}
-				if(id != -1 && message != null){
-					print(id,message);
-				}
-			}
+		}else if(tag.equals("MESSAGE")){
+			print(element);
 		}else if(tag.equals("GAMESTART")){
 			gameStarted = true;
-			print(-1,"Dungeon of DOOM has started");
+			print(Parser.makeMessage(-1,"Dungeon of DOOM has started"));
 			startGameAction();
-		}	
-	}
-	
-	
-	public void processDuringGame(Element element){
-		String tag = element.tag;
-		String value = element.value;
-		if(tag.equals("OUTPUT")){
-			print(-1,Parser.convertToMultiLine(value));
+		}else if(tag.equals("OUTPUT")){
+			print(Parser.makeMessage(-1,Parser.convertToMultiLine(value)));
 		}
 	}
 	
@@ -176,7 +148,7 @@ public abstract class Client {
 		LobbyPlayer player = new LobbyPlayer(playerID);
 		lobbyPlayers.add(player);
 		e.toLobbyPlayer(player);
-		print(-1,"Player "+player.id+" joined.");
+		print(Parser.makeMessage(-1,"Player "+player.id+" joined."));
 	}
 	
 	protected String readFromConsole(){
@@ -206,8 +178,10 @@ public abstract class Client {
 		}else if(input.startsWith("NAME")){
 			send("<LOBBYPLAYER><NAME>"+Parser.sanitise(input.split("NAME ")[1])+"</NAME></LOBBYPLAYER>");
 		}else if(input.startsWith("QUIT")){
-			send("<EXIT></EXIT");//TODO:
+			send("<EXIT></EXIT>");//TODO:
 			System.exit(0);
+		}else if(input.equals("HELP")){
+			processInput(Parser.makeHelpMessage());
 		}else{
 			input = Parser.sanitise(input);
 			send("<INPUT>"+input+"</INPUT>");

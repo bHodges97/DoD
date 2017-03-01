@@ -17,14 +17,15 @@ public class BotClient extends Client {
 		
 	}
 
+
 	@Override
-	public void print(int id,String string) {
-		// TODO Auto-generated method stub
+	protected void startGameAction() {
 		
 	}
 
 	@Override
-	protected void startGameAction() {
+	public void print(Element message) {
+		// TODO Auto-generated method stub
 		
 	}
 	

@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Element {
+public class Element implements Messageable{
 	public Element(String name) {
 		this.tag = name;
 	}
@@ -80,6 +80,24 @@ public class Element {
 				}
 			}
 		}	
+	}
+
+	@Override
+	public String getInfo() {
+		String contents = value;
+		for(Element child:children){
+			contents+=child.getInfo();
+		}
+		return "<"+tag+">" +contents+ "</"+tag+">";
+	}
+	
+	public Element getChild(String name){
+		for(Element child:children){
+			if(child.tag.equals(name)){
+				return child;
+			}
+		}
+		return null;
 	}
 	
 	

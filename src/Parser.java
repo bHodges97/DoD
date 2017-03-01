@@ -1,3 +1,4 @@
+import java.util.List;
 import java.util.Stack;
 
 public class Parser {
@@ -6,6 +7,16 @@ public class Parser {
 	 * @param args
 	 */
 	public static void main(String[] args){
+		
+		String msg = "WHISPER 1 hello world";
+		msg = msg.split("WHISPER ",2)[1];
+		String[] split = msg.split("((\\d+)|(\".*\")) ",2);
+		for(String s : split){
+			System.out.println(s);
+		}
+		
+		
+		
 		String x = "hello\nworld";
 		String x1 = Parser.convertFromMultiLine(x);
 		System.out.println(x1);
@@ -101,7 +112,65 @@ public class Parser {
 		System.out.println("Could not be parsed(Tag is not closed!):"+in);
     	return null;    	
 	}
+
+
+	public static Element makeMessage(int from, String message) {
+		return Parser.parse("<MESSAGE><FROM>"+from+"</FROM><CONTENT>"+Parser.sanitise(message)+"</CONTENT></MESSAGE>");
+	}
+	public static Element makeMessage(int from, int to,String message) {
+		return Parser.parse("<MESSAGE><FROM>"+from+"</FROM><TO>"+to+"</TO><CONTENT>"+Parser.sanitise(message)+"</CONTENT></MESSAGE>");
+	}
 	
+	public static String[] splitMessageToComponents(String message){
+		String[] components;
+		String[] splitter = message.split(" ",2);
+		String type = splitter[0];
+		String content = splitter[1];
+		if(type.equals("WHISPER")){
+			splitter = content.split("((\\d+)|(\".*\")) ",2);
+			components = new String[3];
+			if(splitter.length == 2){
+				components[1] = splitter[1];
+				components[2] = content.replaceFirst(" "+components[1], "");
+				if(components[2].endsWith("\"") && components[2].startsWith("\"")){
+					components[2] = components[2].substring(1,components[2].length()-1);
+				}
+			}else{
+				components[1] = content;
+				components[2] = "-1";
+			}
+		}else{
+			components = new String[2];
+			components[1] = content;
+		}
+		components[0] = type;
+		components[1] = Parser.sanitise(components[1]);
+		return components;
+	}
+
+
+	public static String makeHelpMessage() {
+		String message = "Avaliable commands:\n";
+
+		message+="  At anytime:\n";
+		message+="    HELP : Display this menu\n";
+		message+="    QUIT : Exit the game\n";
+		message+="	  SHOUT <MESSAGE> : Message other players\n";
+		message+="    WHISPER <ID or PlayerName in quotes> <MESSAGE> : Message specific player. Eg. WHISPER \"Player 1\" hello player 1\n";
+		message+="  While in lobby:\n";
+		message+="    READY : Toggle whether you are ready to start game\n";
+		message+="    START : Start the game if every player is ready\n";
+		message+="    NAME : <Name> : Change your current name\n";	
+		message+="  While in game:\n";
+		message+="    LOOK : Display 5x5 Area around you\n";
+		message+="    HELLO : Display gold required to exit game\n";
+		message+="    PICKUP : Pick up items on floor\n";
+		message+="    MOVE : <N or W or S or E> : Take a step in the chosen direction\n";
+		message = Parser.sanitise(message);
+		message = Parser.convertFromMultiLine(message);
+		
+		return ("<OUTPUT>"+message+"</OUTPUT>");
+	}
 	
 
 }

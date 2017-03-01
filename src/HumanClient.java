@@ -47,28 +47,57 @@ public class HumanClient extends Client{
 		lobbygui.setEnabled(false);
 		lobbygui.dispose();
 		lobbygui = null;
-		//TODO: game gui was null here once havent reproduced it yet
 		gamegui.setVisible(true);
 	}
 
 	@Override
-	public void print(int id,String string) {
+	public void print(Element message) {
 		Color color = Color.black;
-		if(id >= 0){
+		int from = -1,to = -1;
+		String content = "",fromName = "",toName = "",output = "";
+		
+		for(Element part:message.children){
+			if(part.tag.equals("FROM") && part.isInt()){
+				from = part.toInt();
+			}else if(part.tag.equals("TO") && part.isInt()){
+				to = part.toInt();
+			}else if(part.tag.equals("CONTENT")){
+				content = part.value;
+			}
+		}
+		if(from >= 0){
 			for(LobbyPlayer player:lobbyPlayers){
-				if(id == player.id){
+				if(from == player.id){
 					color = player.color;
-					string="["+id+"]"+player.name+":"+string;					
+					fromName = player.name;
 					break;
 				}
 			}
 		}
-		System.out.println(string);
+		if(to >= 0){
+			for(LobbyPlayer player:lobbyPlayers){
+				if(from == player.id){
+					toName = player.name;
+					output += "["+from+"]";
+					if(from == id){
+						output+= "You whispered to "+toName+":"+content;
+					}else{
+						output+= fromName + " whispered to you:"+content;
+					}
+					break;
+				}
+			}
+		}else if(from >= 0){
+			output = "["+id+"]"+fromName+":"+content;
+		}else{
+			output = content;
+		}
+		System.out.println(output);
 		if(lobbygui != null){
-			lobbygui.addMessageToChat(string, color);
+			lobbygui.addMessageToChat(output, color);
 		}
 		if(console != null){
-			gamegui.console.println(string);
+			gamegui.console.println(output);
 		}
 	}
 
