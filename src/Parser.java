@@ -1,4 +1,3 @@
-import java.util.List;
 import java.util.Stack;
 
 public class Parser {
@@ -152,20 +151,20 @@ public class Parser {
 	public static String makeHelpMessage() {
 		String message = "Avaliable commands:\n";
 
-		message+="  At anytime:\n";
-		message+="    HELP : Display this menu\n";
-		message+="    QUIT : Exit the game\n";
-		message+="	  SHOUT <MESSAGE> : Message other players\n";
-		message+="    WHISPER <ID or PlayerName in quotes> <MESSAGE> : Message specific player. Eg. WHISPER \"Player 1\" hello player 1\n";
-		message+="  While in lobby:\n";
-		message+="    READY : Toggle whether you are ready to start game\n";
-		message+="    START : Start the game if every player is ready\n";
-		message+="    NAME : <Name> : Change your current name\n";	
-		message+="  While in game:\n";
-		message+="    LOOK : Display 5x5 Area around you\n";
-		message+="    HELLO : Display gold required to exit game\n";
-		message+="    PICKUP : Pick up items on floor\n";
-		message+="    MOVE : <N or W or S or E> : Take a step in the chosen direction\n";
+		message+="At anytime:\n";
+		message+="HELP\n   Display this menu\n";
+		message+="QUIT\n   Exit the game\n";
+		message+="SHOUT <MESSAGE>\n   Message other players\n";
+		message+="WHISPER <ID or PlayerName in quotes> <MESSAGE>\n   Message specific player. Eg. WHISPER \"Player 1\" hello player 1\n";
+		message+="While in lobby:\n";
+		message+="READY\n   Toggle whether you are ready to start game\n";
+		message+="START\n   Start the game if every player is ready\n";
+		message+="NAME <Name>\n   Change your current name\n";	
+		message+="While in game:\n";
+		message+="LOOK \n   Display 5x5 Area around you\n";
+		message+="HELLO \n   Display gold required to exit game\n";
+		message+="PICKUP \n   Pick up items on floor\n";
+		message+="MOVE <N or W or S or E> \n   Take a step in the chosen direction\n";
 		message = Parser.sanitise(message);
 		message = Parser.convertFromMultiLine(message);
 		

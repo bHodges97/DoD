@@ -1,13 +1,5 @@
 import java.awt.Color;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 
 public class HumanClient extends Client{
 	
@@ -28,10 +20,14 @@ public class HumanClient extends Client{
 	
 	@Override
 	public void run(){
-		lobbygui = new LobbyGUI(this);		
+
 		console  = new Console(gamegui);
+		lobbygui = new LobbyGUI(this,console.getStyledDocument());	
 		gamegui = new GameGUI("DUNGEON OF DOOM",false,console);
 		console.gui = gamegui;
+		console.println("Dungeon of Doom chat room", Color.gray);
+		console.println("Type HELP for list of commands", Color.gray);
+		lobbygui.updateInfo();
 		while(true){
 			String input = "";
 			try {
@@ -93,11 +89,8 @@ public class HumanClient extends Client{
 			output = content;
 		}
 		System.out.println(output);
-		if(lobbygui != null){
-			lobbygui.addMessageToChat(output, color);
-		}
 		if(console != null){
-			gamegui.console.println(output);
+			console.println(output,color);
 		}
 	}
 
@@ -106,7 +99,8 @@ public class HumanClient extends Client{
 		super.updateLobbyInfo();
 		if(lobbygui == null){
 			return;
-		}
+		}		
+		lobbygui.updateInfo();
 		for(LobbyPlayer player:lobbyPlayers){
 			if(!player.ready){
 				lobbygui.startButton.setEnabled(false);
@@ -114,6 +108,7 @@ public class HumanClient extends Client{
 			}
 		}
 		lobbygui.startButton.setEnabled(true);
+		
 		//TODO; and then added panels
 	}
 	

@@ -38,7 +38,7 @@ public class LobbyPlayer implements Messageable{
 					+ "<NAME>"+name+"</NAME>"
 					+ "<ID>"+id+"</ID>"
 					+ "<READY>"+ready+"</READY>"
-					+ "<ISBOT>"+isBot+"</ISBOT>"
+					+ "<BOT>"+isBot+"</BOT>"
 					+ "<COLOR>"+color.getRGB()+"</COLOR>"
 					+ "<CONNECTED>"+connected+"</CONNECTED>"
 				+"</LOBBYPLAYER>";

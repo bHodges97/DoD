@@ -16,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EtchedBorder;
@@ -31,6 +32,7 @@ public class GameGUI extends JFrame{
 	private JPanel paintPanel = new JPanel();//TODO:
 	private JPanel controlsPanel = new JPanel(new BorderLayout());
 	private JPanel buttonsPanel = new JPanel(new GridBagLayout());
+	private JTextField inputField = new JTextField(20);
 	private JButton buttonLook = new JButton("LOOK");
 	private JButton buttonPickup = new JButton("<html>PICK<br> UP</html>");
 	private JButton buttonHello = new JButton("HELLO");
@@ -59,6 +61,7 @@ public class GameGUI extends JFrame{
 		setResizable(false);
 		paintPanel.addMouseListener(getMouseListener());
 		paintPanel.addKeyListener(getKeyListener());
+		inputField.addActionListener(getActionListener());
 		pack();
 		allowInputs(true);
 		setVisible(false);
@@ -135,7 +138,7 @@ public class GameGUI extends JFrame{
 	 * @param player The player that won
 	 */
 	protected void showWinEvent(Player player){
-		console.println("----****"+player.name+"_WON****----");
+		console.println("----****"+player.name+"_WON****----",Color.BLACK);
 	}
 	
 	/**
@@ -175,7 +178,11 @@ public class GameGUI extends JFrame{
 		setLayout(new BorderLayout());
 		add(paintPanel,BorderLayout.CENTER);
 		add(controlsPanel,BorderLayout.SOUTH);
-		controlsPanel.add(scrollArea,BorderLayout.CENTER);
+		JPanel textInput = new JPanel(new BorderLayout());
+		textInput.add(scrollArea,BorderLayout.CENTER);
+		textInput.add(inputField,BorderLayout.SOUTH);
+		
+		controlsPanel.add(textInput,BorderLayout.CENTER);
 		controlsPanel.add(buttonsPanel, BorderLayout.EAST);
 		buttonsPanel.setBorder(new LineBorder(Color.GRAY));
 		GridBagConstraints c = new GridBagConstraints();
@@ -328,6 +335,19 @@ public class GameGUI extends JFrame{
 			}			
 		};
 		return listener;
+	}
+	
+	private ActionListener getActionListener(){
+		return new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(inputField.getText()!=null && !inputField.getText().isEmpty()){
+					guiInput = inputField.getText();
+					inputField.setText("");
+				}				
+			}
+			
+		};
 	}
 
 }

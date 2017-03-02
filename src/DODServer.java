@@ -9,16 +9,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.Stack;
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.swing.text.html.HTML.Tag;
 
 public class DODServer {
 	
@@ -269,6 +260,7 @@ public class DODServer {
 				sockets.add(clientSocket);
 				readThreads.add(thread);
 				++connectionsCounter;
+				informClients();
 			}catch(Exception e){
 				e.printStackTrace();
 			}

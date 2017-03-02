@@ -6,22 +6,31 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Client used to connect to a server.
+ */
 public abstract class Client {
 	
-	int port = -1;
-	boolean clientReady = false;
-	PrintWriter writer;
-	Socket socket;
-	int id;
-	List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
-	LobbyPlayer clientPlayer = new LobbyPlayer(0);
-	volatile boolean gameStarted = false;
+	private int port = -1;
+	private boolean clientReady = false;
+	private PrintWriter writer;
+	private Socket socket;
+	protected int id;
+	protected List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
+	protected LobbyPlayer clientPlayer = new LobbyPlayer(0);
+	private volatile boolean gameStarted = false;
 	
-	
+	/**
+	 * Constructor
+	 * @param args Command line arguments to process
+	 */
 	public Client(String[] args){
-		if(!validateParams(args)){
+		//check if parameters are valid
+		if(!validateArgs(args)){
 			return;
 		}
+		//check if connections can be made.
 		if(!tryConnect(args[0],port)){
 			System.out.println("Failed to connect to "+args[0]+" : "+args[1]);
 			return;
@@ -29,12 +38,26 @@ public abstract class Client {
 			System.out.println("Successfully connected!");
 		}
 		send("<GETID></GETID>");
+		updateLobbyInfo();
+		//start
 		run();
 	}
 	
+	/**
+	 * Start the client processes.
+	 */
 	public abstract void run();
+	
+	/**
+	 * Print the message to the client's display
+	 * @param message The message to print
+	 */
 	public abstract void print(Element message);
-	public void updateLobbyInfo(){
+	
+	/**
+	 * Update list of other connected players
+	 */
+	protected void updateLobbyInfo(){
     	System.out.println(lobbyPlayers.size()+" players currently connected:");
     	for(LobbyPlayer player:lobbyPlayers){
     		if(id == player.id){
@@ -47,7 +70,13 @@ public abstract class Client {
     	}
 	}
 	
-	protected boolean validateParams(String[] args){ 
+	/**
+	 * <p>Check if the given arguments matches the expected format.</p>
+	 * <p>Expects String array size 2 where <b>args[0]</b> is a String and <b>args[1]</b> is a valid integer port number
+	 * @param args The argument given to the program
+	 * @return
+	 */
+	protected boolean validateArgs(String[] args){ 
 		if(args.length == 2){	
 			try{
 				port = Integer.valueOf(args[1]);
@@ -66,8 +95,13 @@ public abstract class Client {
 		return true;
 	}
 	
-	
-	boolean tryConnect(String hostName, int portNumber){
+	/**
+	 * Attempt to connect to the given host and port
+	 * @param hostName The host name to connect to
+	 * @param portNumber The port number to connect to
+	 * @return <b>true</b> if connection is successful
+	 */
+	private boolean tryConnect(String hostName, int portNumber){
 		try {
 			socket = new Socket(hostName,portNumber);
 			if(!socket.isConnected()){
@@ -83,16 +117,20 @@ public abstract class Client {
 		return true;
 	}
 	
-
-	public void send(String string){
+	/**
+	 * Send string to server
+	 * @param string The string to send
+	 */
+	protected void send(String string){
 		writer.println(string);
 		writer.flush();
 	}
 
-	
-
-
-	public synchronized void processInput(String line) {
+	/**
+	 * Process input
+	 * @param line The line to process
+	 */
+	protected synchronized void processInput(String line) {
 		Element element = Parser.parse(line);
 		if(element == null){
 			return;
@@ -124,33 +162,41 @@ public abstract class Client {
 		}
 	}
 	
-	protected void updateLobby(Element e){
+	/**
+	 * Update the stored information about given player
+	 * @param lobbyPlayer The player to update.
+	 */
+	protected void updateLobby(Element lobbyPlayer){
 		int playerID = -1;
 		
-		for(Element child: e.children){
+		for(Element child: lobbyPlayer.children){
 			if(child.tag.equals("ID") && child.isInt()){
 				playerID = child.toInt();
 			}
 		}
+		//lobbyPlayer has not ID or a negative id.
 		if(playerID == -1){
 			System.out.println("Cannot update lobby with follwing element:");
-			e.print(0);
+			lobbyPlayer.print(0);
 			return;
 		}
-		
-		
+		//check if player is already stored, otherwise add to list
 		for(LobbyPlayer known:lobbyPlayers){
 			if(known.id == playerID){
-				e.toLobbyPlayer(known);
+				lobbyPlayer.toLobbyPlayer(known);
 				return;
 			}
 		}
 		LobbyPlayer player = new LobbyPlayer(playerID);
 		lobbyPlayers.add(player);
-		e.toLobbyPlayer(player);
+		lobbyPlayer.toLobbyPlayer(player);
 		print(Parser.makeMessage(-1,"Player "+player.id+" joined."));
 	}
 	
+	/**
+	 * Read input from client
+	 * @return String the client's input
+	 */
 	protected String readFromConsole(){
 		BufferedReader in;
 		try {
@@ -165,8 +211,10 @@ public abstract class Client {
 		return "";
 	}
 	
-
-
+	/**
+	 * Process the client's input
+	 * @param input The client's input
+	 */
 	protected synchronized void processUserInput(String input) {
 		if(input.isEmpty()){
 			return;
@@ -188,6 +236,9 @@ public abstract class Client {
 		}
 	}
 	
+	/**
+	 * what to process when the lobby ends and the game begins.
+	 */
 	protected abstract void startGameAction();
 	
 }

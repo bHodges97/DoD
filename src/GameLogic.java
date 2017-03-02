@@ -1,10 +1,9 @@
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * Contains the main logic part of the game, as it processes.
@@ -23,7 +22,7 @@ public class GameLogic {
 	public GameLogic(){
 		map = new Map();
 		if(!map.tryReadMap("example_map.txt")){
-			console.println("map load failed: exiting");
+			console.println("map load failed: exiting",Color.black);
 			System.exit(1);
 		}
 	}

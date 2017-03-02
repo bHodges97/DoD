@@ -1,4 +1,3 @@
-
 public class BotClient extends Client {
 	
 	
@@ -8,13 +7,16 @@ public class BotClient extends Client {
 	}
 	
 	public BotClient(String[] args){
-		super(args);
+		//super(args);
+		//TODO: this method should just be super(args);
+		super(new String[]{"localhost","38983"});
 	}
 
 	@Override
 	public void run(){
-		send("<LOBBYPLAYER><BOT>true/BOT><READY>true</READY></LOBBYPLAYER>");
-		
+		System.out.println("New bot started");
+		send("<LOBBYPLAYER><BOT>true</BOT><READY>true</READY></LOBBYPLAYER>");
+
 	}
 
 
@@ -25,8 +27,7 @@ public class BotClient extends Client {
 
 	@Override
 	public void print(Element message) {
-		// TODO Auto-generated method stub
-		
+		System.out.println(message.value);
 	}
 	
 }

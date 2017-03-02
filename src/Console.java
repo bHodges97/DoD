@@ -1,21 +1,22 @@
-import java.awt.Font;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashSet;
-import java.util.Set;
 
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
 
-public class Console extends JTextArea{
+public class Console extends JTextPane{
 	
 	protected GameGUI gui ;
 	private BufferedReader buffer=new BufferedReader(new InputStreamReader(System.in));
 	private String input;
-	private Set<Integer> arrowKeys = new HashSet<Integer>();
+	private StyledDocument document;
 	
 	/**
 	 * Initialise a console using the given JFrame
@@ -24,11 +25,9 @@ public class Console extends JTextArea{
 	public Console(GameGUI gui){
 		super();
 		this.gui = gui;
-		setFont(new Font("monospaced", Font.PLAIN, 12));
-		setRows(10);
-		initialiseArrowKeys();
+		//setFont(new Font("monospaced", Font.PLAIN, 12));
+		setEditable(false);
 		setCaretPosition(0);
-		addKeyListener(getTextAreaKeyListener());
 	}
 	
 	/**
@@ -62,75 +61,25 @@ public class Console extends JTextArea{
 	 * Print the line from parameter to console
 	 * @param line: the line to print
 	 */
-	protected void println(String line){
+	protected void println(String line,Color color){
 		line+="\n";
-		print(line);
+		print(line,color);
 	}
 	
-	/**
-	 * Print a string to console
-	 * @param chars: the chars to print
-	 */
-	protected void print(String chars){
-		append(chars);
-		setCaretPosition(getText().length());
-	}	
 	
-	/**
-	 * @return The key listener for this class.
-	 */
-	private KeyListener getTextAreaKeyListener(){
-		KeyListener textAreaListener = new KeyListener() {			
-			@Override
-			public void keyTyped(KeyEvent e) {
-				restrictInput(e);
-			}
-			
-			@Override
-			public void keyReleased(KeyEvent e) {
-			}
-		
-			@Override
-			public void keyPressed(KeyEvent e) {	
-				restrictInput(e);
-			}
-			private void restrictInput(KeyEvent e){//makes a textarea console like
-				int caretPos = getCaretPosition();
-				try {
-					if(caretPos < getLineStartOffset(getLineCount()-1) && !arrowKeys.contains(e.getKeyCode())){
-						e.consume();//ignore input and move caret to end
-						setCaretPosition(getText().length());
-					}else if(e.getKeyCode() == KeyEvent.VK_ENTER){
-						int start = getLineStartOffset(getLineCount()-1);
-						int end = getLineEndOffset(getLineCount()-1);
-						input = getText().substring(start,end);
-						setText(getText().substring(0,start));//remove the line inputed
-						e.consume();
-					}else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V){
-						e.consume();//no pasting
-					}else if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE && caretPos <= getLineStartOffset(getLineCount()-1) ){
-						e.consume();//control the backspace button
-					}
-				} catch (BadLocationException exception) {
-					exception.printStackTrace();
-				}	
-			}
-		};
-		return textAreaListener;
-	}
+	public void print(String string,Color color)
+    {	
+		document = getStyledDocument();
+		StyleContext sc = StyleContext.getDefaultStyleContext();
+	    AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY,
+	                                        StyleConstants.Foreground, color);
+		try {
+			document.insertString(document.getLength(), string, aset);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+        
+    }
 	
-	/**
-	 * Add all keys that could change a caret position to the set arrowKeys.
-	 */
-	private void initialiseArrowKeys(){
-		arrowKeys.add(KeyEvent.VK_UP);
-		arrowKeys.add(KeyEvent.VK_KP_UP);
-		arrowKeys.add(KeyEvent.VK_DOWN);
-		arrowKeys.add(KeyEvent.VK_KP_DOWN);
-		arrowKeys.add(KeyEvent.VK_LEFT);
-		arrowKeys.add(KeyEvent.VK_KP_LEFT);
-		arrowKeys.add(KeyEvent.VK_RIGHT);
-		arrowKeys.add(KeyEvent.VK_KP_RIGHT);		
-	}
 	
 }
