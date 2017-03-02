@@ -21,6 +21,7 @@ public class ControllerBot extends Controller{
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		//try random direction
 		if(playerPositions.isEmpty()){
 			Tile next = pather.randomNextStep(currentPosition);
 			if(next != null){
@@ -29,6 +30,7 @@ public class ControllerBot extends Controller{
 				return "MOVE "+direction;
 			}
 		}
+		//pick closest player
 		int closest = 0;
 		Position targetPosition = null;
 		for(Position pos:playerPositions.values()){

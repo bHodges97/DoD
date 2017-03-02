@@ -204,8 +204,8 @@ public class GameLogic {
 				}
 			}
 			String tiles = "<TILES>";
-			for(int y = -3 ;y <= 3;++y){
-				for(int x = -3;x <= 3;++x){
+			for(int y = -2 ;y <= 2;++y){
+				for(int x = -2;x <= 2;++x){
 					Tile tile = map.getTile(new Position(player.position.x+x,player.position.y+y));
 					if(tile != null){
 						tiles+=tile.getInfo();
