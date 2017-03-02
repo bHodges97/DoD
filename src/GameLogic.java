@@ -11,6 +11,9 @@ import java.util.Set;
  * @author : The unsung tutor.
  */
 public class GameLogic {
+	public enum GameState {
+		RUNNING,STOPPED,NOTSTARTED
+	}
 
 	
 	private Map map;
@@ -34,20 +37,17 @@ public class GameLogic {
 			return;
 		}
 		gameState = GameState.RUNNING;
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		informPlayers();
 		for(Player player:players){
 			Thread thread = new Thread(new PlayerLogicThread(player,this));
 			thread.start();
 			threads.add(thread);
-		}
-		
-		for(int y = 0; y< map.getMapHeight();++y){
-			for(int x = 0; x < map.getMapWidth();++x){
-				System.out.print(map.getTile(new Position(x,y)).getDisplayChar());
-			}
-			System.out.print("\n");
-		}
-		
-		
+		}		
 		
 		while(gameState != GameState.STOPPED){
 			if(players.isEmpty()){
@@ -195,6 +195,32 @@ public class GameLogic {
 		}
     	return null;
     }
+    
+	protected synchronized void informPlayers() {
+		for(Player player:players){	
+			for(Player otherPlayer:players){
+				if(PathFinder.estimateDistance(player.position,otherPlayer.position) <= 4){
+					player.controller.processInfo(otherPlayer.getInfo());
+				}
+			}
+			String tiles = "<TILES>";
+			for(int y = -3 ;y <= 3;++y){
+				for(int x = -3;x <= 3;++x){
+					Tile tile = map.getTile(new Position(player.position.x+x,player.position.y+y));
+					if(tile != null){
+						tiles+=tile.getInfo();
+					}
+				}
+			}
+			player.controller.processInfo(tiles+"</TILES>");
+			for(DroppedItems dropped:map.getDroppedItems()){
+				if(PathFinder.estimateDistance(player.position,dropped.position) <= 4){
+					player.controller.processInfo(dropped.getInfo());
+				}
+			}
+		
+		}	
+	}
     
     private void kill(Player player){
     	player.state = PlayerState.DEAD;

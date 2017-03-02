@@ -152,7 +152,7 @@ public class DODServer {
 				return;
 			}
     	}    	
-    	if(game.getGameState() ==  GameState.NOTSTARTED){
+    	if(game.getGameState() ==  GameLogic.GameState.NOTSTARTED){
     		handlePreGame(message,id);
     	}else{
     		handleDuringGame(message,id);
@@ -218,6 +218,10 @@ public class DODServer {
 			return;
 		}
 		for(LobbyPlayer lobbyPlayer : lobbyPlayers){
+			if(lobbyPlayer == null || !lobbyPlayer.connected || !lobbyPlayer.ready){
+				System.out.println("this is not good");
+				continue;
+			}
 			Player player = lobbyPlayer.toPlayer();
 			game.addPlayer(player);
 			player.gameLogic = game;
@@ -241,10 +245,10 @@ public class DODServer {
 	
     private void acceptConnections(){
     	System.out.println("Looking for connections");
-    	while(game.getGameState() == GameState.NOTSTARTED){
+    	while(game.getGameState() == GameLogic.GameState.NOTSTARTED){
 			try{
 				Socket clientSocket = serverSocket.accept();
-				if(game.getGameState() != GameState.NOTSTARTED){
+				if(game.getGameState() != GameLogic.GameState.NOTSTARTED){
 					System.out.println("Slow way of closing");
 					clientSocket.close();
 					break;

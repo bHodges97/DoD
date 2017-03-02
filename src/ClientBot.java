@@ -1,12 +1,12 @@
-public class BotClient extends Client {
+public class ClientBot extends Client {
 	
 	
 	
 	public static void main(String[] args) {
-		BotClient client = new BotClient(args);
+		ClientBot client = new ClientBot(args);
 	}
 	
-	public BotClient(String[] args){
+	public ClientBot(String[] args){
 		//super(args);
 		//TODO: this method should just be super(args);
 		super(new String[]{"localhost","38983"});

@@ -51,6 +51,10 @@ public class Element implements Messageable{
 	public int toInt(){
 		return Integer.parseInt(value);
 	}
+	
+	public char toChar(){
+		return value.toCharArray()[0];
+	}
 
 	public void toLobbyPlayer(LobbyPlayer player){
 		for(Element child:children){
@@ -81,7 +85,32 @@ public class Element implements Messageable{
 			}
 		}	
 	}
+	
+	public Position toPosition(){
+		int x = getChild("X").toInt();
+		int y = getChild("Y").toInt();
+		return new Position(x,y);
+	}
 
+	public Tile toTile(){
+		Position pos = getChild("POSITION").toPosition();
+		Tile.TileType type = Tile.TileType.valueOf(getChild("TYPE").value);
+		return Tile.makeTile(type, pos);
+	}
+	
+	
+	public Player toPlayer(){
+		Player player = null;
+		int id = getChild("ID").toInt();
+		Position pos = getChild("POSITION").toPosition();
+		Player.PlayerType type = Player.PlayerType.valueOf(getChild("TYPE").value);
+		player = Player.makePlayer(type);
+		player.id = id;
+		player.position = pos;
+		
+		return player;
+	}
+	
 	@Override
 	public String getInfo() {
 		String contents = value;

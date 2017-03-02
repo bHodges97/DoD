@@ -1,11 +1,7 @@
 
-public class DroppedItems {	
+public class DroppedItems implements Messageable{	
 	public Inventory inventory;
 	public Position position;
-	
-	private DroppedItems(){
-		
-	}
 	
 	public DroppedItems(Item item, int count,int x, int y) {
 		this.position = new Position(x,y);
@@ -16,5 +12,10 @@ public class DroppedItems {
 	public DroppedItems(Inventory inventory, Position position) {
 		this.inventory = inventory;
 		this.position = new Position(position);
+	}
+
+	@Override
+	public String getInfo() {
+		return "<DROPPEDITEMS>"+inventory.getInfo()+position.getInfo()+"</DROPPEDITEMS>";
 	}
 }

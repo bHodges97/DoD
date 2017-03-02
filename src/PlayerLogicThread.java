@@ -18,6 +18,12 @@ public class PlayerLogicThread implements Runnable{
 	public void run() {
 		while(true){
 			player.selectNextAction();
+			gameLogic.informPlayers();
+			try {
+				Thread.sleep(400);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		
 	}

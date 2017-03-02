@@ -61,7 +61,7 @@ public class Position implements Messageable{
 
 	@Override
 	public String getInfo() {
-		return "<POSITION><X>"+x+"</X><Y>"+y+"</Y><POSITION>";
+		return "<POSITION><X>"+x+"</X><Y>"+y+"</Y></POSITION>";
 	}
 	
 }

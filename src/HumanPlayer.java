@@ -18,4 +18,8 @@ public class HumanPlayer extends Player{
 		return false;
 	}
 
+	@Override
+	protected PlayerType getPlayerType() {
+		return PlayerType.HUMANPLAYER;
+	}
 }

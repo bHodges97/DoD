@@ -11,8 +11,14 @@ import java.util.Set;
  */
 public class PathFinder {
 	private Map map;
-    private java.util.Map<Tile,Tile> path;
-	private Tile start,goal;
+    private java.util.Map<Position,Position> path;
+	private Position start = new Position(0,0),goal;
+	
+	public static void main(String[] args){
+		Position position = new Position(1,1);
+		Position position2 = new Position(5,1);
+		System.out.println(PathFinder.estimateDistance(position, position2));
+	}
     
 	/**
 	 * Construct a new pathfinder
@@ -30,20 +36,20 @@ public class PathFinder {
 	 * @see <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">wikipedia a* search</a>
 	 * @return true if successful,false otherwise
 	 */
-	protected boolean  pathFind(Tile start,Tile goal){	 	
-	    Set<Tile> closedSet = new HashSet<Tile>();
-	    Set<Tile> openSet = new HashSet<Tile>();
+	protected boolean  pathFind(Position start,Position goal){	 	
+	    Set<Position> closedSet = new HashSet<Position>();
+	    Set<Position> openSet = new HashSet<Position>();
 	    openSet.add(start);
-	    java.util.Map<Tile,Tile> cameFrom = new HashMap<Tile,Tile> ();
-	    java.util.Map<Tile,Integer> gScore = new HashMap<Tile,Integer>();
-	    java.util.Map<Tile,Integer> fScore = new HashMap<Tile,Integer>();
+	    java.util.Map<Position,Position> cameFrom = new HashMap<Position,Position> ();
+	    java.util.Map<Position,Integer> gScore = new HashMap<Position,Integer>();
+	    java.util.Map<Position,Integer> fScore = new HashMap<Position,Integer>();
 	    gScore.put(start, 0);
 	    fScore.put(start,estimateDistance(start,goal));
 	    path = cameFrom;
 	    while(!openSet.isEmpty()){ 
-	    	Tile current = null;
+	    	Position current = null;
 	    	int score = Integer.MAX_VALUE;
-	    	for(Tile node:openSet){
+	    	for(Position node:openSet){
 	    		int newScore = fScore.get(node);
 	    		if( newScore < score){
 	    			score = newScore;
@@ -55,7 +61,8 @@ public class PathFinder {
 	    	}
 	    	openSet.remove(current);
 	    	closedSet.add(current);
-	    	for(Tile neighbor: map.getAdjacentWalkableTiles(current.pos)){
+	    	for(Tile neighborTile: map.getAdjacentWalkableTiles(current)){
+	    		Position neighbor = neighborTile.pos;
 	    		if(closedSet.contains(neighbor)){
 	    			continue;
 	    		}
@@ -76,8 +83,8 @@ public class PathFinder {
 	 * Retrace the route from a successful pathfind
 	 * @return The nexttile to move on to.
 	 */
-	protected Tile findNextStep(){
-		Tile step = goal;
+	protected Position findNextStep(){
+		Position step = goal;
 		while(!path.isEmpty()){				
 			if(path.get(step)==start){
 				return step;
@@ -89,10 +96,11 @@ public class PathFinder {
 	
 	/**
 	 * Find a random adjacent clear tile from starting position
+	 * @param currentPosition 
 	 * @return The next tile,null if no adjacent clear tiles exist
 	 */
-	protected Tile randomNextStep(){
-		List<Tile> neighbours = new ArrayList<Tile>(map.getAdjacentWalkableTiles(start.pos));
+	protected Tile randomNextStep(Position currentPosition){
+		List<Tile> neighbours = new ArrayList<Tile>(map.getAdjacentWalkableTiles(currentPosition));
     	if(neighbours.isEmpty()){
     		return null;//if bot has no where to go
     	}
@@ -103,11 +111,11 @@ public class PathFinder {
 	
     /**
      * Manhattan block distance from a to b
-     * @param a Position a
-     * @param b Position b
+     * @param position Position a
+     * @param position2 Position b
      * @return Distance from a to b
      */
-    public static int estimateDistance(Tile a,Tile b){
-    	return Math.abs(a.pos.x-b.pos.x)+Math.abs(a.pos.y-b.pos.y);
+    public static int estimateDistance(Position position,Position position2){
+    	return Math.abs(position.x-position2.x)+Math.abs(position.y-position2.y);
     }
 }

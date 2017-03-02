@@ -16,5 +16,6 @@ public abstract class Controller {
 	
 	
 	public abstract void sendOutput(String output);
+	public abstract void processInfo(String info);
 
 }

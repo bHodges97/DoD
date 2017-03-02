@@ -22,4 +22,9 @@ public class TileExit extends Tile {
 	public void onSteppedOn(Player player){
 		player.tryEscape();
 	}
+
+	@Override
+	protected TileType getTileType() {
+		return TileType.TILEEXIT;
+	}
 }

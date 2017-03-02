@@ -4,6 +4,7 @@ import java.awt.Color;
  * Abstract player class
  */
 abstract class Player implements Messageable,Displayable{
+	public enum PlayerType{HUMANPLAYER,BOTPLAYER};
 	protected GameLogic gameLogic = null;
 	protected int lives = 1;
 	protected String name = "PLAYER";
@@ -14,10 +15,22 @@ abstract class Player implements Messageable,Displayable{
 	protected PlayerState state;
 	protected Color color;
 	protected FightResolver fightResolver = null;
-	
+
+	protected abstract boolean isImmortal();
+	protected abstract PlayerType getPlayerType();
+	protected static Player makePlayer(PlayerType playerType){
+		switch(playerType){
+		case BOTPLAYER:
+			return new BotPlayer();
+		case HUMANPLAYER:
+			return new HumanPlayer();
+		default:
+			return null;
+		}		
+	}
 	
 	public String getInfo(){
-		return "<PLAYER><NAME>"+name+"</NAME><ID>"+"</ID>"+position.getInfo()+inventory.getInfo()+"</PLAYER>";
+		return "<PLAYER><TYPE>"+getPlayerType()+"</TYPE><NAME>"+name+"</NAME><ID>"+id+"</ID>"+position.getInfo()+inventory.getInfo()+"</PLAYER>";
 	}
 	
 	
@@ -71,15 +84,10 @@ abstract class Player implements Messageable,Displayable{
      * and then displays in console the final answer.
      */
     protected void selectNextAction() {
-    	String input,output = "Invalid";
-    	//keep getting inputs until one is valid
-    	do{
-    		input = controller.getInput();
-    		controller.sendOutput(processCommand(input));
-    	}while((output.equals("Invalid") || output.equals("Fail"))||(input.equals("LOOK"))||input.equals("HELLO"));
+    	String input = controller.getInput();
+    	controller.sendOutput(processCommand(input));
     } 
     
-	protected abstract boolean isImmortal();
 	public void tryEscape() {
 		int goldCount = Integer.valueOf(processCommand("HELLO").split("GOLD: ")[1]);
 		if(this.getGoldCount() >= goldCount){

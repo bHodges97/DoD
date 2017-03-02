@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -31,15 +32,7 @@ public class Map{
     protected int getGoldRequired() {
         return goldRequired;
     }
-    
-    /**
-     * @return : The map as stored in memory.
-     * @deprecated Use getTileList()
-     */
-    protected char[][] getMap() {
-        return null;
-    }
-
+       
 
     /**
      * @return : The height of the current map.
@@ -60,15 +53,6 @@ public class Map{
      */
     protected int getMapWidth() {
         return width;
-    }
-
-    /**
-     * @return : The position of the player.
-     * @deprecated 
-     */
-    protected int[] getPlayersPosition() {
-    	//return posList.getNearestHuman(new int[]{0,0});
-    	return null;
     }
     
     /**
@@ -116,70 +100,30 @@ public class Map{
     }
 
     /**
-     * Retrieves a tile on the map. If the location requested is outside bounds of the map, it returns 'X' wall.
-     *
-     * @param coordinates : Coordinates of the tile as a 2D array.
-     * @return : What the tile at the location requested contains.
-     * @deprecated
-     */
-    protected char getTile(int[] coordinates) {
-		if(coordinates[0] >= getMapWidth() || coordinates[1] >= getMapHeight() || coordinates[0] < 0 || coordinates[1] <0 ){
-	    	return 'X';
-		}
-		return '.';
-        //return map[coordinates[0]][coordinates[1]];
-    }
-
-    /**
-     * Updates a floor tile in the map, as it is stored in the memory.
-     *
-     * @param coordinates : The coordinates of the tile to be updated.
-     * @param updatedTile : The new tile.
-     * @deprecated
-     */
-    protected void updateMapLocation(int[] coordinates, char updatedTile) {
-    	if(getTile(coordinates)!='X'){
-    		//map[coordinates[0]][coordinates[1]] = updatedTile;
-    	}
-    }
-
-    /**
-     * Updates the stored in memory location of the player.
-     *
-     * @param location : New location of the player.
-     * @deprecated
-     */
-    protected void updatePlayerPosition(int[] pos) {
-    	//Player player = posList.getMainPlayer();
-    	//updatePosition(player, pos);
-    }
-    
-    /**
      * @param current The current tile
      * @return A set of adjacent tiles to current
      */
-    protected Set<Tile> getAdjacentTiles(Position current){
-    	Set<Tile> neighbors = new HashSet<Tile>();
-    	neighbors.add(getTile(current.getAdjacentTile('N')));
-    	neighbors.add(getTile(current.getAdjacentTile('S')));
-    	neighbors.add(getTile(current.getAdjacentTile('W')));
-    	neighbors.add(getTile(current.getAdjacentTile('E')));
-    	for(Tile tile:neighbors){
-    		if(tile == null){
-    			neighbors.remove(tile);
+    protected List<Tile> getAdjacentTiles(Position current){
+    	List<Tile> neighbors = new ArrayList<Tile>();
+    	char[] directions = {'N','S','W','E'};
+    	for(int i = 0;i < directions.length;++i){
+    		Tile tile = getTile(current.getAdjacentTile(directions[i]));
+    		if(tile!=null){
+    	    	neighbors.add(tile);
     		}
     	}
     	return neighbors;
     }
     
     protected Set<Tile> getAdjacentWalkableTiles(Position current){
-    	Set<Tile> neighbors = getAdjacentTiles(current);
+    	Set<Tile> neighbors = new HashSet<Tile>(getAdjacentTiles(current));
+    	Set<Tile> passables = new HashSet<Tile>();
     	for(Tile tile:neighbors){
-    		if(tile.isPassable() == false){
-    			neighbors.remove(tile);
+    		if(tile.isPassable()){
+    			passables.add(tile);
     		}
     	}
-    	return neighbors;
+    	return passables;
     }
     
     protected Tile getTile(Position tilePosition){
@@ -206,7 +150,6 @@ public class Map{
     			return current;
     		}
     	}
-    	
     	return null;
     }
 
@@ -250,7 +193,7 @@ public class Map{
 		return null;
 	}
 	
-    private void addTile(char c,int x, int y){
+    protected void addTile(char c,int x, int y){
     	Position pos = new Position(x,y);
     	if(x >= width-minx){
     		width = x-minx+1;
@@ -280,7 +223,7 @@ public class Map{
     	validate();
     }
     
-    private void validate(){
+    protected void validate(){
     	List<Tile> holder = new ArrayList<Tile>();
     	for(Tile tile:tileList){
     		if(tile != null){
@@ -288,8 +231,11 @@ public class Map{
     		}
     		tile = null;
     	}
-    	while(tileList.size()<=(width+1)*(height+1)){
+    	while(tileList.size()<=((width+1)*(height+1))){
     		tileList.add(null);
+    	}
+    	while(tileList.size()>((width+1)*(height+1))){
+    		tileList.remove(tileList.get(tileList.size()-1));
     	}
     	for(Tile current:holder){
     		int index = (current.pos.x - minx) + (current.pos.y-miny) * width;
@@ -302,6 +248,11 @@ public class Map{
 		DroppedItems toBeRemoved = getDroppedItemsAt(position);
 		droppedItems.remove(toBeRemoved);
 		return toBeRemoved.inventory;
+	}
+
+
+	public Set<DroppedItems> getDroppedItems() {
+		return droppedItems;
 	}
 
 }

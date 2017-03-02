@@ -16,4 +16,9 @@ public class BotPlayer extends Player{
 		return true;
 	}
 
+	@Override
+	protected PlayerType getPlayerType() {
+		return PlayerType.BOTPLAYER;
+	}
+
 }

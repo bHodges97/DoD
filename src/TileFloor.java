@@ -18,4 +18,9 @@ public class TileFloor extends Tile {
 	protected boolean isPassable() {
 		return passable;
 	}
+
+	@Override
+	protected TileType getTileType() {
+		return TileType.TILEFLOOR;
+	}
 }

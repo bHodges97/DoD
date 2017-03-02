@@ -24,5 +24,11 @@ public class ControllerHuman extends Controller{
 	public void sendOutput(String output) {
 		output = Parser.sanitise(output);
 		server.processInput("<OUTPUT>"+ output + "</OUTPUT>", id);
+	}
+
+	@Override
+	public void processInfo(String message) {
+		// TODO Auto-generated method stub
+		
 	}   
 }
