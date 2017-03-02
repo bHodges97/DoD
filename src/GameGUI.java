@@ -22,6 +22,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.StyledDocument;
 
 
@@ -63,6 +64,8 @@ public class GameGUI extends JFrame{
 		paintPanel.addMouseListener(getMouseListener());
 		paintPanel.addKeyListener(getKeyListener());
 		inputField.addActionListener(getActionListener());
+		console.setAutoscrolls(true);
+		((DefaultCaret)console.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);;
 		pack();
 		allowInputs(true);
 		setVisible(false);

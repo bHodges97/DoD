@@ -17,6 +17,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.StyledDocument;
 
 public class LobbyGUI extends JFrame{
@@ -42,6 +43,8 @@ public class LobbyGUI extends JFrame{
 		add(southPanel,BorderLayout.SOUTH);
 		southPanel.add(controls,BorderLayout.NORTH);
 		southPanel.add(chatPanel,BorderLayout.CENTER);
+		chatPane.setAutoscrolls(true);
+		((DefaultCaret)chatPane.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);;
 		
 		
 		//Set up chat room
