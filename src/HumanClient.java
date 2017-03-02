@@ -1,12 +1,20 @@
 import java.awt.Color;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
 
 public class HumanClient extends Client{
 	
-	LobbyGUI lobbygui;
-	GameGUI gamegui;
-	Console console;
-	
+	private LobbyGUI lobbygui;
+	private GameGUI gamegui;
+	private StyledDocument document;
 	
 	public static void main(String[] args) {
 		HumanClient client = new HumanClient(args);		
@@ -20,22 +28,37 @@ public class HumanClient extends Client{
 	
 	@Override
 	public void run(){
-
-		console  = new Console(gamegui);
-		lobbygui = new LobbyGUI(this,console.getStyledDocument());	
-		gamegui = new GameGUI("DUNGEON OF DOOM",false,console);
-		console.gui = gamegui;
-		console.println("Dungeon of Doom chat room", Color.gray);
-		console.println("Type HELP for list of commands", Color.gray);
+		lobbygui = new LobbyGUI(this);
+		document = lobbygui.getStyledDucment();
+		lobbygui.setStyledDocument(document);
+		gamegui = new GameGUI("DUNGEON OF DOOM",false);
+		gamegui.setStyledDocument(document);
+		println("Dungeon of Doom chat room", Color.gray);
+		println("Type HELP for list of commands", Color.gray);
 		lobbygui.updateInfo();
-		while(true){
+		
+		BufferedReader buffer= new BufferedReader(new InputStreamReader(System.in));
+		while(true){		
 			String input = "";
-			try {
-				input = console.readln();
+			try {	
+				 while(input == null || input.isEmpty()){				
+					input = gamegui.getInput();
+					if(buffer.ready()){
+						input=buffer.readLine();
+						//fromGui = false
+					}
+					try {
+						Thread.sleep(1);//wait for gui to update
+						} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				 }				
 			} catch (IOException e) {
 				e.printStackTrace();
+				input = "";
 			}
-			processUserInput(Parser.sanitise(input));
+			processUserInput(Parser.sanitise(input));			
+			
 		}
 	}
 	
@@ -89,9 +112,7 @@ public class HumanClient extends Client{
 			output = content;
 		}
 		System.out.println(output);
-		if(console != null){
-			console.println(output,color);
-		}
+		println(output,color);
 	}
 
 	@Override
@@ -111,5 +132,27 @@ public class HumanClient extends Client{
 		
 		//TODO; and then added panels
 	}
+	
+
+	/**
+	 * Print string to console
+	 * @param string The string to print
+	 * @param color The color to print as
+	 */
+	public void println(String string,Color color)    {	
+		if(document == null){
+			System.out.println("Styled Document is not loaded!");
+			return;
+		}
+		StyleContext styleContext = StyleContext.getDefaultStyleContext();
+	    AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY,
+	                                        StyleConstants.Foreground, color);
+		try {
+			document.insertString(document.getLength(), string+"\n", attributeSet);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+        
+    }
 	
 }

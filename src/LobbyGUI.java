@@ -34,8 +34,7 @@ public class LobbyGUI extends JFrame{
 	private java.util.Map<LobbyPlayer,JLabel> playerToLabelMap = new HashMap<LobbyPlayer,JLabel>();
 	protected JButton startButton = new JButton("START GAME");
 	
-	public LobbyGUI(Client client, StyledDocument doc){
-		this.chatPane.setStyledDocument(doc);
+	public LobbyGUI(Client client){
 		this.client = client;
 		setTitle("Dungeon of Doom: Game Lobby");
 		JPanel southPanel = new JPanel(new BorderLayout());
@@ -147,6 +146,14 @@ public class LobbyGUI extends JFrame{
 		chatField.setText("");
 		sendButton.addActionListener(sendMessageAction);
 		chatField.addActionListener(sendMessageAction);
+	}
+
+	public StyledDocument getStyledDucment() {
+		return chatPane.getStyledDocument();
+	}
+	
+	public void setStyledDocument(StyledDocument doc){
+		chatPane.setStyledDocument(doc);
 	}
 
 }

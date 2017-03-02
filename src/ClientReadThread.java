@@ -25,6 +25,7 @@ public class ClientReadThread extends Thread {
 		try {
 			in = new BufferedReader(new InputStreamReader(stream));
 			String line;
+			//read and process input
 			while((line = in.readLine()) != null){
 				client.processInput(line);
 			}

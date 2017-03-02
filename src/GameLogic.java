@@ -16,13 +16,12 @@ public class GameLogic {
 	private Map map;
 	private List<Player> players = new ArrayList<Player>();
 	private List<Thread> threads = new ArrayList<Thread>();
-	protected Console console;
 	private GameState gameState = GameState.NOTSTARTED;
 	
 	public GameLogic(){
 		map = new Map();
 		if(!map.tryReadMap("example_map.txt")){
-			console.println("map load failed: exiting",Color.black);
+			System.out.println("map load failed: exiting");
 			System.exit(1);
 		}
 	}

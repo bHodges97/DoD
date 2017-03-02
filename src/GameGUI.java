@@ -17,17 +17,19 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.text.StyledDocument;
 
 
 /**
  * The main gui in which DOD is rendered on
  */
 public class GameGUI extends JFrame{
-	Console console;
+	private JTextPane console = new JTextPane();
 	private JScrollPane scrollArea;
 	private JPanel paintPanel = new JPanel();//TODO:
 	private JPanel controlsPanel = new JPanel(new BorderLayout());
@@ -50,9 +52,8 @@ public class GameGUI extends JFrame{
 	 * @param title The title text of the frame
 	 * @param visible true if the frame should be visible
 	 */
-	public GameGUI(String title,boolean visible,Console console){
+	public GameGUI(String title,boolean visible){
 		super(title);
-		this.console = console;
 		scrollArea = new JScrollPane(this.console);
 		loadIcons();
 		initialiseLayout();		
@@ -66,17 +67,6 @@ public class GameGUI extends JFrame{
 		allowInputs(true);
 		setVisible(false);
 	}
-	
-	/**
-	 * Update gui with gamestate and current player
-	 * @param player The new current player
-	 * @param gameState The new gamestate
-	 */
-	protected void update(Player player, String gameState){
-		//paintPanel.setPlayer(player,gameState);
-		waitForAnimation();
-	}
-	
 	/**
 	 * @param map The map to render;
 	 */
@@ -106,49 +96,6 @@ public class GameGUI extends JFrame{
 		String in = guiInput;
 		guiInput = null;
 		return in;
-	}
-	
-	/**
-	 * @return The gui console
-	 */
-	protected Console getConsole(){
-		return console;
-	}
-
-	/**
-	 * Wait for paint panel to
-	 */
-	protected void waitForAnimation(){
-		if(!isVisible()){
-			return;//if window is not visible, don't wait
-		}
-		/*
-		do{
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}while(!paintPanel.finishedMove());
-		*/
-	}
-	
-	/**
-	 * Shows when a player wins
-	 * @param player The player that won
-	 */
-	protected void showWinEvent(Player player){
-		console.println("----****"+player.name+"_WON****----",Color.BLACK);
-	}
-	
-	/**
-	 * Play when a player is killed
-	 * @param player The player that attacks
-	 */
-	protected void showFailEvent(Player player){
-		//paintPanel.animation = "DEFEAT";
-		waitForAnimation();
-		//console.println("----****"+player.name+"_DIED****----");
 	}
 	
 	/**
@@ -348,6 +295,10 @@ public class GameGUI extends JFrame{
 			}
 			
 		};
+	}
+	protected void setStyledDocument(StyledDocument document) {
+		 console.setStyledDocument(document);
+		
 	}
 
 }
