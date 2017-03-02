@@ -65,6 +65,7 @@ public class GameGUI extends JFrame{
 		paintPanel.addKeyListener(getKeyListener());
 		inputField.addActionListener(getActionListener());
 		console.setAutoscrolls(true);
+		console.setEditable(false);
 		((DefaultCaret)console.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);;
 		pack();
 		allowInputs(true);
