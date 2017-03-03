@@ -1,4 +1,6 @@
-
+/**
+ * Player status enum
+ */
 public enum PlayerState implements Messageable {
 	PLAYING,DEAD,STUNNED,ESCAPED;
 

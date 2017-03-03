@@ -1,5 +1,6 @@
-
-
+/**
+ * Exit tile
+ */
 public class TileExit extends Tile {
 	protected static final char displayChar = 'E';
 	protected static final boolean passable = true;

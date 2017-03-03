@@ -1,5 +1,9 @@
 import java.awt.Color;
 
+/**
+ * Class for storing client connection info
+ *
+ */
 public class LobbyPlayer implements Messageable{
 	public boolean ready = false;
 	public boolean isBot = false;
@@ -8,11 +12,14 @@ public class LobbyPlayer implements Messageable{
 	public int id;
 	public boolean connected = true;
 	
-	
 	public LobbyPlayer(int connectionsCounter) {
 		name = "Player "+connectionsCounter;
 	}
-
+	
+	/**
+	 * Convert to gamelogic player
+	 * @return new Player
+	 */
 	public Player toPlayer(){
 		Player player;
 		if(isBot){

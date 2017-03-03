@@ -16,8 +16,8 @@ public class Sprite {
 	private static final int TILESIZE = 64;
 	private static java.util.Map<String,BufferedImage> sprites = new HashMap<String,BufferedImage>();
 	
-	
-	private Sprite(){//whole class is static;
+	//whole class is static;
+	private Sprite(){
 	}
 	
 	static{

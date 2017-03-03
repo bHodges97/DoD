@@ -1,36 +1,16 @@
 import java.util.Stack;
 
+/**
+ * For handling messageable objects
+ *
+ */
 public class Parser {
+	
 	/**
-	 * Delete me
-	 * @param args
+	 * Make sure the input doesn't break the format
+	 * @param input The input to clean
+	 * @return Cleaned input
 	 */
-	public static void main(String[] args){
-		
-		String msg = "WHISPER 1 hello world";
-		msg = msg.split("WHISPER ",2)[1];
-		String[] split = msg.split("((\\d+)|(\".*\")) ",2);
-		for(String s : split){
-			System.out.println(s);
-		}
-		
-		
-		
-		String x = "hello\nworld";
-		String x1 = Parser.convertFromMultiLine(x);
-		System.out.println(x1);
-		String x2 = Parser.convertToMultiLine(x1);
-		System.out.println(x2);
-		
-		System.out.println(sanitise("<tag>"));
-		parse("<GAMESTART></GAMESTART>").print(0);;
-	//	parse("<LOBBYPLAYER><BOT>false</BOT><READY>false<READY></LOBBYPLAYER>").print(0);
-		//parse("<ID></ID>").print(0);
-		//parse("<><><<<");
-		
-	}
-	
-	
 	public static String sanitise(String input){
 		if(input == null || input.isEmpty()){
 			return "";
@@ -41,9 +21,19 @@ public class Parser {
 		return input;
 	}
 	
+	/**
+	 * Convert string back to a multiline format
+	 * @param string the string to format
+	 * @return converted string
+	 */
 	public static String convertToMultiLine(String string){
 		return (string.replaceAll("\\\\n","\n"));
 	}	
+	/**
+	 * Clean input so it doesn't break println
+	 * @param input
+	 * @return the cleaned input
+	 */
 	public static String convertFromMultiLine(String input){
 		return  (input.replaceAll("\\n", "\\\\n"));	
 	}	
@@ -112,33 +102,55 @@ public class Parser {
     	return null;    	
 	}
 
-
+	/**
+	 * Make a message
+	 * @param from The id of the sender
+	 * @param message The message
+	 * @return element representing message
+	 */
 	public static Element makeMessage(int from, String message) {
 		return Parser.parse("<MESSAGE><FROM>"+from+"</FROM><CONTENT>"+Parser.sanitise(message)+"</CONTENT></MESSAGE>");
 	}
+	
+	/**
+	 * Make a message
+	 * @param from The id of the sender
+	 * @param to The recipient of the message
+	 * @param message The message
+	 * @return element representing message
+	 */
 	public static Element makeMessage(int from, int to,String message) {
 		return Parser.parse("<MESSAGE><FROM>"+from+"</FROM><TO>"+to+"</TO><CONTENT>"+Parser.sanitise(message)+"</CONTENT></MESSAGE>");
 	}
 	
+	/**
+	 * Split message into type,content,target
+	 * @param message the message to split
+	 * @return splitted message
+	 */
 	public static String[] splitMessageToComponents(String message){
 		String[] components;
 		String[] splitter = message.split(" ",2);
 		String type = splitter[0];
 		String content = splitter[1];
 		if(type.equals("WHISPER")){
+			//split based on id or name in quotes
 			splitter = content.split("((\\d+)|(\".*\")) ",2);
 			components = new String[3];
 			if(splitter.length == 2){
 				components[1] = splitter[1];
+				//find contents
 				components[2] = content.replaceFirst(" "+components[1], "");
 				if(components[2].endsWith("\"") && components[2].startsWith("\"")){
 					components[2] = components[2].substring(1,components[2].length()-1);
 				}
 			}else{
+				//whisper missing target info
 				components[1] = content;
 				components[2] = "-1";
 			}
 		}else{
+			//shout has only two components
 			components = new String[2];
 			components[1] = content;
 		}
@@ -147,7 +159,10 @@ public class Parser {
 		return components;
 	}
 
-
+	/**
+	 * 
+	 * @return A help message
+	 */
 	public static String makeHelpMessage() {
 		String message = "Avaliable commands:\n";
 

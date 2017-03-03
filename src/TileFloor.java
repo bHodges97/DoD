@@ -1,5 +1,8 @@
 
-
+/**
+ * Floor tile
+ *
+ */
 public class TileFloor extends Tile {
 
 	protected static final char displayChar = '.';

@@ -1,12 +1,11 @@
-
+/**
+ * For handling player actions
+ * 
+ */
 public class PlayerLogicThread implements Runnable{
 
 	private Player player;
 	private GameLogic gameLogic;
-	
-	private PlayerLogicThread(){
-		
-	}
 	
 	public PlayerLogicThread(Player player, GameLogic gameLogic){
 		this.player = player;
@@ -18,6 +17,7 @@ public class PlayerLogicThread implements Runnable{
 	public void run() {
 		while(true){
 			player.selectNextAction();
+			//update other players on changes
 			gameLogic.informPlayers();
 			try {
 				Thread.sleep(400);

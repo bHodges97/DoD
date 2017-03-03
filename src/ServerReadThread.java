@@ -4,12 +4,21 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.SocketException;
 
+/**
+ * Thread for reading client inputs to server
+ */
 public class ServerReadThread extends Thread{
 	
 	private Socket socket;
 	private DODServer server;
 	private int id;
 	
+	/**
+	 * Constructor
+	 * @param socket The socket to read from
+	 * @param server the server this belongs to
+	 * @param id The id of the socket
+	 */
 	public ServerReadThread(Socket socket,DODServer server,int id){
 		this.socket = socket;
 		this.server = server;

@@ -20,6 +20,10 @@ import javax.swing.JToggleButton;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.StyledDocument;
 
+/**
+ * GUI window for lobby connections
+ *
+ */
 public class LobbyGUI extends JFrame{
 	private JPanel connectionsPanel = new JPanel(new GridLayout(0,1,0,0));
 	private JScrollPane scrollPane = new JScrollPane(connectionsPanel,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -35,6 +39,10 @@ public class LobbyGUI extends JFrame{
 	private java.util.Map<LobbyPlayer,JLabel> playerToLabelMap = new HashMap<LobbyPlayer,JLabel>();
 	protected JButton startButton = new JButton("START GAME");
 	
+	/**
+	 * Construct a new gui for the given client
+	 * @param client
+	 */
 	public LobbyGUI(Client client){
 		this.client = client;
 		setTitle("Dungeon of Doom: Game Lobby");
@@ -151,10 +159,17 @@ public class LobbyGUI extends JFrame{
 		chatField.addActionListener(sendMessageAction);
 	}
 
+	/**
+	 * @return StyledDocument for chatPane
+	 */
 	public StyledDocument getStyledDucment() {
 		return chatPane.getStyledDocument();
 	}
 	
+	/**
+	 * Set styledDocument for chatPane
+	 * @param doc the Document to use
+	 */
 	public void setStyledDocument(StyledDocument doc){
 		chatPane.setStyledDocument(doc);
 	}

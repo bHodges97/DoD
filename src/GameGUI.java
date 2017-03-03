@@ -88,8 +88,10 @@ public class GameGUI extends JFrame{
 		allowInputs = mode;
 		guiInput = null;
 		for (Component comp : buttonsPanel.getComponents()) {
-			if (comp instanceof JButton) {//iterate through all buttons and disable/enable
+			try{//iterate through all buttons and disable/enable
 				((JButton) comp).setEnabled(mode);
+			}catch(ClassCastException e){
+				
 			}
 		}
 		
@@ -181,7 +183,7 @@ public class GameGUI extends JFrame{
 	private void initialiseButtons(){
 		ActionListener actionListener = getButtonListener();
 		for(Component component : buttonsPanel.getComponents()){
-			if(component instanceof JButton){
+			try{
 				JButton button = (JButton)component;
 				button.addActionListener(actionListener);
 				button.setPreferredSize(new Dimension(64,64));
@@ -192,6 +194,8 @@ public class GameGUI extends JFrame{
 				if(button.getIcon()!=null){
 					button.setText("");//if icons loaded clear text
 				}
+			}catch(ClassCastException e){
+				
 			}
 		}
 	}

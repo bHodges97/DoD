@@ -1,5 +1,7 @@
 
-
+/**
+ * Wall tile
+ */
 public class TileWall extends Tile {
 	public static final char displayChar = '#';
 	public static final boolean passable = false;

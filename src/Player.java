@@ -15,9 +15,20 @@ abstract class Player implements Messageable,Displayable{
 	protected PlayerState state;
 	protected Color color;
 	protected FightResolver fightResolver = null;
-
+	
+	/**
+	 * @return true if player can't be attacked
+	 */
 	protected abstract boolean isImmortal();
+	/**
+	 * @return player type
+	 */
 	protected abstract PlayerType getPlayerType();
+	/**
+	 * Construct a player based on the given type
+	 * @param playerType
+	 * @return the new player
+	 */
 	protected static Player makePlayer(PlayerType playerType){
 		switch(playerType){
 		case BOTPLAYER:
@@ -28,7 +39,7 @@ abstract class Player implements Messageable,Displayable{
 			return null;
 		}		
 	}
-	
+	@Override
 	public String getInfo(){
 		return "<PLAYER><TYPE>"+getPlayerType()+"</TYPE><NAME>"+name+"</NAME><ID>"+id+"</ID>"+position.getInfo()+inventory.getInfo()+state.getInfo()+"</PLAYER>";
 	}
@@ -119,7 +130,9 @@ abstract class Player implements Messageable,Displayable{
 		return true;
 	}
 
-
+	/**
+	 * For losing a fight
+	 */
 	public void lostCombat() {
 		gameLogic.kill(this);
 	}
