@@ -12,13 +12,14 @@ import java.util.List;
  */
 public abstract class Client {
 	
+	
+	protected List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
+	protected LobbyPlayer clientPlayer = new LobbyPlayer(0);	
 	private int port = -1;
 	private boolean clientReady = false;
 	private PrintWriter writer;
 	private Socket socket;
 	protected int id;
-	protected List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
-	protected LobbyPlayer clientPlayer = new LobbyPlayer(0);
 	private volatile boolean gameStarted = false;
 	
 	/**
@@ -53,6 +54,12 @@ public abstract class Client {
 	 * @param message The message to print
 	 */
 	public abstract void print(Element message);
+	
+	/**
+	 * what to process when the lobby ends and the game begins.
+	 */
+	protected abstract void startGameAction();
+	
 	
 	/**
 	 * Update list of other connected players
@@ -92,28 +99,6 @@ public abstract class Client {
 			System.out.println("Expected parameters: hostname portnumber");
 			return false;
 		}
-		return true;
-	}
-	
-	/**
-	 * Attempt to connect to the given host and port
-	 * @param hostName The host name to connect to
-	 * @param portNumber The port number to connect to
-	 * @return <b>true</b> if connection is successful
-	 */
-	private boolean tryConnect(String hostName, int portNumber){
-		try {
-			socket = new Socket(hostName,portNumber);
-			if(!socket.isConnected()){
-				return false;
-			}
-			ClientReadThread readThread = new ClientReadThread(socket.getInputStream(),this);
-			readThread.start();
-			writer = new PrintWriter(socket.getOutputStream());
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		} 
 		return true;
 	}
 	
@@ -226,7 +211,7 @@ public abstract class Client {
 		}else if(input.startsWith("NAME")){
 			send("<LOBBYPLAYER><NAME>"+Parser.sanitise(input.split("NAME ")[1])+"</NAME></LOBBYPLAYER>");
 		}else if(input.startsWith("QUIT")){
-			send("<EXIT></EXIT>");//TODO:
+			send("<EXIT></EXIT>");
 			System.exit(0);
 		}else if(input.equals("HELP")){
 			processInput(Parser.makeHelpMessage());
@@ -235,10 +220,28 @@ public abstract class Client {
 			send("<INPUT>"+input+"</INPUT>");
 		}
 	}
-	
+
 	/**
-	 * what to process when the lobby ends and the game begins.
+	 * Attempt to connect to the given host and port
+	 * @param hostName The host name to connect to
+	 * @param portNumber The port number to connect to
+	 * @return <b>true</b> if connection is successful
 	 */
-	protected abstract void startGameAction();
+	private boolean tryConnect(String hostName, int portNumber){
+		try {
+			socket = new Socket(hostName,portNumber);
+			if(!socket.isConnected()){
+				return false;
+			}
+			ClientReadThread readThread = new ClientReadThread(socket.getInputStream(),this);
+			readThread.start();
+			writer = new PrintWriter(socket.getOutputStream());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		} 
+		return true;
+	}
+	
 	
 }

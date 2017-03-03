@@ -33,7 +33,7 @@ import javax.swing.text.StyledDocument;
 public class GameGUI extends JFrame{
 	private JTextPane console = new JTextPane();
 	private JScrollPane scrollArea;
-	private JPanel paintPanel = new JPanel();//TODO:
+	private JPanel paintPanel = new JPanel();
 	private JPanel controlsPanel = new JPanel(new BorderLayout());
 	private JPanel buttonsPanel = new JPanel(new GridBagLayout());
 	private JTextField inputField = new JTextField(20);

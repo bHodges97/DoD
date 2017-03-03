@@ -4,6 +4,11 @@ import java.awt.Color;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Message element
+ * Consists of tag, children and value
+ *
+ */
 public class Element implements Messageable{
 	public Element(String name) {
 		this.tag = name;
@@ -12,7 +17,10 @@ public class Element implements Messageable{
 	public Set<Element> children = new HashSet<Element>();
 	public String value = "";
 	
-	
+	/**
+	 * Print the contents recursively
+	 * @param depth The recursion depth
+	 */
 	public void print(int depth){
 		for(int i = 0;i < depth;i++){
 			System.out.print("--");
@@ -30,15 +38,24 @@ public class Element implements Messageable{
 			}
 		}
 	}
-
+	
+	/**
+	 * @return true if the stored value is a boolean
+	 */
 	public boolean isBoolean(){
 		return value.equals("true") || value.equals("false");
 	}
 	
+	/**
+	 * @return stored value as a boolean
+	 */
 	public boolean toBoolean() {
 		return value.equals("true");
 	}
 	
+	/**
+	 * @return is stored value an integer
+	 */
 	public boolean isInt(){
 		try{
 			Integer.valueOf(value);
@@ -48,14 +65,23 @@ public class Element implements Messageable{
 		return true;
 	}
 	
+	/**
+	 * @return stored value as an integer
+	 */
 	public int toInt(){
 		return Integer.parseInt(value);
 	}
 	
+	/**
+	 * @return the stored value as a char
+	 */
 	public char toChar(){
 		return value.toCharArray()[0];
 	}
 
+	/**
+	 * @param player The player load the element attributes into
+	 */
 	public void toLobbyPlayer(LobbyPlayer player){
 		for(Element child:children){
 			String tag = child.tag;
@@ -86,19 +112,27 @@ public class Element implements Messageable{
 		}	
 	}
 	
+	/**
+	 * @return The element as a position
+	 */
 	public Position toPosition(){
 		int x = getChild("X").toInt();
 		int y = getChild("Y").toInt();
 		return new Position(x,y);
 	}
-
+	
+	/**
+	 * @return The element as a tile
+	 */
 	public Tile toTile(){
 		Position pos = getChild("POSITION").toPosition();
 		Tile.TileType type = Tile.TileType.valueOf(getChild("TYPE").value);
 		return Tile.makeTile(type, pos);
 	}
 	
-	
+	/**
+	 * @return The element as a player
+	 */
 	public Player toPlayer(){
 		Player player = null;
 		int id = getChild("ID").toInt();
@@ -121,6 +155,11 @@ public class Element implements Messageable{
 		return "<"+tag+">" +contents+ "</"+tag+">";
 	}
 	
+	/**
+	 * Get a named child element
+	 * @param name The name of a child element
+	 * @return The first child element with given name
+	 */
 	public Element getChild(String name){
 		for(Element child:children){
 			if(child.tag.equals(name)){

@@ -1,4 +1,7 @@
-
+/**
+ * Gold
+ *
+ */
 public class ItemGold extends Item {
 	private final static String name = "Gold";
 	private final static String description = "Used to exit the dungeon.";

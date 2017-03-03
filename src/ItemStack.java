@@ -2,10 +2,6 @@
 public class ItemStack implements Messageable{
 	private Item item;
 	public int count;
-
-	private ItemStack(){
-		
-	}
 	public ItemStack(Item item){
 		this.item = item;
 	}

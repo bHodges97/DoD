@@ -3,36 +3,71 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class Inventory implements Messageable{
+/**
+ * This is used to store player gold and future items to add to the game
+ *
+ */
+public class Inventory implements Messageable,Displayable{
 	private List<ItemStack> itemStacks;
 	
 	public Inventory(){
 		itemStacks = new ArrayList<ItemStack>();
 	}
 	
-	public char getDisplayChar(){
-		return itemStacks.get(0).getDisplayChar();
-	}
-
+	/**
+	 * @param itemStack To add to inventory
+	 */
 	public void addItemStack(ItemStack itemStack) {
 		itemStacks.add(itemStack);
 	}
 
-	private boolean removeStack(ItemStack itemStack) {
+	/**
+	 * @param itemStack The item stack to remove
+	 * @return true if the itemstack can be found
+	 */
+	public boolean removeStack(ItemStack itemStack) {
 		if(itemStacks.contains(itemStack)){
 			itemStacks.remove(itemStack);
 			return true;
 		}
 		return false;		
 	}
+	
+	/**
+	 * @return true if the inventory is input
+	 */
+	public boolean isEmpty(){
+		for(ItemStack stack:itemStacks){
+			if(stack.count > 0){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	/**
+	 * Clear the stored contents
+	 */
+	public void empty(){
+		itemStacks = new ArrayList<ItemStack>();
+	}
 
+	/**
+	 * 
+	 * @param name the name of item
+	 * @return  count of given item
+	 */
 	public int getItemCount(String name) {
 		if(getItemStack(name) == null){
 			return 0;
 		}
 		return getItemStack(name).count;
 	}
-
+	
+	/**
+	 * @param name
+	 * @return The first itemstack with the given name
+	 */
 	public ItemStack getItemStack(String name) {
 		for(ItemStack stack:itemStacks){
 			if(stack.getName() == name){
@@ -41,7 +76,12 @@ public class Inventory implements Messageable{
 		}
 		return null;
 	}
-
+	
+	/**
+	 * Transfer contents from inventory to another
+	 * @param from The inventory to transfer from
+	 * @param to The inventory to transfer to
+	 */
 	public static void transfer(Inventory from, Inventory to) {
 		//toBeDeleted is a holder to avoid ConcurrentModificationException when iterating
 		Set<ItemStack> toBeDeleted = new HashSet<ItemStack>();
@@ -67,6 +107,11 @@ public class Inventory implements Messageable{
 	}
 
 	@Override
+	public char getDisplayChar(){
+		return itemStacks.get(0).getDisplayChar();
+	}
+
+	@Override
 	public String getInfo() {
 		String builder = "<INVENTORY>";
 		for(ItemStack stack:itemStacks){
@@ -76,16 +121,4 @@ public class Inventory implements Messageable{
 		return builder;
 	}
 	
-	public boolean isEmpty(){
-		for(ItemStack stack:itemStacks){
-			if(stack.count > 0){
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	public void empty(){
-		itemStacks = new ArrayList<ItemStack>();
-	}
 }

@@ -1,4 +1,7 @@
-
+/**
+ * used to select human actions
+ *
+ */
 public class ControllerHuman extends Controller{
 	
 	public ControllerHuman(DODServer dodServer, int id,Player player) {
@@ -7,7 +10,6 @@ public class ControllerHuman extends Controller{
 
 	@Override
 	public synchronized String getInput() {
-
         while(input.isEmpty()) {
             try {
 				Thread.sleep(1);
@@ -15,6 +17,7 @@ public class ControllerHuman extends Controller{
 				e.printStackTrace();
 			}
         }
+        //clear input and return;
         String holder = input;
         input = "";
         return holder;
@@ -22,13 +25,13 @@ public class ControllerHuman extends Controller{
 
 	@Override
 	public void sendOutput(String output) {
+		//make sure the output is safe to parse
 		output = Parser.sanitise(output);
 		server.processInput("<OUTPUT>"+ output + "</OUTPUT>", id);
 	}
 
 	@Override
 	public void processInfo(String message) {
-		// TODO Auto-generated method stub
-		
+		//Place holder for gui integration
 	}   
 }

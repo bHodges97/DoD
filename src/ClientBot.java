@@ -1,6 +1,9 @@
-public class ClientBot extends Client {
-	
-	
+
+/**
+ * Bot client. This allows a new Bot to join the server.
+ *
+ */
+public class ClientBot extends Client {	
 	
 	public static void main(String[] args) {
 		ClientBot client = new ClientBot(args);
@@ -16,13 +19,12 @@ public class ClientBot extends Client {
 	public void run(){
 		System.out.println("New bot started");
 		send("<LOBBYPLAYER><BOT>true</BOT><READY>true</READY></LOBBYPLAYER>");
-
 	}
 
 
 	@Override
 	protected void startGameAction() {
-		
+		//Do nothing. Bot logic is done server side.
 	}
 
 	@Override

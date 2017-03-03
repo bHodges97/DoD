@@ -28,6 +28,7 @@ public class ClientHuman extends Client{
 	
 	@Override
 	public void run(){
+		//Initialise the gui
 		lobbygui = new LobbyGUI(this);
 		document = lobbygui.getStyledDucment();
 		lobbygui.setStyledDocument(document);
@@ -37,6 +38,7 @@ public class ClientHuman extends Client{
 		println("Type HELP for list of commands", Color.gray);
 		lobbygui.updateInfo();
 		
+		//Read inputs from console and gui
 		BufferedReader buffer= new BufferedReader(new InputStreamReader(System.in));
 		while(true){		
 			String input = "";
@@ -62,6 +64,7 @@ public class ClientHuman extends Client{
 		}
 	}
 	
+	@Override
 	protected void startGameAction() {
 		lobbygui.setEnabled(false);
 		lobbygui.dispose();
@@ -74,7 +77,7 @@ public class ClientHuman extends Client{
 		Color color = Color.black;
 		int from = -1,to = -1;
 		String content = "",fromName = "",toName = "",output = "";
-		
+		//Convert message into SHOUT/WHISPER/general style
 		for(Element part:message.children){
 			if(part.tag.equals("FROM") && part.isInt()){
 				from = part.toInt();
@@ -85,6 +88,7 @@ public class ClientHuman extends Client{
 			}
 		}
 		if(from >= 0){
+			//load names and colors
 			for(LobbyPlayer player:lobbyPlayers){
 				if(from == player.id){
 					color = player.color;
@@ -94,6 +98,7 @@ public class ClientHuman extends Client{
 			}
 		}
 		if(to >= 0){
+			//output different messages based on player id
 			for(LobbyPlayer player:lobbyPlayers){
 				if(from == player.id){
 					toName = player.name;
@@ -107,11 +112,13 @@ public class ClientHuman extends Client{
 				}
 			}
 		}else if(from >= 0){
+			//make shout message
 			output = "["+id+"]"+fromName+":"+content;
 		}else{
 			output = content;
 		}
 		System.out.println(output);
+		//print to console
 		println(output,color);
 	}
 
@@ -122,6 +129,7 @@ public class ClientHuman extends Client{
 			return;
 		}		
 		lobbygui.updateInfo();
+		//Enable start button if all players are ready
 		for(LobbyPlayer player:lobbyPlayers){
 			if(!player.ready){
 				lobbygui.startButton.setEnabled(false);
@@ -129,8 +137,6 @@ public class ClientHuman extends Client{
 			}
 		}
 		lobbygui.startButton.setEnabled(true);
-		
-		//TODO; and then added panels
 	}
 	
 
@@ -145,8 +151,7 @@ public class ClientHuman extends Client{
 			return;
 		}
 		StyleContext styleContext = StyleContext.getDefaultStyleContext();
-	    AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY,
-	                                        StyleConstants.Foreground, color);
+	    AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY,StyleConstants.Foreground, color);
 		try {
 			document.insertString(document.getLength(), string+"\n", attributeSet);
 		} catch (BadLocationException e) {

@@ -53,13 +53,20 @@ abstract class Player implements Messageable,Displayable{
     protected void addGold(int i){
     	inventory.getItemStack("Gold").add(i);
     }
+    
+    /**
+     * Process player commands, Valid commands are HELLO PICKUP LOOK and MOVE
+     * @param command Command to process
+     * @return Output of command. "Invalid" if command is not valid.
+     */
 	protected String processCommand(String command){
 		if(state == PlayerState.ESCAPED){
 			return "You have escaped type QUIT to stop playing";
 		}else if(state == PlayerState.DEAD){
 			return "You are dead type QUIT to stop playing";
 		}else if(state == PlayerState.STUNNED){
-			return "You are stunned";//TODO:
+			//TODO:unimplemented
+			return "You are stunned";
 		}		
 		String output = "Invalid";
 		if(fightResolver != null){
@@ -88,25 +95,33 @@ abstract class Player implements Messageable,Displayable{
     	controller.sendOutput(processCommand(input));
     } 
     
+    /**
+     * Check if player can win  and then make player win.
+     */
 	public void tryEscape() {
 		int goldCount = Integer.valueOf(processCommand("HELLO").split("GOLD: ")[1]);
 		if(this.getGoldCount() >= goldCount){
 			this.state = PlayerState.ESCAPED;
 			controller.sendOutput("ESCAPED");
 		}
-		//TODO: make this fancier?/
+		//TODO: Notify other players of this event.
 	}
+	
+	/**
+	 * Check if player is still in the game map 
+	 * 
+	 * @return <b>true</b> if player is still in game
+	 */
 	public boolean isInGame() {
-		if(state == PlayerState.PLAYING || state == PlayerState.STUNNED){
-			return true;
+		if(state == PlayerState.ESCAPED|| state == PlayerState.DEAD){
+			return false;
 		}
-		return false;
+		return true;
 	}
 
 
 	public void lostCombat() {
-		// TODO Auto-generated method stub
-		
+		gameLogic.kill(this);
 	}
 	
 	

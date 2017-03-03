@@ -197,15 +197,16 @@ public class GameLogic {
     }
     
 	protected synchronized void informPlayers() {
+		int width = 2;
 		for(Player player:players){	
 			for(Player otherPlayer:players){
-				if(PathFinder.estimateDistance(player.position,otherPlayer.position) <= 4){
-					player.controller.processInfo(otherPlayer.getInfo());
+				if(Math.abs(player.position.x - otherPlayer.position.x) <= width && Math.abs(player.position.y - otherPlayer.position.y) <= width ){
+					player.controller.processInfo(otherPlayer.getInfo()); 
 				}
 			}
 			String tiles = "<TILES>";
-			for(int y = -2 ;y <= 2;++y){
-				for(int x = -2;x <= 2;++x){
+			for(int y = -width ;y <= width;++y){
+				for(int x = -width;x <= width;++x){
 					Tile tile = map.getTile(new Position(player.position.x+x,player.position.y+y));
 					if(tile != null){
 						tiles+=tile.getInfo();
@@ -222,10 +223,11 @@ public class GameLogic {
 		}	
 	}
     
-    private void kill(Player player){
+    protected void kill(Player player){
     	player.state = PlayerState.DEAD;
     	if(player.inventory.isEmpty()){
     		DroppedItems dropped = new DroppedItems(player.inventory,player.position);
+    		map.addDroppedItems(dropped);
     	}
     	player.inventory.empty();
     	player.controller.sendOutput("You have died!");

@@ -4,7 +4,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 
-
+/**
+ * Thread to read inputs from client
+ *
+ */
 public class ClientReadThread extends Thread {
 	private InputStream stream;
 	private Client client;
@@ -17,6 +20,7 @@ public class ClientReadThread extends Thread {
 	public ClientReadThread(InputStream stream,Client client){
 		this.stream = stream;
 		this.client = client;
+		this.setName("Client Read Thread "+client.id);
 	}
 	
 	@Override

@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -15,7 +14,7 @@ import java.util.Set;
 public class Map{	
 	private String mapName = "";
 	private int goldRequired = 0;
-	public List<Tile> tileList;//TODO: private
+	private List<Tile> tileList;
 	private Set<DroppedItems> droppedItems = new  HashSet<DroppedItems>();
 	private int width = 0,height = 0;
 	private int minx = 0,miny = 0;
@@ -186,8 +185,6 @@ public class Map{
 		for(DroppedItems droppedItem : droppedItems){
 			if(droppedItem.position.equalsto(pos)){
 				return droppedItem;
-			}else{
-				
 			}
 		}
 		return null;
@@ -253,6 +250,18 @@ public class Map{
 
 	public Set<DroppedItems> getDroppedItems() {
 		return droppedItems;
+	}
+
+
+	public void addDroppedItems(DroppedItems dropped) {
+		DroppedItems existingItems = getDroppedItemsAt(dropped.position);
+		if(existingItems == null){
+			this.droppedItems.add(dropped);
+			
+		}else{
+			Inventory.transfer(dropped.inventory, existingItems.inventory);
+		}
+		
 	}
 
 }

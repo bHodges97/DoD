@@ -1,5 +1,9 @@
 import java.util.HashMap;
 
+/**
+ * used to select bot actions
+ * 
+ */
 public class ControllerBot extends Controller{
 	private Map map = new Map();
 	private String output = "START";
@@ -40,18 +44,25 @@ public class ControllerBot extends Controller{
 				closest = holder;
 			}
 		}
+		//now try path finding
 		if(targetPosition != null){
-			if(pather.pathFind(currentPosition, targetPosition)){
-				sendOutput("Pather found path");
-				Position nextStep = pather.findNextStep();
-				playerPositions = new HashMap<Integer,Position>();
-				return "MOVE "+currentPosition.getDirectionTo(nextStep);
-			}else{
-				sendOutput("Pather failed heading at direction of player");
-				return "MOVE "+currentPosition.getDirectionTo(targetPosition);
+			try{
+				if(pather.pathFind(currentPosition, targetPosition)){
+					sendOutput("Pather found path");
+					Position nextStep = pather.findNextStep();
+					playerPositions = new HashMap<Integer,Position>();
+					return "MOVE "+currentPosition.getDirectionTo(nextStep);
+				}else{
+					sendOutput("Pather failed heading at direction of player");
+					return "MOVE "+currentPosition.getDirectionTo(targetPosition);
+				}
+			}catch(NullPointerException e){
+				e.printStackTrace();
+				System.out.println("Debug0"+currentPosition);
+				System.out.println("Debug1"+targetPosition);
 			}
 		}
-		sendOutput("Couldn't decide" + currentPosition);
+		sendOutput("Couldn't decide on what to do" + currentPosition);
 		return "LOOK";
 	}
 
@@ -64,6 +75,7 @@ public class ControllerBot extends Controller{
 	public void processInfo(String message) {
 		Element info = Parser.parse(message);
 		if(info.tag.equals("TILES")){
+			//process map info
 			int i = 0;
 			for(Element child:info.children){
 				++i;
@@ -71,8 +83,8 @@ public class ControllerBot extends Controller{
 				map.addTile(tile.getDisplayChar(),tile.pos.x,tile.pos.y);
 			}
 		}else if(info.tag.equals("PLAYER")){
+			//process player info
 			Player player = info.toPlayer();
-
 			if(player.id == id){
 				currentPosition = player.position;
 			}else if(player.getPlayerType() == Player.PlayerType.HUMANPLAYER && player.isInGame()){
