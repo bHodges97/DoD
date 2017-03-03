@@ -115,7 +115,7 @@ abstract class Player implements Messageable,Displayable{
 			this.state = PlayerState.ESCAPED;
 			controller.sendOutput("ESCAPED");
 		}
-		//TODO: Notify other players of this event.
+		gameLogic.informPlayers("Player "+id+ " has escaped. There is likely not enough gold left on the map, remaining players are stuck for ever");
 	}
 	
 	/**

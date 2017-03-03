@@ -183,10 +183,18 @@ public class GameLogic {
     	System.exit(0);//todo: change it
     }
     
+    /**
+     * @return current game state
+     */
     protected GameState getGameState(){
     	return gameState;
     }
     
+    /**
+     * Get the first player at a position
+     * @param position 
+     * @return the player at the given position
+     */
     protected Player getPlayerAt(Position position){
     	for(Player player:players){
 			if(player.isInGame() && Position.equals(player.position, position)){
@@ -196,6 +204,9 @@ public class GameLogic {
     	return null;
     }
     
+    /**
+     * Update players are game conditions
+     */
 	protected synchronized void informPlayers() {
 		int width = 2;
 		for(Player player:players){	
@@ -222,7 +233,19 @@ public class GameLogic {
 		
 		}	
 	}
-    
+	/**
+	 * Send message to all players
+	 * @param message
+	 */
+	protected synchronized void informPlayers(String message) {
+		for(Player player:players){
+			player.controller.sendOutput(message);
+		}
+	}
+	/**
+	 * Make player dead
+	 * @param player
+	 */
     protected void kill(Player player){
     	player.state = PlayerState.DEAD;
     	if(player.inventory.isEmpty()){
@@ -231,6 +254,7 @@ public class GameLogic {
     	}
     	player.inventory.empty();
     	player.controller.sendOutput("You have died!");
+		informPlayers("Player "+player.id+ " has died");
     }
 
 }

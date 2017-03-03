@@ -10,20 +10,18 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
-public class ClientHuman extends Client{
+public class HumanClient extends Client{
 	
 	private LobbyGUI lobbygui;
 	private GameGUI gamegui;
 	private StyledDocument document;
 	
 	public static void main(String[] args) {
-		ClientHuman client = new ClientHuman(args);		
+		HumanClient client = new HumanClient(args);		
 	}
 	
-	public ClientHuman(String[] args){
-		//super(args);
-		//TODO: this method should just be super(args);
-		super(new String[]{"localhost","38983"});
+	public HumanClient(String[] args){
+		super(args);
 	}
 	
 	@Override

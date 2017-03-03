@@ -36,7 +36,7 @@ public class DODServer {
 	 * @param args port number
 	 */
     public static void main(String[] args) {
-    	int port = 38983;//TODO:set this back to zero after testing. Java will generate a random valid port number if this is 0.
+    	int port = 0;
     	if(args.length == 1){
     		try{
     		port = Integer.valueOf(args[0]);

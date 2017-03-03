@@ -73,10 +73,9 @@ public class Map{
     	if(fileName.isEmpty()){
     		return false;
     	}
-		File file = new File(getClass().getResource(fileName).getPath());
 		Scanner reader = null;
     	try{
-    		reader = new Scanner(file);
+    		reader = new Scanner(Map.class.getResourceAsStream(fileName));
 			mapName = reader.nextLine().split("name ")[1];
 			goldRequired = Integer.parseInt(reader.nextLine().split("win ")[1]);
 			int x = 0, y = 0;
@@ -92,7 +91,7 @@ public class Map{
 				}
 				++y;
 			}while(reader.hasNextLine());
-    	}catch(FileNotFoundException|NoSuchElementException e){
+    	}catch(NoSuchElementException e){
     		System.out.println("Map load failed");
     		e.printStackTrace();
     		return false;

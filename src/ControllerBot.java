@@ -68,7 +68,8 @@ public class ControllerBot extends Controller{
 
 	@Override
 	public void sendOutput(String output) {
-		this.output = output;
+		output = Parser.sanitise(output);
+		server.processInput("<OUTPUT>"+ output + "</OUTPUT>", id);
 	}
 
 	@Override

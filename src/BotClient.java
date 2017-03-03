@@ -3,16 +3,14 @@
  * Bot client. This allows a new Bot to join the server.
  *
  */
-public class ClientBot extends Client {	
+public class BotClient extends Client {	
 	
 	public static void main(String[] args) {
-		ClientBot client = new ClientBot(args);
+		BotClient client = new BotClient(args);
 	}
 	
-	public ClientBot(String[] args){
-		//super(args);
-		//TODO: this method should just be super(args);
-		super(new String[]{"localhost","38983"});
+	public BotClient(String[] args){
+		super(args);
 	}
 
 	@Override
@@ -29,7 +27,7 @@ public class ClientBot extends Client {
 
 	@Override
 	public void print(Element message) {
-		System.out.println(message.value);
+		message.print(0);
 	}
 	
 }
