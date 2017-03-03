@@ -107,6 +107,7 @@ public class Element implements Messageable{
 		player = Player.makePlayer(type);
 		player.id = id;
 		player.position = pos;
+		player.state = PlayerState.valueOf(getChild("PLAYERSTATE").value);
 		
 		return player;
 	}

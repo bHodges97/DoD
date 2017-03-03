@@ -4,6 +4,6 @@ public enum PlayerState implements Messageable {
 
 	@Override
 	public String getInfo() {
-		return "<PLAYERSTATE>"+"</PLAYERSTATE>";
+		return "<PLAYERSTATE>"+this+"</PLAYERSTATE>";
 	}
 }

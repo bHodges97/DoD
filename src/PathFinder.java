@@ -12,13 +12,8 @@ import java.util.Set;
 public class PathFinder {
 	private Map map;
     private java.util.Map<Position,Position> path;
-	private Position start = new Position(0,0),goal;
+	private Position start = new Position(0,0),goal = new Position(0,0);
 	
-	public static void main(String[] args){
-		Position position = new Position(1,1);
-		Position position2 = new Position(5,1);
-		System.out.println(PathFinder.estimateDistance(position, position2));
-	}
     
 	/**
 	 * Construct a new pathfinder
@@ -36,18 +31,19 @@ public class PathFinder {
 	 * @see <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">wikipedia a* search</a>
 	 * @return true if successful,false otherwise
 	 */
-	protected boolean  pathFind(Position start,Position goal){	 	
+	protected boolean  pathFind(Position start,Position goal){	 
+		this.start = map.getTile(start).pos;
+		this.goal = map.getTile(goal).pos;;
 	    Set<Position> closedSet = new HashSet<Position>();
 	    Set<Position> openSet = new HashSet<Position>();
 	    openSet.add(start);
-	    java.util.Map<Position,Position> cameFrom = new HashMap<Position,Position> ();
+	    path = new HashMap<Position,Position> ();
 	    java.util.Map<Position,Integer> gScore = new HashMap<Position,Integer>();
 	    java.util.Map<Position,Integer> fScore = new HashMap<Position,Integer>();
 	    gScore.put(start, 0);
 	    fScore.put(start,estimateDistance(start,goal));
-	    path = cameFrom;
 	    while(!openSet.isEmpty()){ 
-	    	Position current = null;
+	    	Position current = new Position(0,0);
 	    	int score = Integer.MAX_VALUE;
 	    	for(Position node:openSet){
 	    		int newScore = fScore.get(node);
@@ -56,7 +52,7 @@ public class PathFinder {
 	    			current = node;
 	    		}
 	    	}
-	    	if(current == goal){
+	    	if(current.equalsto(goal)){
 	    		return true;
 	    	}
 	    	openSet.remove(current);
@@ -72,7 +68,7 @@ public class PathFinder {
 	    		}else if(tentative_gScore >= gScore.get(neighbor)){
 	    			continue;
 	    		}
-	    		cameFrom.put(neighbor,current);
+	    		path.put(neighbor,current);
 	    		gScore.put(neighbor,tentative_gScore);
 	    		fScore.put(neighbor,gScore.get(neighbor)+estimateDistance(neighbor, goal));
 	    	}
@@ -86,12 +82,12 @@ public class PathFinder {
 	protected Position findNextStep(){
 		Position step = goal;
 		while(!path.isEmpty()){				
-			if(path.get(step)==start){
+			if(path.get(step).equalsto(start)){
 				return step;
 			}
-			step=path.get(step);
+			step=path.remove(step);
 		}
-		return null;
+		throw new IllegalStateException("Pather path does not lead to goal");
 	}
 	
 	/**

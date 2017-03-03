@@ -26,8 +26,8 @@ public class ControllerBot extends Controller{
 			Tile next = pather.randomNextStep(currentPosition);
 			if(next != null){
 				char direction = currentPosition.getDirectionTo(next.pos);
-				System.out.println("moving random "+direction);
-				return "MOVE "+direction;
+				sendOutput("moving random "+direction+currentPosition);
+				return "MOVE "+direction ;
 			}
 		}
 		//pick closest player
@@ -42,16 +42,16 @@ public class ControllerBot extends Controller{
 		}
 		if(targetPosition != null){
 			if(pather.pathFind(currentPosition, targetPosition)){
+				sendOutput("Pather found path");
 				Position nextStep = pather.findNextStep();
-				System.out.println("moving to player " + nextStep);
 				playerPositions = new HashMap<Integer,Position>();
 				return "MOVE "+currentPosition.getDirectionTo(nextStep);
 			}else{
-				System.out.println("Pather failed heading at direction of player");
+				sendOutput("Pather failed heading at direction of player");
 				return "MOVE "+currentPosition.getDirectionTo(targetPosition);
 			}
 		}
-		System.out.println("Couldn't decide");
+		sendOutput("Couldn't decide" + currentPosition);
 		return "LOOK";
 	}
 
@@ -72,15 +72,11 @@ public class ControllerBot extends Controller{
 			}
 		}else if(info.tag.equals("PLAYER")){
 			Player player = info.toPlayer();
+
 			if(player.id == id){
 				currentPosition = player.position;
 			}else if(player.getPlayerType() == Player.PlayerType.HUMANPLAYER && player.isInGame()){
-				if(playerPositions.containsKey(player.id)){
-					playerPositions.remove(player.id);
-					playerPositions.put(player.id, player.position);
-				}else{
-					playerPositions.put(player.id, player.position);
-				}
+				playerPositions.put(player.id, player.position);
 			}
 		}
 		

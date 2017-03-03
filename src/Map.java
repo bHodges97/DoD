@@ -126,7 +126,7 @@ public class Map{
     	return passables;
     }
     
-    protected Tile getTile(Position tilePosition){
+    protected synchronized Tile getTile(Position tilePosition){
     	if(tilePosition == null){
     		return null;
     	}

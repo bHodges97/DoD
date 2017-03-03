@@ -30,7 +30,7 @@ abstract class Player implements Messageable,Displayable{
 	}
 	
 	public String getInfo(){
-		return "<PLAYER><TYPE>"+getPlayerType()+"</TYPE><NAME>"+name+"</NAME><ID>"+id+"</ID>"+position.getInfo()+inventory.getInfo()+"</PLAYER>";
+		return "<PLAYER><TYPE>"+getPlayerType()+"</TYPE><NAME>"+name+"</NAME><ID>"+id+"</ID>"+position.getInfo()+inventory.getInfo()+state.getInfo()+"</PLAYER>";
 	}
 	
 	
