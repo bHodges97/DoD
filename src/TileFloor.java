@@ -26,4 +26,13 @@ public class TileFloor extends Tile {
 	protected TileType getTileType() {
 		return TileType.TILEFLOOR;
 	}
+
+	@Override
+	protected void onSteppedOn(Player player) {
+	}
+
+	@Override
+	protected float getHeight() {
+		return 0;
+	}
 }

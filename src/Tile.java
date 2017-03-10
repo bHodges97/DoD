@@ -45,7 +45,9 @@ public abstract class Tile implements Displayable,Messageable {
 	 * Action when player stands on tile
 	 * @param player the player that triggered this tile
 	 */
-	protected void onSteppedOn(Player player){};
+	protected abstract void onSteppedOn(Player player);
+	
+	protected abstract float getHeight();
 	
 	@Override
 	public String toString(){
@@ -56,4 +58,5 @@ public abstract class Tile implements Displayable,Messageable {
 	public String getInfo(){
 		return "<TILE><TYPE>"+getTileType()+"</TYPE>"+pos.getInfo()+"</TILE>";
 	}
+	
 }

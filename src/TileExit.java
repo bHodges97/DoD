@@ -28,4 +28,9 @@ public class TileExit extends Tile {
 	protected TileType getTileType() {
 		return TileType.TILEEXIT;
 	}
+
+	@Override
+	protected float getHeight() {
+		return 0;
+	}
 }

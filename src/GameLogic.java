@@ -145,11 +145,7 @@ public class GameLogic {
 		for(int y = -2;y<=2;++y){
 			for(int x = -2;x<=2;++x){
 				Position drawingPos = new Position(playerPos.x+x,playerPos.y+y);
-				Tile tile = map.getTile(drawingPos);
-				char displayChar = (tile == null? '#':tile.getDisplayChar());
-				if(!map.isTileEmpty(drawingPos)){
-					displayChar = map.getItemCharAt(drawingPos);
-				}
+				char displayChar = map.getCharAt(drawingPos);
 				Player tempPlayer = getPlayerAt(drawingPos);
 				if(tempPlayer!=null){
 					displayChar = tempPlayer.getDisplayChar();

@@ -201,8 +201,15 @@ public class Map{
 	 * @param pos the position of items
 	 * @return the display char of the item
 	 */
-	protected char getItemCharAt(Position pos){
-		return getDroppedItemsAt(pos).inventory.getDisplayChar();
+	protected char getCharAt(Position pos){
+		char displayChar = '#';
+		if(getTile(pos) != null){
+			displayChar = getTile(pos).getDisplayChar();
+		}
+		if(!isTileEmpty(pos)){
+			displayChar = getDroppedItemsAt(pos).inventory.getDisplayChar();
+		}
+		return displayChar;
 	}
 	/**
 	 * @param pos The position to test

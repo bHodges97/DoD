@@ -26,5 +26,15 @@ public class TileWall extends Tile {
 	protected TileType getTileType() {
 		return TileType.TILEWALL;
 	}
+
+	@Override
+	protected void onSteppedOn(Player player) {
+		throw new IllegalArgumentException("PLAYER ON WALL TILE");
+	}
+
+	@Override
+	protected float getHeight() {
+		return 1;
+	}
 	
 }
