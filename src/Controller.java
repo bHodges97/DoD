@@ -32,12 +32,21 @@ public abstract class Controller {
 	 * Send output to client
 	 * @param output The output to send to client
 	 */
-	public abstract void sendOutput(String output);
+	public void sendOutput(String output){
+		send("<OUTPUT>"+ output + "</OUTPUT>");
+	}
 	
 	/**
 	 * Process game info
 	 * @param info process the info
 	 */
-	public abstract void processInfo(String info);
+	public void sendInfo(String info){
+		send("<INFO>"+info+"<INFO>");
+	}
+	
+	public void send(String message){
+		message = Parser.sanitise(message);
+		server.processInput(message, id);
+	}
 
 }

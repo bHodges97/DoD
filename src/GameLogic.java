@@ -11,8 +11,13 @@ import java.util.Set;
  * @author : The unsung tutor.
  */
 public class GameLogic {
-	public enum GameState {
-		RUNNING,STOPPED,NOTSTARTED
+	public enum GameState implements Messageable{
+		RUNNING,STOPPED,NOTSTARTED;
+
+		@Override
+		public String getInfo() {
+			return "<GAMESTATE>"+toString()+"</GAMESTATE>";
+		}
 	}
 
 	
@@ -206,27 +211,29 @@ public class GameLogic {
 	protected synchronized void informPlayers() {
 		int width = 2;
 		for(Player player:players){	
+			String info = "";
 			for(Player otherPlayer:players){
 				if(Math.abs(player.position.x - otherPlayer.position.x) <= width && Math.abs(player.position.y - otherPlayer.position.y) <= width ){
-					player.controller.processInfo(otherPlayer.getInfo()); 
+					info+=otherPlayer.getInfo(); 
 				}
 			}
-			String tiles = "<TILES>";
+			info += "<TILES>";
 			for(int y = -width ;y <= width;++y){
 				for(int x = -width;x <= width;++x){
 					Tile tile = map.getTile(new Position(player.position.x+x,player.position.y+y));
 					if(tile != null){
-						tiles+=tile.getInfo();
+						info+=tile.getInfo();
 					}
 				}
 			}
-			player.controller.processInfo(tiles+"</TILES>");
+			info+="</TILES>";
 			for(DroppedItems dropped:map.getDroppedItems()){
 				if(PathFinder.estimateDistance(player.position,dropped.position) <= 4){
-					player.controller.processInfo(dropped.getInfo());
+					info+=dropped.getInfo();
 				}
 			}
-		
+			info+=gameState.getInfo();
+			player.controller.sendInfo(info);		
 		}	
 	}
 	/**

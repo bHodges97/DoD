@@ -67,31 +67,25 @@ public class ControllerBot extends Controller{
 	}
 
 	@Override
-	public void sendOutput(String output) {
-		output = Parser.sanitise(output);
-		server.processInput("<OUTPUT>"+ output + "</OUTPUT>", id);
-	}
-
-	@Override
-	public void processInfo(String message) {
-		Element info = Parser.parse(message);
-		if(info.tag.equals("TILES")){
-			//process map info
-			int i = 0;
-			for(Element child:info.children){
-				++i;
-				Tile tile = child.toTile();
-				map.addTile(tile.getDisplayChar(),tile.pos.x,tile.pos.y);
-			}
-		}else if(info.tag.equals("PLAYER")){
-			//process player info
-			Player player = info.toPlayer();
-			if(player.id == id){
-				currentPosition = player.position;
-			}else if(player.getPlayerType() == Player.PlayerType.HUMANPLAYER && player.isInGame()){
-				playerPositions.put(player.id, player.position);
+	public void sendInfo(String message) {
+		super.sendInfo(message);
+		Element messageElement = Parser.parse(message);
+		for(Element info:messageElement.children){
+			if(info.tag.equals("TILES")){
+				//process map info
+				for(Element child:info.children){
+					Tile tile = child.toTile();
+					map.addTile(tile.getDisplayChar(),tile.pos.x,tile.pos.y);
+				}
+			}else if(info.tag.equals("PLAYER")){
+				//process player info
+				Player player = info.toPlayer();
+				if(player.id == id){
+					currentPosition = player.position;
+				}else if(player.getPlayerType() == Player.PlayerType.HUMANPLAYER && player.isInGame()){
+					playerPositions.put(player.id, player.position);
+				}
 			}
 		}
-		
 	}
 }

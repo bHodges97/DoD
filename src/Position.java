@@ -92,5 +92,9 @@ public class Position implements Messageable{
 	public String getInfo() {
 		return "<POSITION><X>"+x+"</X><Y>"+y+"</Y></POSITION>";
 	}
+
+	public static Position subtract(Position a, Position b) {
+		return new Position(a.x-b.x,a.y-b.y);
+	}
 	
 }

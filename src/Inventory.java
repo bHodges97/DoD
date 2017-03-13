@@ -1,3 +1,4 @@
+import java.awt.Image;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -119,6 +120,11 @@ public class Inventory implements Messageable,Displayable{
 		}
 		builder+="</INVENTORY>";
 		return builder;
+	}
+
+	@Override
+	public Image[] getImage() {
+		return itemStacks.get(0).getImage();
 	}
 	
 }

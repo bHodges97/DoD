@@ -1,3 +1,4 @@
+import java.awt.Image;
 
 /**
  * Wall tile
@@ -35,6 +36,11 @@ public class TileWall extends Tile {
 	@Override
 	protected float getHeight() {
 		return 1;
+	}
+
+	@Override
+	public Image[] getImage() {
+		return Sprite.getRow(3);
 	}
 	
 }

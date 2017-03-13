@@ -1,3 +1,5 @@
+import java.awt.Image;
+
 /**
  * Exit tile
  */
@@ -32,5 +34,10 @@ public class TileExit extends Tile {
 	@Override
 	protected float getHeight() {
 		return 0;
+	}
+
+	@Override
+	public Image[] getImage() {
+		return Sprite.getRow(4);
 	}
 }

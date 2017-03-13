@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -37,18 +38,15 @@ public class PanelPlayer extends JPanel{
 	private int tileFrame = 0;
 	private int centerX,centerY;
 	private boolean showDeath = false;
-	private Font defaultFont;
-	private String gameState = "NOTSTARTED";
-	private Player current,main;
-	
+	private Font defaultFont;	
 	
 	/**
 	 * Constructor
 	 */
 	public PanelPlayer() {
 		setPreferredSize(new Dimension(350,350));
-		bot = Sprite.get("bot");
-		InputStream is = getClass().getResourceAsStream("font.ttf");//rubberbiscuit font http://dabnotu.tk free for non-commercial use
+		//rubberbiscuit font http://dabnotu.tk free for non-commercial use
+		InputStream is = getClass().getResourceAsStream("font.ttf");
 		setFocusable(true);
 		try {
 			defaultFont = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(20f);
@@ -95,7 +93,7 @@ public class PanelPlayer extends JPanel{
 		if(cameraPos == null){//set camera pos
 			cameraPos = new int[]{0,0};
 		}
-		drawBG(g2d);//draw background
+		drawBackground(g2d);//draw background
 		drawPlayers(g2d);//draw player sprites
 		drawAnimations(g2d);//draw any animation
 		
@@ -137,7 +135,7 @@ public class PanelPlayer extends JPanel{
 			if(player.isMainPlayer){
 				continue;
 			}else{
-				int[] posDif = PosList.subtract(cameraPos,posMap.get(player));
+				int[] posDif = Position.subtract(cameraPos,posMap.get(player));
 				if(!isVisible(posMap.get(player))){
 					return;
 				}
@@ -172,28 +170,10 @@ public class PanelPlayer extends JPanel{
 	 * Draw the background
 	 * @param g2d The graphics to draw onto.
 	 */
-	private void drawBG(Graphics2D g2d){
+	private void drawBackground(Graphics2D g2d){
 		int x = centerX - cameraPos[0] * TILESIZE;
 		int y = centerY - cameraPos[1] * TILESIZE;
-		if (main == current) {
-			x -= offSet[0];
-			y -= offSet[1];
-			if(offSet[0] < 0 && offSet[0] > -64){
-				bot = Sprite.get("bot"); //draw which way the bot is looking
-			}else if(offSet[0] > 1 && offSet[0] < 64){
-				bot = Sprite.get("bot1");
-			}
-		}
 		g2d.drawImage(backGround, x, y, null);
-		if (!deadPlayers.contains(main)) {
-			if(main instanceof HumanPlayer){
-				g2d.drawImage(Sprite.getRow(1)[tileFrame%5],centerX ,centerY ,null);
-			}else{
-				g2d.drawImage(bot, centerX ,centerY ,null);
-			}
-		} else {
-			showDeath = true;
-		}
 	}
 	
 	/**
@@ -250,36 +230,21 @@ public class PanelPlayer extends JPanel{
 		int imageHeight = TILESIZE * map.getMapHeight();
 		BufferedImage image = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g2d = (Graphics2D)image.getGraphics();
+		Image[] floor = Sprite.getRow(2);
+		Random rand = new Random();
 		for(int y = 0;y < map.getMapHeight();++y){
 			for(int x = 0;x < map.getMapWidth();++x){
-				Image tile;
-				int heght = map.getTile(new Position(x,y)).getHeight();
-				if(c == '#'){
-					tile = Sprite.get("wall");
-					wallSet.add(new int[]{x,y});
-				}else if(c == 'G'){
-					tile = Sprite.get("gold");
-				}else if(c == 'E'){
-					tile = Sprite.getRow(4)[tileFrame%4];//exit is an animated tile
-				}else if(c == '.'){
-					tile = Sprite.get("floor");//get the relevant sprites
-				}else if(c == 'X'){
+				Tile tile = map.getTile(new Position(x,y));
+				g2d.drawImage(floor[rand.nextInt(floor.length)],x*TILESIZE, y*TILESIZE, null);	
+				if(tile == null){
+					g2d.drawImage(Sprite.getDefaultImg(),x*TILESIZE, y*TILESIZE, null);	
 					continue;
-				}else{
-					tile = Sprite.getDefaultImg();
-				}
-				g2d.drawImage(Sprite.get("floor"), x*TILESIZE, y*TILESIZE, null);//always draw floor first
-				g2d.drawImage(tile,  x*TILESIZE, y*TILESIZE, null);//then tile other sprites on top
-				
-				for(Player deadPlayer : deadPlayers){
-					int[] pos = posMap.get(deadPlayer);
-					if(pos[0] == x && pos[1] == y){
-						g2d.drawImage(Sprite.get("blood"),  x*TILESIZE, y*TILESIZE, null);
+				}else if(tile.getHeight() > 0){
+					Image[] images = tile.getImage();
+					g2d.drawImage(images[rand.nextInt(images.length)],  x*TILESIZE, y*TILESIZE, null);//then tile other sprites on top
+					if(tile.getHeight() > 0.5){
+						wallSet.add(new int[]{x,y});
 					}
-				}
-				
-				if(gameState.equals("WON")){
-					g2d.drawImage(Sprite.get("confetti"),x*TILESIZE, y*TILESIZE, null);
 				}
 			}			
 		}
@@ -294,23 +259,24 @@ public class PanelPlayer extends JPanel{
 	 * @param g2d The graphics object to draw to
 	 * @param wallPos the position of the wall tile
 	 */
-	private void drawWallEdge(Graphics2D g2d,int[] wallPos){
+	private void drawWallEdge(Graphics2D g2d,Position wallPos){
 		g2d.setColor(new Color(0,0,0,100));
-		List<int[]> neighBours = map.getAdjacentClearTiles(wallPos);
-		for(int[] pos:neighBours){
-			int[] dif = PosList.subtract(wallPos,pos);
-			int sx = wallPos[0]*TILESIZE;
-			int sy = wallPos[1]*TILESIZE;
-			int swidth,sheight;
-			if(dif[0]<0){
+		Set<Tile> neighBours = map.getAdjacentWalkableTiles(wallPos);
+		for(Tile tile:neighBours){
+			Position pos = tile.pos;
+			Position dif = new Position(wallPos.x - pos.x,wallPos.y-pos.y);
+			int sx = wallPos.x*TILESIZE;
+			int sy = wallPos.y*TILESIZE;
+			int swidth,sheight;//TODO: shorten with relative position
+			if(dif.x<0){
 				sx+=TILESIZE;
 				swidth = TILESIZE / 4;
 				sheight = TILESIZE;
-			}else if(dif[0]>0){
+			}else if(dif.x>0){
 				swidth = TILESIZE / 4;
 				sheight = TILESIZE;
 				sx-=swidth;
-			}else if(dif[1]<0){
+			}else if(dif.y<0){
 				sy+=TILESIZE;
 				swidth = TILESIZE;
 				sheight = TILESIZE / 4;
@@ -380,9 +346,9 @@ public class PanelPlayer extends JPanel{
 	 * @param pos The tile to test
 	 * @return true if tile is visible, false otherwise
 	 */
-	private boolean isVisible(int[] pos){
-		int[] posDif = PosList.subtract(cameraPos,pos);
-		if(Math.abs(posDif[0]) > 5|| Math.abs(posDif[1]) > 5){
+	private boolean isVisible(Position pos){
+		Position posDif = Position.subtract(cameraPos,pos);
+		if(Math.abs(posDif.x) > 4|| Math.abs(posDif.y) > 4){
 			return false;
 		}
 		return true;

@@ -1,3 +1,5 @@
+import java.awt.Image;
+
 /**
  * Runs the game with a human player and contains code needed to read inputs.
  *
@@ -21,5 +23,10 @@ public class HumanPlayer extends Player{
 	@Override
 	protected PlayerType getPlayerType() {
 		return PlayerType.HUMANPLAYER;
+	}
+
+	@Override
+	public Image[] getImage() {
+		return Sprite.getRow(1);
 	}
 }

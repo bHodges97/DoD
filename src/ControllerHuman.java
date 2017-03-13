@@ -21,17 +21,5 @@ public class ControllerHuman extends Controller{
         String holder = input;
         input = "";
         return holder;
-	}
-
-	@Override
-	public void sendOutput(String output) {
-		//make sure the output is safe to parse
-		output = Parser.sanitise(output);
-		server.processInput("<OUTPUT>"+ output + "</OUTPUT>", id);
-	}
-
-	@Override
-	public void processInfo(String message) {
-		//Place holder for gui integration
-	}   
+	}  
 }

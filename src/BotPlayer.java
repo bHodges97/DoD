@@ -1,3 +1,5 @@
+import java.awt.Image;
+
 /**
  * Starts the game with a Bot Player. Contains code for bot's decision making.
  *
@@ -19,6 +21,11 @@ public class BotPlayer extends Player{
 	@Override
 	protected PlayerType getPlayerType() {
 		return PlayerType.BOTPLAYER;
+	}
+
+	@Override
+	public Image[] getImage() {
+		return Sprite.getRow(0);
 	}
 
 }

@@ -1,3 +1,4 @@
+import java.awt.Image;
 
 public class ItemStack implements Messageable,Displayable{
 	private Item item;
@@ -38,5 +39,10 @@ public class ItemStack implements Messageable,Displayable{
 	@Override
 	public String getInfo() {
 		return "<ITEMSTACK>"+item.getInfo()+"<COUNT>"+count+"</COUNT></ITEMSTACK>";
+	}
+
+	@Override
+	public Image[] getImage() {
+		return item.getImage();
 	}
 }

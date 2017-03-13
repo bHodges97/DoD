@@ -1,3 +1,4 @@
+import java.awt.Image;
 
 /**
  * Floor tile
@@ -33,6 +34,11 @@ public class TileFloor extends Tile {
 
 	@Override
 	protected float getHeight() {
-		return 0;
+		return 0.01f;
+	}
+
+	@Override
+	public Image[] getImage() {
+		return Sprite.getRow(2);
 	}
 }

@@ -1,3 +1,5 @@
+import java.awt.Image;
+
 /**
  * Gold
  *
@@ -19,6 +21,11 @@ public class ItemGold extends Item {
 	@Override
 	public String getDescription() {
 		return description;
+	}
+
+	@Override
+	public Image[] getImage() {
+		return Sprite.getRow(5);
 	}
 
 }
