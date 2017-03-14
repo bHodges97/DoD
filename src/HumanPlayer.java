@@ -26,7 +26,7 @@ public class HumanPlayer extends Player{
 	}
 
 	@Override
-	public Image[] getImage() {
+	public Image[] getImages() {
 		return Sprite.getRow(1);
 	}
 }

@@ -38,7 +38,7 @@ public class TileFloor extends Tile {
 	}
 
 	@Override
-	public Image[] getImage() {
+	public Image[] getImages() {
 		return Sprite.getRow(2);
 	}
 }

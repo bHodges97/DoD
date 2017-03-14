@@ -97,4 +97,13 @@ public class Position implements Messageable{
 		return new Position(a.x-b.x,a.y-b.y);
 	}
 	
+	public static Position multiply(Position a, int scaler){
+		return new Position(a.x * scaler,a.y * scaler);
+	}
+
+	public void multiply(int scaler) {
+		x*=scaler;
+		y*=scaler;
+	}
+	
 }

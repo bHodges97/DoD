@@ -30,7 +30,7 @@ public class HumanClient extends Client{
 		lobbygui = new LobbyGUI(this);
 		document = lobbygui.getStyledDucment();
 		lobbygui.setStyledDocument(document);
-		gamegui = new GameGUI("DUNGEON OF DOOM",false);
+		gamegui = new GameGUI("DUNGEON OF DOOM",false,this);
 		gamegui.setStyledDocument(document);
 		println("Dungeon of Doom chat room", Color.gray);
 		println("Type HELP for list of commands", Color.gray);

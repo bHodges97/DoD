@@ -36,6 +36,7 @@ public class DODServer {
 	 * @param args port number
 	 */
     public static void main(String[] args) {
+    	args = new String[]{"41583"};
     	int port = 0;
     	if(args.length == 1){
     		try{
@@ -147,7 +148,7 @@ public class DODServer {
     		handlePreGame(message,id);
     	//handle game time commands
     	}else{
-    		handleDuringGame(message,id);
+    		handleDuringGame(input,id);
     	}
     }
     
@@ -198,13 +199,14 @@ public class DODServer {
      * @param message The message to process
      * @param id sender id
      */
-    private void handleDuringGame(Element message,int id) {
+    private void handleDuringGame(String input,int id) {
+    	Element message = Parser.parse(input);
     	String tag = message.tag;
     	String value = message.value;
     	if(tag.equals("INPUT")){
     		controllers.get(id).input = (value); 
-    	}else if(tag.equals("OUTPUT")){
-    		send("<OUTPUT>"+message.value+"</OUTPUT>", id);
+    	}else if(tag.equals("OUTPUT") || tag.equals("INFO")){
+    		send(input, id);
     	}else{
     		System.out.println("Unrecognised game command");
 			send("<OUTPUT>Unrecognised game command type \"HELP\" for avaliable commands</OUTPUT>",id);

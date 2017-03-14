@@ -1,3 +1,7 @@
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -11,13 +15,14 @@ import java.util.Set;
  *
  * @author: The unnamed tutor.
  */
-public class Map{	
+public class Map implements Displayable{	
 	private String mapName = "";
 	private int goldRequired = 0;
 	private List<Tile> tileList;
 	private Set<DroppedItems> droppedItems = new  HashSet<DroppedItems>();
 	private int width = 0,height = 0;
 	private int minx = 0,miny = 0;
+	private BufferedImage image;
 	
 	public Map(){
 		tileList = new ArrayList<Tile>();
@@ -237,7 +242,7 @@ public class Map{
 	 * @param x The position x
 	 * @param y the position y
 	 */
-    protected void addTile(char type,int x, int y){
+    protected synchronized void addTile(char type,int x, int y){
     	Position pos = new Position(x,y);
     	//set up bounds
     	if(x >= width-minx){
@@ -269,12 +274,13 @@ public class Map{
     		throw new IllegalArgumentException("Unrecognised tile type:"+type);
     	}
     	validate();
+    	drawMap(64);
     }
     
     /**
      * Validate tile positions
      */
-    protected void validate(){
+    protected synchronized void validate(){
     	List<Tile> holder = new ArrayList<Tile>();
     	for(Tile tile:tileList){
     		if(tile != null){
@@ -326,5 +332,86 @@ public class Map{
 		}
 		
 	}
+	
+	/**
+	 * Draw the map onto a buffered image
+	 * @return The map as a buffered image
+	 */
+	private void drawMap(int tileSize){
+		Set<Position> wallSet = new HashSet<Position>();
+		int imageWidth = tileSize * getMapWidth();
+		int imageHeight = tileSize * getMapHeight();
+		BufferedImage image = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = (Graphics2D)image.getGraphics();
+		Image[] floor = Sprite.getRow(2);
+		g2d.setColor(Color.black);
+		
+		for(int y = 0;y < getMapHeight();++y){
+			for(int x = 0;x < getMapWidth();++x){
+				Tile tile = getTile(new Position(x,y));
+				g2d.drawImage(floor[0],x*tileSize, y*tileSize, null);	
+				if(tile == null){
+					//g2d.drawImage(Sprite.getDefaultImg(),x*tileSize, y*tileSize, null);	
+					g2d.fillRect(x*tileSize, y*tileSize,tileSize,tileSize);
+					continue;
+				}else if(tile.getHeight() > 0){
+					Image images = tile.getImages()[0];
+					g2d.drawImage(images,  x*tileSize, y*tileSize, null);//then tile other sprites on top
+					if(tile.getHeight() > 0.5){
+						wallSet.add(new Position(x,y));
+					}
+				}
+			}			
+		}
+		for(Position wall : wallSet){
+			drawWallEdge(g2d, wall,tileSize);
+		}
+		this.image = image;
+	}
+	/**
+	 * Draw the wall shadows
+	 * @param g2d The graphics object to draw to
+	 * @param wallPos the position of the wall tile
+	 */
+	private void drawWallEdge(Graphics2D g2d,Position wallPos,int tileSize){
+		g2d.setColor(new Color(0,0,0,100));
+		Set<Tile> neighBours = getAdjacentWalkableTiles(wallPos);
+		for(Tile tile:neighBours){
+			Position pos = tile.pos;
+			Position dif = new Position(wallPos.x - pos.x,wallPos.y-pos.y);
+			int sx = wallPos.x*tileSize;
+			int sy = wallPos.y*tileSize;
+			int swidth,sheight;//TODO: shorten with relative position
+			if(dif.x<0){
+				sx+=tileSize;
+				swidth = tileSize / 4;
+				sheight = tileSize;
+			}else if(dif.x>0){
+				swidth = tileSize / 4;
+				sheight = tileSize;
+				sx-=swidth;
+			}else if(dif.y<0){
+				sy+=tileSize;
+				swidth = tileSize;
+				sheight = tileSize / 4;
+			}else{
+				swidth = tileSize;
+				sheight = tileSize/ 4;
+				sy-=sheight;
+			}
+			g2d.fillRect(sx, sy, swidth, sheight);//paint a transparent rectangle as the shadow
+		}		
+	}
 
+
+	@Override
+	public char getDisplayChar() {
+		return 0;
+	}
+
+
+	@Override
+	public Image[] getImages() {
+		return new Image[]{image};
+	}
 }

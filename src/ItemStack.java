@@ -42,7 +42,7 @@ public class ItemStack implements Messageable,Displayable{
 	}
 
 	@Override
-	public Image[] getImage() {
-		return item.getImage();
+	public Image[] getImages() {
+		return item.getImages();
 	}
 }

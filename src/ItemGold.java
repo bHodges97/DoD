@@ -24,7 +24,7 @@ public class ItemGold extends Item {
 	}
 
 	@Override
-	public Image[] getImage() {
+	public Image[] getImages() {
 		return Sprite.getRow(5);
 	}
 

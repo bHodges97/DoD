@@ -4,7 +4,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -21,12 +23,16 @@ public abstract class Client {
 	private Socket socket;
 	protected int id;
 	private volatile boolean gameStarted = false;
+	protected volatile GameLogic.GameState gameState = GameLogic.GameState.NOTSTARTED;
+	protected Map gameMap = new Map();
+	
 	
 	/**
 	 * Constructor
 	 * @param args Command line arguments to process
 	 */
 	public Client(String[] args){
+		args = new String[]{"localhost","41583"};
 		//check if parameters are valid
 		if(!validateArgs(args)){
 			return;
@@ -60,6 +66,32 @@ public abstract class Client {
 	 */
 	protected abstract void startGameAction();
 	
+	
+	protected synchronized void processInfo(Element message){
+		for(LobbyPlayer player:lobbyPlayers){
+			player.visible = false;
+		}
+		for(Element info:message.children){
+			if(info.tag.equals("TILES")){
+				//process map info
+				for(Element child:info.children){
+					Tile tile = child.toTile();
+					gameMap.addTile(tile.getDisplayChar(),tile.pos.x,tile.pos.y);
+				}
+			}else if(info.tag.equals("PLAYER")){
+				//process player info
+				Player player = info.toPlayer();
+				LobbyPlayer lobbyPlayer = lobbyPlayers.get(player.id);
+				lobbyPlayer.currentPos.x = player.position.x * 64;
+				lobbyPlayer.currentPos.y = player.position.y * 64;
+				
+				lobbyPlayer.visible = true;
+			}else if(info.tag.equals("GAMESTATE")){
+				gameState = GameLogic.GameState.valueOf(info.value);
+			}
+		}
+		
+	}
 	
 	/**
 	 * Update list of other connected players
@@ -144,6 +176,8 @@ public abstract class Client {
 			startGameAction();
 		}else if(tag.equals("OUTPUT")){
 			print(Parser.makeMessage(-1,Parser.convertToMultiLine(value)));
+		}else if(tag.equals("INFO")){
+			processInfo(element);
 		}
 	}
 	

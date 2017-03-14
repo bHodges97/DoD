@@ -33,11 +33,11 @@ public class TileExit extends Tile {
 
 	@Override
 	protected float getHeight() {
-		return 0;
+		return 0.1f;
 	}
 
 	@Override
-	public Image[] getImage() {
+	public Image[] getImages() {
 		return Sprite.getRow(4);
 	}
 }

@@ -9,6 +9,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -17,33 +18,30 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JPanel;
 
+
 /**
  * The panel that is use to draw LOOK in terms of graphics
  *
  */
 public class PanelPlayer extends JPanel{
 
-	protected String animation = "NONE";
 	private static final int TILESIZE = 64;
-	
+	private BufferedImage overlay,backGround;
 	private Map map = null;
-	private BufferedImage overlay,backGround,bot;
-	private java.util.Map<Player,int[]> posMap = new ConcurrentHashMap<Player,int[]>();
-	private Set<Player> deadPlayers = new HashSet<Player>();
-	private int[] offSet = new int[]{0,0};
-	private int[] animeOffSet = new int[]{0,0};
-	private int[] cameraPos = new int[]{0,0};
-	private int loseAnimeFrame = 0;	
-	private int frame = 0;
 	private int tileFrame = 0;
 	private int centerX,centerY;
-	private boolean showDeath = false;
 	private Font defaultFont;	
+	private List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
+	private LobbyPlayer clientPlayer = new LobbyPlayer(0);	
+	private GameLogic.GameState gameState = GameLogic.GameState.NOTSTARTED;
+	private Position cameraPos,center;
+	private Client client;
+	
 	
 	/**
 	 * Constructor
 	 */
-	public PanelPlayer() {
+	public PanelPlayer(Client client) {
 		setPreferredSize(new Dimension(350,350));
 		//rubberbiscuit font http://dabnotu.tk free for non-commercial use
 		InputStream is = getClass().getResourceAsStream("font.ttf");
@@ -53,18 +51,16 @@ public class PanelPlayer extends JPanel{
 		} catch (FontFormatException |IOException e) {
 			e.printStackTrace();
 		}
-		
+		this.client = client;
+		this.map = client.gameMap;
+		this.lobbyPlayers = client.lobbyPlayers;
+		this.clientPlayer = client.clientPlayer;
+		this.gameState = client.gameState;
+		this.cameraPos = clientPlayer.currentPos;
 		Thread repaintThread = new Thread(makeRunnable(),"repainter");
 		repaintThread.start();
 	}
 	
-	/**
-	 * Set the map to render
-	 * @param map The map tp render
-	 */
-	protected void setMap(Map map){
-		this.map = map;
-	}
 	
 	@Override
 	public void paintComponent(Graphics g){
@@ -72,27 +68,24 @@ public class PanelPlayer extends JPanel{
 		Graphics2D g2d = (Graphics2D)g;
 		int width =getWidth();
 		int height = getHeight();		
-		
-		g2d.fillRect(0,0 , width, height);//fill background 
-		if(map==null){//don't draw until game is properly loaded
+		if(map==null || map.getMapWidth() == 0){
+			//don't draw until game is properly loaded
 			g2d.drawString("MAP LOAD FAILED", 0, 20);
 			return;
-		}else if(gameState.equals("NOTSTARTED")){
+		}else if(gameState == GameLogic.GameState.NOTSTARTED){
 			g2d.drawString("GAME NOT STARTED", 0, 20);
 			return;
-		}else if(main == null){
+		}else if(clientPlayer.visible == false){
+			g2d.drawString("WAITING FOR PLAYER TO LOAD",0,20);
 			return;
+		}else{
+			g2d.drawString("RENDERING "+cameraPos, 0, 20);
 		}
 		g2d.setFont(defaultFont);
 		height+=g2d.getFontMetrics().getHeight();
 		centerX = width/2-TILESIZE/2;
 		centerY = height/2-TILESIZE/2;
-		backGround = drawFullMap();
-		
-		cameraPos = posMap.get(main);
-		if(cameraPos == null){//set camera pos
-			cameraPos = new int[]{0,0};
-		}
+		center = new Position(centerX,centerY);
 		drawBackground(g2d);//draw background
 		drawPlayers(g2d);//draw player sprites
 		drawAnimations(g2d);//draw any animation
@@ -103,20 +96,16 @@ public class PanelPlayer extends JPanel{
 		g2d.drawImage(overlay, 0, 0, null);	
 		//draw the ui
 		drawUI(g2d,width,height);
+		g2d.drawString("RENDERING"+cameraPos, 0, 20);
 	}
-	/**
-	 * @return true If no current animation,false otherwise
-	 */
-	protected boolean finishedMove(){
-		return animation.equals("NONE");
-	}
-	
 	
 	/**
 	 * Draw animations
 	 * @param g2d The graphics object to draw onto.
 	 */
 	private void drawAnimations(Graphics2D g2d){
+		//TODO:
+		/*
 		int[] posDif = PosList.subtract(posList.get(current),posMap.get(current));
 		int[] camera = PosList.subtract(posList.get(current),cameraPos);
 		int	x = centerX + camera[0] * TILESIZE - posDif[0]*TILESIZE;
@@ -124,6 +113,7 @@ public class PanelPlayer extends JPanel{
 		if(animation.equals("DEFEAT")){		
 			g2d.drawImage(Sprite.getRow(8)[loseAnimeFrame], x + animeOffSet[0], y + animeOffSet[1], null);
 		}
+		*/
 	}
 	
 	/**
@@ -131,39 +121,13 @@ public class PanelPlayer extends JPanel{
 	 * @param g2d The graphics object to draw onto.
 	 */
 	private void drawPlayers(Graphics2D g2d){
-		for(Player player:posMap.keySet()){
-			if(player.isMainPlayer){
-				continue;
-			}else{
-				int[] posDif = Position.subtract(cameraPos,posMap.get(player));
-				if(!isVisible(posMap.get(player))){
-					return;
-				}
-				int x = centerX- posDif[0]*TILESIZE;
-				int y = centerY- posDif[1]*TILESIZE;
-				if(current.isMainPlayer){
-					x-=offSet[0];//shift map differently if camera is this player
-					y-=offSet[1];
-				}else if(player == current){
-					x+=offSet[0];
-					y+=offSet[1];
-					
-				}
-				if(offSet[0] < 0 && offSet[0] > -64){
-					bot = Sprite.get("bot"); //bot facing left
-				}else if(offSet[0] > 1 && offSet[0] < 64){
-					bot = Sprite.get("bot1");//bot facing right
-				}
-				if(!deadPlayers.contains(player)){
-					if(player instanceof HumanPlayer){
-						g2d.drawImage(Sprite.getRow(1)[tileFrame%5],x ,y ,null);
-					}else{
-						g2d.drawImage(bot,x ,y ,null);
-					}
-				}
-				
+		for(LobbyPlayer player:lobbyPlayers){
+			if(player.visible){
+				Position posDif = Position.subtract(cameraPos, player.currentPos);
+				Position drawPos = Position.subtract(center, posDif);
+				g2d.drawImage(player.toPlayer().getImages()[tileFrame%5],drawPos.x,drawPos.y,null);
 			}
-		}		
+		}	
 	}
 	
 	/**
@@ -171,9 +135,9 @@ public class PanelPlayer extends JPanel{
 	 * @param g2d The graphics to draw onto.
 	 */
 	private void drawBackground(Graphics2D g2d){
-		int x = centerX - cameraPos[0] * TILESIZE;
-		int y = centerY - cameraPos[1] * TILESIZE;
-		g2d.drawImage(backGround, x, y, null);
+		int x = centerX - cameraPos.x;
+		int y = centerY - cameraPos.y;
+		g2d.drawImage(map.getImages()[0], x, y, null);
 	}
 	
 	/**
@@ -186,25 +150,26 @@ public class PanelPlayer extends JPanel{
 		if(gameState.equals("WON")){
 			g2d.setColor(Color.orange);
 			g2d.setFont(defaultFont.deriveFont(32f));
-			int twidth = g2d.getFontMetrics().stringWidth("♪YOU WIN♪");//WIN SCREEN
+			int twidth = g2d.getFontMetrics().stringWidth("♪YOU WIN♪");
 			g2d.drawString("♪YOU WIN♪", (width - twidth )/2,centerY);
 		}else if(gameState.equals("END")){
 			g2d.setColor(Color.red);
 			g2d.setFont(defaultFont.deriveFont(32f));
-			int twidth = g2d.getFontMetrics().stringWidth("GAME OVER");//LOSE SCREEN
+			int twidth = g2d.getFontMetrics().stringWidth("GAME OVER");
 			g2d.drawString("GAME OVER", (width - twidth )/2,centerY);
 		}
 
 		int x = 0;
 		int y = height-TILESIZE -TILESIZE/2;
 		g2d.setColor(Color.white);
-		g2d.drawImage(Sprite.get("gold") ,x,y,TILESIZE/2,TILESIZE/2, null);//draw gold count
-		g2d.drawString(" "+main.getGoldCount() + "/" + map.getGoldRequired(), x + TILESIZE/2, y + TILESIZE/2-8);
+		g2d.drawImage(new ItemGold().getImages()[0],x,y,TILESIZE/2,TILESIZE/2, null);//draw gold count
+		g2d.drawString(" "+clientPlayer.inventory.getItemCount("GOLD") + "/" + map.getGoldRequired(), x + TILESIZE/2, y + TILESIZE/2-8);
 		y+=TILESIZE/2 + 3;
-		g2d.drawImage(Sprite.get("heart"),x,y,TILESIZE/2,TILESIZE/2,null);//draw lives count
-		g2d.drawString(" "+main.lives+"/1", x + TILESIZE/2, y + TILESIZE/2-8);
+		//draw lives count
+		g2d.drawImage(Sprite.getSprite(3, 6),x,y,TILESIZE/2,TILESIZE/2,null);
+		g2d.drawString(" "+1+"/1", x + TILESIZE/2, y + TILESIZE/2-8);//TODO:
 		
-		if(showDeath){
+		if(!clientPlayer.visible){//TODO:player dead temp solution
 			g2d.setColor(Color.orange);
 			g2d.setFont(defaultFont.deriveFont(25f));
 			int twidth = g2d.getFontMetrics().stringWidth("YOU ARE DEAD");//player death
@@ -220,74 +185,9 @@ public class PanelPlayer extends JPanel{
 		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
 	}
 	
-	/**
-	 * Draw the map onto a buffered image
-	 * @return The map as a buffered image
-	 */
-	private BufferedImage drawFullMap(){
-		Set<int[]> wallSet = new HashSet<int[]>();
-		int imageWidth = TILESIZE * map.getMapWidth();
-		int imageHeight = TILESIZE * map.getMapHeight();
-		BufferedImage image = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g2d = (Graphics2D)image.getGraphics();
-		Image[] floor = Sprite.getRow(2);
-		Random rand = new Random();
-		for(int y = 0;y < map.getMapHeight();++y){
-			for(int x = 0;x < map.getMapWidth();++x){
-				Tile tile = map.getTile(new Position(x,y));
-				g2d.drawImage(floor[rand.nextInt(floor.length)],x*TILESIZE, y*TILESIZE, null);	
-				if(tile == null){
-					g2d.drawImage(Sprite.getDefaultImg(),x*TILESIZE, y*TILESIZE, null);	
-					continue;
-				}else if(tile.getHeight() > 0){
-					Image[] images = tile.getImage();
-					g2d.drawImage(images[rand.nextInt(images.length)],  x*TILESIZE, y*TILESIZE, null);//then tile other sprites on top
-					if(tile.getHeight() > 0.5){
-						wallSet.add(new int[]{x,y});
-					}
-				}
-			}			
-		}
-		for(int[] wall : wallSet){
-			drawWallEdge(g2d, wall);
-		}
-		return image;
-	}
 	
-	/**
-	 * Draw the wall shadows
-	 * @param g2d The graphics object to draw to
-	 * @param wallPos the position of the wall tile
-	 */
-	private void drawWallEdge(Graphics2D g2d,Position wallPos){
-		g2d.setColor(new Color(0,0,0,100));
-		Set<Tile> neighBours = map.getAdjacentWalkableTiles(wallPos);
-		for(Tile tile:neighBours){
-			Position pos = tile.pos;
-			Position dif = new Position(wallPos.x - pos.x,wallPos.y-pos.y);
-			int sx = wallPos.x*TILESIZE;
-			int sy = wallPos.y*TILESIZE;
-			int swidth,sheight;//TODO: shorten with relative position
-			if(dif.x<0){
-				sx+=TILESIZE;
-				swidth = TILESIZE / 4;
-				sheight = TILESIZE;
-			}else if(dif.x>0){
-				swidth = TILESIZE / 4;
-				sheight = TILESIZE;
-				sx-=swidth;
-			}else if(dif.y<0){
-				sy+=TILESIZE;
-				swidth = TILESIZE;
-				sheight = TILESIZE / 4;
-			}else{
-				swidth = TILESIZE;
-				sheight = TILESIZE/ 4;
-				sy-=sheight;
-			}
-			g2d.fillRect(sx, sy, swidth, sheight);//paint a transparent rectangle as the shadow
-		}		
-	}
+	
+	
 	
 	/**
 	 * Render the fog
@@ -297,7 +197,7 @@ public class PanelPlayer extends JPanel{
 	 */
 	private BufferedImage getOverlay(int width,int height){
 		BufferedImage overlay = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);		
-		int tileWidth = 6;
+		int tileWidth = 5;
 		int maskDiameter = tileWidth * TILESIZE+10;
 		int maskRadius = maskDiameter/2;
 		float ratio = ((float)255/(float)maskRadius) * 0.9f;
@@ -313,48 +213,6 @@ public class PanelPlayer extends JPanel{
 	}
 	
 	/**
-	 * Animate a player moving
-	 * @param player the player to animate 
-	 */
-	private void animate(Player player){
-		if(!posList.isReady())return;
-		int[] pos = posList.get(player);
-		int[] oldPos = posMap.get(player);
-		int[] posDif = PosList.subtract(pos,oldPos);
-		if(!animation.equals("NONE") && !animation.equals("MOVING") && playAnimation(animation,player)){
-			return;
-		}else if(posDif[0] == 0 && posDif[1] == 0){
-			return;
-		}
-		if(Math.abs(offSet[0]) >= TILESIZE || Math.abs(offSet[1]) >= TILESIZE
-				|| !isVisible(pos)){
-			posMap.remove(player);
-			posMap.put(player,pos);
-			offSet = new int[]{0,0};
-			animation = "NONE";//animation is completed
-		}else{
-			if(animation.equals("NONE")){
-				animation = "MOVING";
-			}
-			offSet[0]+=posDif[0];
-			offSet[1]+=posDif[1];
-		}		
-	}
-	
-	/**
-	 * Check if the given tile is visible from cameraPos
-	 * @param pos The tile to test
-	 * @return true if tile is visible, false otherwise
-	 */
-	private boolean isVisible(Position pos){
-		Position posDif = Position.subtract(cameraPos,pos);
-		if(Math.abs(posDif.x) > 4|| Math.abs(posDif.y) > 4){
-			return false;
-		}
-		return true;
-	}
-	
-	/**
 	 * Play the animation 
 	 * @param animation The animation to play
 	 * @param player The player to play it on
@@ -364,7 +222,7 @@ public class PanelPlayer extends JPanel{
 		if(animation.equals("DEFEAT")){
 			return playDefeat(player);
 		}
-		this.animation = "NONE";
+		//this.animation = "NONE";
 		return true;		
 	}
 	
@@ -374,6 +232,7 @@ public class PanelPlayer extends JPanel{
 	 * @return true if the animation is playing
 	 */
 	private boolean playDefeat(Player player){
+		/*
 		int[] pos = posList.get(player);
 		int[] oldPos = posMap.get(player);
 		int[] posDif = PosList.subtract(pos,oldPos);
@@ -399,6 +258,7 @@ public class PanelPlayer extends JPanel{
 			animeOffSet[1]+= TILESIZE  / 4 * posDif[1];
 			++loseAnimeFrame;
 		}
+		*/
 		return true;
 	}
 	
@@ -416,13 +276,8 @@ public class PanelPlayer extends JPanel{
 						e.printStackTrace();
 					}			
 				}
-				initialisePos();
 				long lastChange = System.currentTimeMillis();
 				while(true){
-					if(frame > TILESIZE){
-						frame = 0;
-					}
-					++frame;
 					if(tileFrame > 8){
 						tileFrame = 0;
 					}
@@ -430,11 +285,14 @@ public class PanelPlayer extends JPanel{
 						++tileFrame;//for animating tiles
 						lastChange = System.currentTimeMillis();
 					}
+					gameState = client.gameState;
+					/*
 					try{
 						animate(current);
 					}catch(Exception e){
 						e.printStackTrace();
 					}
+					*/
 					repaint();
 					try {//delay for other threads
 						Thread.sleep(4);

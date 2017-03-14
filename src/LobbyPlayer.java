@@ -5,12 +5,16 @@ import java.awt.Color;
  *
  */
 public class LobbyPlayer implements Messageable{
+	public Position screenPos = new Position(0,0);
+	public Position currentPos = new Position(0,0);
 	public boolean ready = false;
 	public boolean isBot = false;
 	public String name = "New Player";
 	public Color color = new Color(0, 0, 0, 0);//transparent i think havent tested it yet
 	public int id;
 	public boolean connected = true;
+	public boolean visible = false;
+	public Inventory inventory = new Inventory();
 	
 	public LobbyPlayer(int connectionsCounter) {
 		name = "Player "+connectionsCounter;

@@ -33,7 +33,7 @@ import javax.swing.text.StyledDocument;
 public class GameGUI extends JFrame{
 	private JTextPane console = new JTextPane();
 	private JScrollPane scrollArea;
-	private JPanel paintPanel = new JPanel();
+	private PanelPlayer paintPanel;
 	private JPanel controlsPanel = new JPanel(new BorderLayout());
 	private JPanel buttonsPanel = new JPanel(new GridBagLayout());
 	private JTextField inputField = new JTextField(20);
@@ -54,8 +54,9 @@ public class GameGUI extends JFrame{
 	 * @param title The title text of the frame
 	 * @param visible true if the frame should be visible
 	 */
-	public GameGUI(String title,boolean visible){
+	public GameGUI(String title,boolean visible,Client client){
 		super(title);
+		paintPanel = new PanelPlayer(client);
 		scrollArea = new JScrollPane(this.console);
 		console.setFont(new Font("monospaced", Font.PLAIN, 12));
 		loadIcons();
@@ -114,10 +115,10 @@ public class GameGUI extends JFrame{
 		buttonPickup.setIcon(	new ImageIcon(Sprite.getSprite(1, 6)));
 		buttonHello.setIcon(	new ImageIcon(Sprite.getSprite(0, 5)));
 		buttonExit.setIcon(		new ImageIcon(Sprite.getSprite(0, 6)));
-		buttonNorth.setIcon(	new ImageIcon(Sprite.getSprite(3, 7)));
-		buttonSouth.setIcon(	new ImageIcon(Sprite.getSprite(0, 7)));
-		buttonWest.setIcon(		new ImageIcon(Sprite.getSprite(1, 7)));
-		buttonEast.setIcon(		new ImageIcon(Sprite.getSprite(2, 7)));
+		buttonNorth.setIcon(	new ImageIcon(Sprite.getSprite(2, 7)));
+		buttonSouth.setIcon(	new ImageIcon(Sprite.getSprite(3, 7)));
+		buttonWest.setIcon(		new ImageIcon(Sprite.getSprite(0, 7)));
+		buttonEast.setIcon(		new ImageIcon(Sprite.getSprite(1, 7)));
 	}
 	
 	/**

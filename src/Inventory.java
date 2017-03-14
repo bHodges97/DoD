@@ -13,6 +13,7 @@ public class Inventory implements Messageable,Displayable{
 	
 	public Inventory(){
 		itemStacks = new ArrayList<ItemStack>();
+		itemStacks.add(new ItemStack(new ItemGold(),0));
 	}
 	
 	/**
@@ -123,8 +124,8 @@ public class Inventory implements Messageable,Displayable{
 	}
 
 	@Override
-	public Image[] getImage() {
-		return itemStacks.get(0).getImage();
+	public Image[] getImages() {
+		return itemStacks.get(0).getImages();
 	}
 	
 }

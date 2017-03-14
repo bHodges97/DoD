@@ -39,7 +39,7 @@ public class TileWall extends Tile {
 	}
 
 	@Override
-	public Image[] getImage() {
+	public Image[] getImages() {
 		return Sprite.getRow(3);
 	}
 	

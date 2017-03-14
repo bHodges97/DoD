@@ -33,6 +33,7 @@ public abstract class Controller {
 	 * @param output The output to send to client
 	 */
 	public void sendOutput(String output){
+		output = Parser.sanitise(output);
 		send("<OUTPUT>"+ output + "</OUTPUT>");
 	}
 	
@@ -41,11 +42,10 @@ public abstract class Controller {
 	 * @param info process the info
 	 */
 	public void sendInfo(String info){
-		send("<INFO>"+info+"<INFO>");
+		send("<INFO>"+info+"</INFO>");
 	}
 	
 	public void send(String message){
-		message = Parser.sanitise(message);
 		server.processInput(message, id);
 	}
 
