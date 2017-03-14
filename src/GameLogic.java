@@ -209,7 +209,7 @@ public class GameLogic {
      * Update players are game conditions
      */
 	protected synchronized void informPlayers() {
-		int width = 2;
+		int width = 3;
 		for(Player player:players){	
 			String info = "";
 			for(Player otherPlayer:players){

@@ -6,7 +6,7 @@ import java.awt.Color;
  */
 public class LobbyPlayer implements Messageable{
 	public Position screenPos = new Position(0,0);
-	public Position currentPos = new Position(0,0);
+	public Position actualPos = new Position(0,0);
 	public boolean ready = false;
 	public boolean isBot = false;
 	public String name = "New Player";
@@ -14,7 +14,9 @@ public class LobbyPlayer implements Messageable{
 	public int id;
 	public boolean connected = true;
 	public boolean visible = false;
+	public boolean updated = false;
 	public Inventory inventory = new Inventory();
+	public Position orientation = new Position(1,0);
 	
 	public LobbyPlayer(int connectionsCounter) {
 		name = "Player "+connectionsCounter;

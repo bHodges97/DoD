@@ -80,7 +80,7 @@ abstract class Player implements Messageable,Displayable{
 			return "You are stunned";
 		}		
 		String output = "Invalid";
-		if(fightResolver != null){
+		if(fightResolver != null && !fightResolver.resolved){
 			return fightResolver.handle(command,this);
 		}
 		

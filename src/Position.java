@@ -93,6 +93,10 @@ public class Position implements Messageable{
 		return "<POSITION><X>"+x+"</X><Y>"+y+"</Y></POSITION>";
 	}
 
+	public void add(Position b) {
+		x+=b.x;
+		y+=b.y;
+	}
 	public static Position subtract(Position a, Position b) {
 		return new Position(a.x-b.x,a.y-b.y);
 	}
@@ -101,9 +105,36 @@ public class Position implements Messageable{
 		return new Position(a.x * scaler,a.y * scaler);
 	}
 
-	public void multiply(int scaler) {
+	public void multiply(float scaler) {
 		x*=scaler;
 		y*=scaler;
+	}
+
+	public double magnitude() {
+		return Math.sqrt(Math.pow(x,2) + Math.pow(y,2));
+	}
+
+	/**
+	 * Crude normalisation because this vector is an integer
+	 * @return
+	 */
+	public Position normalise() {
+		int normx,normy;
+		if(x > 0){
+			normx = 1;
+		}else if(x < 0){
+			normx = -1;
+		}else{
+			normx = 0;
+		}
+		if(y > 0){
+			normy = 1;
+		}else if(y < 0){
+			normy = -1;
+		}else{
+			normy = 0;
+		}
+		return new Position(normx,normy);
 	}
 	
 }

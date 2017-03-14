@@ -33,7 +33,6 @@ public class PanelPlayer extends JPanel{
 	private Font defaultFont;	
 	private List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
 	private LobbyPlayer clientPlayer = new LobbyPlayer(0);	
-	private GameLogic.GameState gameState = GameLogic.GameState.NOTSTARTED;
 	private Position cameraPos,center;
 	private Client client;
 	
@@ -55,8 +54,7 @@ public class PanelPlayer extends JPanel{
 		this.map = client.gameMap;
 		this.lobbyPlayers = client.lobbyPlayers;
 		this.clientPlayer = client.clientPlayer;
-		this.gameState = client.gameState;
-		this.cameraPos = clientPlayer.currentPos;
+		this.cameraPos = clientPlayer.screenPos;
 		Thread repaintThread = new Thread(makeRunnable(),"repainter");
 		repaintThread.start();
 	}
@@ -67,19 +65,21 @@ public class PanelPlayer extends JPanel{
 		super.paintComponent(g);
 		Graphics2D g2d = (Graphics2D)g;
 		int width =getWidth();
-		int height = getHeight();		
+		int height = getHeight();
+		g2d.setColor(Color.BLACK);
+		g2d.fillRect(0, 0, width, height);
+		g2d.setColor(Color.WHITE);
 		if(map==null || map.getMapWidth() == 0){
 			//don't draw until game is properly loaded
-			g2d.drawString("MAP LOAD FAILED", 0, 20);
+			g2d.drawString("Game is loading. Please wait", 0, 20);
 			return;
-		}else if(gameState == GameLogic.GameState.NOTSTARTED){
-			g2d.drawString("GAME NOT STARTED", 0, 20);
+		}else if(client.gameState == GameLogic.GameState.NOTSTARTED){
+			g2d.drawString("Waiting for game to start", 0, 20);
 			return;
 		}else if(clientPlayer.visible == false){
 			g2d.drawString("WAITING FOR PLAYER TO LOAD",0,20);
+			System.out.println("WAITING FOR PLAYER TO LOAD if this is shown while a player is playing something has gone wrong!");
 			return;
-		}else{
-			g2d.drawString("RENDERING "+cameraPos, 0, 20);
 		}
 		g2d.setFont(defaultFont);
 		height+=g2d.getFontMetrics().getHeight();
@@ -93,11 +93,32 @@ public class PanelPlayer extends JPanel{
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
 			overlay = getOverlay(width,height);
 		}//drawing the fog 
-		g2d.drawImage(overlay, 0, 0, null);	
+		//g2d.drawImage(overlay, 0, 0, null);	
 		//draw the ui
 		drawUI(g2d,width,height);
-		g2d.drawString("RENDERING"+cameraPos, 0, 20);
 	}
+	
+
+
+	protected void updatePlayerPositions() {
+		for(LobbyPlayer player:lobbyPlayers){
+			if(player.visible){
+				if(!player.actualPos.equalsto(player.screenPos)){
+					Position dif = Position.subtract(player.actualPos,player.screenPos);
+					if(dif.magnitude() > 4 * TILESIZE || (dif.magnitude() < 5)){
+						player.screenPos.x = player.actualPos.x;
+						player.screenPos.y = player.actualPos.y;
+					}else{
+						dif = dif.normalise();
+						dif.multiply(16);
+						player.orientation = dif;
+						player.screenPos.add(dif);
+					}
+				}
+			}
+		}
+		
+	}	
 	
 	/**
 	 * Draw animations
@@ -116,15 +137,19 @@ public class PanelPlayer extends JPanel{
 		*/
 	}
 	
+
+	
 	/**
 	 * Draw the player sprites.
 	 * @param g2d The graphics object to draw onto.
 	 */
 	private void drawPlayers(Graphics2D g2d){
 		for(LobbyPlayer player:lobbyPlayers){
-			if(player.visible){
-				Position posDif = Position.subtract(cameraPos, player.currentPos);
-				Position drawPos = Position.subtract(center, posDif);
+			if(player == player){
+				g2d.drawImage(player.toPlayer().getImages()[tileFrame%5],center.x,center.y,null);
+			}else if(player.visible){
+				Position posDif = Position.subtract(cameraPos, player.screenPos);
+				Position drawPos = Position.subtract(center, cameraPos);
 				g2d.drawImage(player.toPlayer().getImages()[tileFrame%5],drawPos.x,drawPos.y,null);
 			}
 		}	
@@ -147,12 +172,12 @@ public class PanelPlayer extends JPanel{
 	 * @param height The height of the ui
 	 */
 	private void drawUI(Graphics2D g2d,int width,int height){		
-		if(gameState.equals("WON")){
+		if(client.gameState.equals("WON")){
 			g2d.setColor(Color.orange);
 			g2d.setFont(defaultFont.deriveFont(32f));
 			int twidth = g2d.getFontMetrics().stringWidth("♪YOU WIN♪");
 			g2d.drawString("♪YOU WIN♪", (width - twidth )/2,centerY);
-		}else if(gameState.equals("END")){
+		}else if(client.gameState.equals("END")){
 			g2d.setColor(Color.red);
 			g2d.setFont(defaultFont.deriveFont(32f));
 			int twidth = g2d.getFontMetrics().stringWidth("GAME OVER");
@@ -184,9 +209,6 @@ public class PanelPlayer extends JPanel{
 		int titleWidth = g2d.getFontMetrics().stringWidth(title);
 		g2d.drawString(title, (width-titleWidth)/2, titleHeight) ;
 	}
-	
-	
-	
 	
 	
 	/**
@@ -269,13 +291,6 @@ public class PanelPlayer extends JPanel{
 		return new Runnable(){
 			@Override
 			public void run() {
-				while(map==null || gameState.equals("NOTSTARTED")){
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}			
-				}
 				long lastChange = System.currentTimeMillis();
 				while(true){
 					if(tileFrame > 8){
@@ -285,22 +300,15 @@ public class PanelPlayer extends JPanel{
 						++tileFrame;//for animating tiles
 						lastChange = System.currentTimeMillis();
 					}
-					gameState = client.gameState;
-					/*
-					try{
-						animate(current);
-					}catch(Exception e){
-						e.printStackTrace();
-					}
-					*/
+					updatePlayerPositions();
 					repaint();
 					try {//delay for other threads
-						Thread.sleep(4);
+						Thread.sleep(100);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}			
 				}
-			}			
+			}		
 		};
 	}
 }

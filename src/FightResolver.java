@@ -30,11 +30,14 @@ public class FightResolver {
 			@Override
 			public void run(){
 				int i = timer;
-				while(!resolved || i >= 0){
+				while(i >= 0){
 					try {
 						
 						Thread.sleep(1000);
-						if(!resolved && i == timer/2){
+						if(resolved){
+							return;
+						}
+						if(i == timer/2){
 							messageAllPlayers("Type "+MoveType.ROCK+", "+MoveType.PAPER+" OR "+MoveType.SCISSORS+". You have "+i+" seconds remaining");
 						}
 						--i;
@@ -43,6 +46,7 @@ public class FightResolver {
 					}
 				}
 				if(!resolved){
+					System.out.println("times up");
 					messageAllPlayers("Times up");
 					resolveCombat();
 				}
@@ -103,7 +107,7 @@ public class FightResolver {
 		for(Player player:players){
 			player.fightResolver = null;
 		}
-		return ;
+		
 	}
 	
 	

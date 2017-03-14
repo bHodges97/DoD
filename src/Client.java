@@ -69,28 +69,35 @@ public abstract class Client {
 	
 	protected synchronized void processInfo(Element message){
 		for(LobbyPlayer player:lobbyPlayers){
-			player.visible = false;
+			player.updated = false;
 		}
 		for(Element info:message.children){
 			if(info.tag.equals("TILES")){
 				//process map info
 				for(Element child:info.children){
 					Tile tile = child.toTile();
-					gameMap.addTile(tile.getDisplayChar(),tile.pos.x,tile.pos.y);
+					if(gameMap.getTile(tile.pos) == null){
+						gameMap.addTile(tile.getDisplayChar(),tile.pos.x,tile.pos.y);	
+					}
 				}
 			}else if(info.tag.equals("PLAYER")){
 				//process player info
 				Player player = info.toPlayer();
+				System.out.println(player.id);
 				LobbyPlayer lobbyPlayer = lobbyPlayers.get(player.id);
-				lobbyPlayer.currentPos.x = player.position.x * 64;
-				lobbyPlayer.currentPos.y = player.position.y * 64;
-				
+				lobbyPlayer.actualPos.x = player.position.x * 64;
+				lobbyPlayer.actualPos.y = player.position.y * 64;
 				lobbyPlayer.visible = true;
+				lobbyPlayer.updated = true;
 			}else if(info.tag.equals("GAMESTATE")){
 				gameState = GameLogic.GameState.valueOf(info.value);
 			}
 		}
-		
+		for(LobbyPlayer player:lobbyPlayers){
+			if(player.updated == false){
+				player.visible = false;
+			}
+		}
 	}
 	
 	/**

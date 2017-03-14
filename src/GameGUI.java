@@ -115,10 +115,10 @@ public class GameGUI extends JFrame{
 		buttonPickup.setIcon(	new ImageIcon(Sprite.getSprite(1, 6)));
 		buttonHello.setIcon(	new ImageIcon(Sprite.getSprite(0, 5)));
 		buttonExit.setIcon(		new ImageIcon(Sprite.getSprite(0, 6)));
-		buttonNorth.setIcon(	new ImageIcon(Sprite.getSprite(2, 7)));
-		buttonSouth.setIcon(	new ImageIcon(Sprite.getSprite(3, 7)));
-		buttonWest.setIcon(		new ImageIcon(Sprite.getSprite(0, 7)));
-		buttonEast.setIcon(		new ImageIcon(Sprite.getSprite(1, 7)));
+		buttonNorth.setIcon(	new ImageIcon(Sprite.getSprite(1, 7)));
+		buttonSouth.setIcon(	new ImageIcon(Sprite.getSprite(2, 7)));
+		buttonWest.setIcon(		new ImageIcon(Sprite.getSprite(3, 7)));
+		buttonEast.setIcon(		new ImageIcon(Sprite.getSprite(0, 7)));
 	}
 	
 	/**
