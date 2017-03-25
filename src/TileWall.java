@@ -1,4 +1,5 @@
 import java.awt.Image;
+import java.util.Random;
 
 /**
  * Wall tile
@@ -6,11 +7,11 @@ import java.awt.Image;
 public class TileWall extends Tile {
 	public static final char displayChar = '#';
 	public static final boolean passable = false;
-	
-	
+	private int style = 0;	
 	
 	public TileWall(Position pos){
 		super(pos);
+		style = new Random().nextInt(4);
 	}
 	
 	@Override
@@ -39,8 +40,8 @@ public class TileWall extends Tile {
 	}
 
 	@Override
-	public Image[] getImages() {
-		return Sprite.getRow(3);
+	public Image getImage(int type) {
+		return Sprite.getSprite(style,3);
 	}
 	
 }

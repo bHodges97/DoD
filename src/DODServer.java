@@ -1,4 +1,5 @@
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -18,7 +19,7 @@ import java.util.List;
 public class DODServer {
 
 	private ServerSocket serverSocket;
-	private GameLogic game;
+	private GameLogic game = null;
 	private int connectionsCounter = 0;
 	private boolean shouldGameStart = false;
    	private List<PrintWriter> writers = new ArrayList<PrintWriter>();
@@ -30,12 +31,14 @@ public class DODServer {
 	private Date date = new Date();
 	private DateFormat longDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
 	private DateFormat shortDateFormat = new SimpleDateFormat("HH:mm");
+	private int port = 0;
 	
 	/**
 	 * Main method
 	 * @param args port number
 	 */
     public static void main(String[] args) {
+    	
     	args = new String[]{"41583"};
     	int port = 0;
     	if(args.length == 1){
@@ -59,7 +62,9 @@ public class DODServer {
      * @param port The port number to host it on
      */
     public DODServer(int port){
+    	this.port = port;
     	game = new GameLogic();
+    	ServerGUI serverGUI = new ServerGUI(this);
     	//try make game server
 		try {
 			serverSocket = new ServerSocket(port);
@@ -94,6 +99,10 @@ public class DODServer {
 		}
 		
     }
+    
+    public List<LobbyPlayer> getLobbyPlayers() {
+		return lobbyPlayers;
+	}
     
     /**
      * Send message to client
@@ -150,6 +159,10 @@ public class DODServer {
     	}else{
     		handleDuringGame(input,id);
     	}
+    }
+    
+    protected GameLogic getGameLogic(){
+    	return game;
     }
     
     /**
@@ -356,5 +369,14 @@ public class DODServer {
 		}
 		//no clients
 		System.exit(0);
+	}
+
+	public void saveLogTo(File saveFile) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public int getPort() {
+		return port; 
 	}
 }

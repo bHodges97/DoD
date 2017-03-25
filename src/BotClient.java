@@ -27,7 +27,7 @@ public class BotClient extends Client {
 
 	@Override
 	public void print(Element message) {
-		message.print(0);
+		//message.print(0);
 	}
 	
 }

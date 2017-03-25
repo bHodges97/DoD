@@ -26,7 +26,7 @@ import javax.swing.JPanel;
 public class PanelPlayer extends JPanel{
 
 	private static final int TILESIZE = 64;
-	private BufferedImage overlay,backGround;
+	private BufferedImage overlay;
 	private Map map = null;
 	private int tileFrame = 0;
 	private int centerX,centerY;
@@ -78,24 +78,35 @@ public class PanelPlayer extends JPanel{
 			return;
 		}else if(clientPlayer.visible == false){
 			g2d.drawString("WAITING FOR PLAYER TO LOAD",0,20);
-			System.out.println("WAITING FOR PLAYER TO LOAD if this is shown while a player is playing something has gone wrong!");
+			for(int i = 0;i < lobbyPlayers.size();++i){
+				LobbyPlayer player = lobbyPlayers.get(i);
+				g2d.drawString(player.id+"|"+player.visible+","+player.actualPos+","+player.screenPos+","+player.orientation,0,40 + i *20);			
+			}
 			return;
 		}
-		g2d.setFont(defaultFont);
+		//TODO:
+		//g2d.setFont(defaultFont);
 		height+=g2d.getFontMetrics().getHeight();
 		centerX = width/2-TILESIZE/2;
 		centerY = height/2-TILESIZE/2;
 		center = new Position(centerX,centerY);
 		drawBackground(g2d);//draw background
 		drawPlayers(g2d);//draw player sprites
-		drawAnimations(g2d);//draw any animation
 		
 		if(overlay==null || overlay.getWidth(null) != width || overlay.getHeight(null) != height){
 			overlay = getOverlay(width,height);
-		}//drawing the fog 
+		}
+		
+		for(int i = 0;i < lobbyPlayers.size();++i){
+			LobbyPlayer player = lobbyPlayers.get(i);
+			g2d.drawString(player.id+"|"+player.visible+","+player.actualPos+","+player.screenPos+","+player.orientation,0,20 + i *20);			
+		}
+		//drawing the fog 
 		//g2d.drawImage(overlay, 0, 0, null);	
 		//draw the ui
 		drawUI(g2d,width,height);
+
+		
 	}
 	
 
@@ -105,9 +116,8 @@ public class PanelPlayer extends JPanel{
 			if(player.visible){
 				if(!player.actualPos.equalsto(player.screenPos)){
 					Position dif = Position.subtract(player.actualPos,player.screenPos);
-					if(dif.magnitude() > 4 * TILESIZE || (dif.magnitude() < 5)){
-						player.screenPos.x = player.actualPos.x;
-						player.screenPos.y = player.actualPos.y;
+					if(dif.magnitude() > 3 * TILESIZE || (dif.magnitude() < 5)){
+						player.screenPos.set(player.actualPos);
 					}else{
 						dif = dif.normalise();
 						dif.multiply(16);
@@ -118,25 +128,7 @@ public class PanelPlayer extends JPanel{
 			}
 		}
 		
-	}	
-	
-	/**
-	 * Draw animations
-	 * @param g2d The graphics object to draw onto.
-	 */
-	private void drawAnimations(Graphics2D g2d){
-		//TODO:
-		/*
-		int[] posDif = PosList.subtract(posList.get(current),posMap.get(current));
-		int[] camera = PosList.subtract(posList.get(current),cameraPos);
-		int	x = centerX + camera[0] * TILESIZE - posDif[0]*TILESIZE;
-		int y = centerY + camera[1] * TILESIZE - posDif[1]*TILESIZE;
-		if(animation.equals("DEFEAT")){		
-			g2d.drawImage(Sprite.getRow(8)[loseAnimeFrame], x + animeOffSet[0], y + animeOffSet[1], null);
-		}
-		*/
 	}
-	
 
 	
 	/**
@@ -145,12 +137,11 @@ public class PanelPlayer extends JPanel{
 	 */
 	private void drawPlayers(Graphics2D g2d){
 		for(LobbyPlayer player:lobbyPlayers){
-			if(player == player){
-				g2d.drawImage(player.toPlayer().getImages()[tileFrame%5],center.x,center.y,null);
+			if(player == clientPlayer){
+				g2d.drawImage(player.toPlayer().getImage(tileFrame%5),center.x,center.y,null);
 			}else if(player.visible){
 				Position posDif = Position.subtract(cameraPos, player.screenPos);
-				Position drawPos = Position.subtract(center, cameraPos);
-				g2d.drawImage(player.toPlayer().getImages()[tileFrame%5],drawPos.x,drawPos.y,null);
+				g2d.drawImage(player.toPlayer().getImage(tileFrame%5),center.x - posDif.x,center.y - posDif.y,null);
 			}
 		}	
 	}
@@ -162,7 +153,7 @@ public class PanelPlayer extends JPanel{
 	private void drawBackground(Graphics2D g2d){
 		int x = centerX - cameraPos.x;
 		int y = centerY - cameraPos.y;
-		g2d.drawImage(map.getImages()[0], x, y, null);
+		g2d.drawImage(map.getImage(0), x, y, null);
 	}
 	
 	/**
@@ -187,7 +178,7 @@ public class PanelPlayer extends JPanel{
 		int x = 0;
 		int y = height-TILESIZE -TILESIZE/2;
 		g2d.setColor(Color.white);
-		g2d.drawImage(new ItemGold().getImages()[0],x,y,TILESIZE/2,TILESIZE/2, null);//draw gold count
+		g2d.drawImage(new ItemGold().getImage(0),x,y,TILESIZE/2,TILESIZE/2, null);//draw gold count
 		g2d.drawString(" "+clientPlayer.inventory.getItemCount("GOLD") + "/" + map.getGoldRequired(), x + TILESIZE/2, y + TILESIZE/2-8);
 		y+=TILESIZE/2 + 3;
 		//draw lives count
@@ -293,13 +284,14 @@ public class PanelPlayer extends JPanel{
 			public void run() {
 				long lastChange = System.currentTimeMillis();
 				while(true){
-					if(tileFrame > 8){
+					if(tileFrame == 3){
 						tileFrame = 0;
 					}
-					if(System.currentTimeMillis() - lastChange > 2000){
+					if(System.currentTimeMillis() - lastChange > 4000){
 						++tileFrame;//for animating tiles
 						lastChange = System.currentTimeMillis();
 					}
+					map.repaint(TILESIZE, tileFrame);
 					updatePlayerPositions();
 					repaint();
 					try {//delay for other threads

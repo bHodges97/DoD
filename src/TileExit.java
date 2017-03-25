@@ -37,7 +37,7 @@ public class TileExit extends Tile {
 	}
 
 	@Override
-	public Image[] getImages() {
-		return Sprite.getRow(4);
+	public Image getImage(int type) {
+		return Sprite.getSprite(type,4);
 	}
 }

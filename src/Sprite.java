@@ -14,6 +14,7 @@ public class Sprite {
 	
 	private static BufferedImage spriteSheet = null;
 	private static final int TILESIZE = 64;
+	private static BufferedImage defaultImage;
 	
 	//whole class is static;
 	private Sprite(){
@@ -21,6 +22,7 @@ public class Sprite {
 	
 	static{
 		loadSpriteSheet();
+		makeDefaultImage();
 	}
 	
 	/**
@@ -38,18 +40,7 @@ public class Sprite {
 	 * @return The default image if spritesheet didn't load
 	 */
 	protected static BufferedImage getDefaultImg(){
-		int halfTile = TILESIZE/2;
-		BufferedImage defaultImg = new BufferedImage(TILESIZE,TILESIZE,BufferedImage.TYPE_INT_ARGB);
-		for(int x = 0;x < TILESIZE;++x){
-			for(int y = 0;y< TILESIZE;++y){
-				if(( x < halfTile && y < halfTile) ||( x >= halfTile && y >= halfTile)){
-					defaultImg.setRGB(x, y, new Color(255,0,220).getRGB());//purple
-				}else{
-					defaultImg.setRGB(x, y, Color.black.getRGB());
-				}
-			}
-		}
-		return defaultImg;
+		return defaultImage;
 	}
 	
 	/**
@@ -74,12 +65,26 @@ public class Sprite {
 	 * @param row The row of sprites to retrieve
 	 * @return every sprite on the given row in an array.
 	 */
-	protected static BufferedImage[] getRow(int row){
+	protected static BufferedImage[] getRow(int row,int width){
 		int sheetWidth = 5;
-		BufferedImage[] sprites = new BufferedImage[sheetWidth];
-		for(int i = 0 ; i < sheetWidth; ++i){
+		BufferedImage[] sprites = new BufferedImage[width];
+		for(int i = 0 ; i < width; ++i){
 			sprites[i] = getSprite(i,row);
 		}
 		return sprites;
 	}
-}
+	
+	private static void makeDefaultImage(){
+		int halfTile = TILESIZE/2;
+		defaultImage = new BufferedImage(TILESIZE,TILESIZE,BufferedImage.TYPE_INT_ARGB);
+		for(int x = 0;x < TILESIZE;++x){
+			for(int y = 0;y< TILESIZE;++y){
+				if(( x < halfTile && y < halfTile) ||( x >= halfTile && y >= halfTile)){
+					defaultImage.setRGB(x, y, new Color(255,0,220).getRGB());//purple
+				}else{
+					defaultImage.setRGB(x, y, Color.black.getRGB());
+				}
+			}
+		}
+	}
+}	

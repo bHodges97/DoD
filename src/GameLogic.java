@@ -58,6 +58,7 @@ public class GameLogic {
 			if(players.isEmpty()){
 				break;
 			}
+			informPlayers();
 			try {
 				Thread.sleep(1000l);
 			} catch (InterruptedException e) {
@@ -93,7 +94,6 @@ public class GameLogic {
 	protected Map getMap(){
 		return map;
 	}
-	
 
     /**
      * @return : Returns back gold player requires to exit the Dungeon.
@@ -205,6 +205,11 @@ public class GameLogic {
     	return null;
     }
     
+    protected List<Player> getPlayers(){
+    	return players;
+    }
+    
+    
     /**
      * Update players are game conditions
      */
@@ -258,6 +263,15 @@ public class GameLogic {
     	player.inventory.empty();
     	player.controller.sendOutput("You have died!");
 		informPlayers("Player "+player.id+ " has died");
+		informPlayers();
     }
 
+	public void movePlayer(Player player, Position position) {
+		player.position = position;
+		informPlayers();
+	}
+
+	public void addGold(int count, Position position) {
+		map.addDroppedItems(new DroppedItems(new ItemGold(), count ,position.x,position.y));
+	}
 }

@@ -6,5 +6,5 @@ import java.awt.Image;
  */
 public interface Displayable {
 	public char getDisplayChar();
-	public Image[] getImages();
+	public Image getImage(int param);
 }

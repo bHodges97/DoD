@@ -114,8 +114,8 @@ abstract class Player implements Messageable,Displayable{
 		if(this.getGoldCount() >= goldCount){
 			this.state = PlayerState.ESCAPED;
 			controller.sendOutput("ESCAPED");
+			gameLogic.informPlayers("Player "+id+ " has escaped. There is likely not enough gold left on the map, remaining players are stuck for ever");
 		}
-		gameLogic.informPlayers("Player "+id+ " has escaped. There is likely not enough gold left on the map, remaining players are stuck for ever");
 	}
 	
 	/**
@@ -137,5 +137,8 @@ abstract class Player implements Messageable,Displayable{
 		gameLogic.kill(this);
 	}
 	
-	
+	@Override
+	public String toString(){
+		return id+"."+name;
+	}
 }

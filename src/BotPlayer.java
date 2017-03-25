@@ -24,8 +24,8 @@ public class BotPlayer extends Player{
 	}
 
 	@Override
-	public Image[] getImages() {
-		return Sprite.getRow(0);
+	public Image getImage(int type) {
+		return Sprite.getSprite(type,0);
 	}
 
 }

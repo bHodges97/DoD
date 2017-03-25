@@ -83,10 +83,11 @@ public abstract class Client {
 			}else if(info.tag.equals("PLAYER")){
 				//process player info
 				Player player = info.toPlayer();
-				System.out.println(player.id);
 				LobbyPlayer lobbyPlayer = lobbyPlayers.get(player.id);
-				lobbyPlayer.actualPos.x = player.position.x * 64;
-				lobbyPlayer.actualPos.y = player.position.y * 64;
+				lobbyPlayer.actualPos.set(Position.multiply(player.position, 64));
+				if(!lobbyPlayer.visible){
+					lobbyPlayer.screenPos.set(lobbyPlayer.actualPos);
+				}
 				lobbyPlayer.visible = true;
 				lobbyPlayer.updated = true;
 			}else if(info.tag.equals("GAMESTATE")){
@@ -164,6 +165,7 @@ public abstract class Client {
 		if(tag.equals("ID")){
 			if(element.isInt()){
 				id = element.toInt();
+				clientPlayer.id = id;
 			}else{
 				//try request id again
 				send("<GETID></GETID>");

@@ -113,6 +113,11 @@ public class Position implements Messageable{
 	public double magnitude() {
 		return Math.sqrt(Math.pow(x,2) + Math.pow(y,2));
 	}
+	
+	public void set(Position pos){
+		this.x = pos.x;
+		this.y = pos.y;
+	}
 
 	/**
 	 * Crude normalisation because this vector is an integer
@@ -136,5 +141,6 @@ public class Position implements Messageable{
 		}
 		return new Position(normx,normy);
 	}
+
 	
 }

@@ -124,8 +124,12 @@ public class Inventory implements Messageable,Displayable{
 	}
 
 	@Override
-	public Image[] getImages() {
-		return itemStacks.get(0).getImages();
+	public Image getImage(int type) {
+		return itemStacks.get(0).getImage(type);
 	}
 	
+	@Override
+	public String toString(){
+		return itemStacks.get(0).getName() + ":"+itemStacks.get(0).count;
+	}
 }
