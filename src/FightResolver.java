@@ -53,7 +53,7 @@ public class FightResolver {
 			}
 		}.start();
 	}
-	
+
 	/**
 	 * Process a player's chosen action
 	 * @param input The player's input
@@ -62,14 +62,18 @@ public class FightResolver {
 	 */
 	public String handle(String input,Player player){
 		int id = player == players[0]?0:1;
+		boolean passed = false;
 		for(MoveType move:MoveType.values()){
-			if(!move.name().equals(input)){
-				return "Invalid command, Accepted are "+MoveType.ROCK+", "+MoveType.PAPER+" or "+MoveType.SCISSORS;				
+			if(move.name().equals(input)){
+				passed = true;			
 			}
+		}
+		if(!passed){
+			return "Invalid command, Accepted are "+MoveType.ROCK+", "+MoveType.PAPER+" or "+MoveType.SCISSORS;	
 		}
 		playerActions[id] = MoveType.valueOf(input);
 		
-		if(!playerActions[1-id].equals("SURRENDER")){
+		if(playerActions[1-id] != MoveType.SURRENDER){
 			resolveCombat();
 			return "";
 		}

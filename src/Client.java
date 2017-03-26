@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JOptionPane;
+
 
 /**
  * Client used to connect to a server.
@@ -16,13 +18,13 @@ public abstract class Client {
 	
 	
 	protected List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
-	protected LobbyPlayer clientPlayer;	
+	protected LobbyPlayer clientPlayer = new LobbyPlayer(0);	
 	private int port = -1;
 	private boolean clientReady = false;
 	private PrintWriter writer;
 	private Socket socket;
 	protected int id;
-	private volatile boolean gameStarted = false;
+	private volatile boolean connected = false;
 	protected volatile GameLogic.GameState gameState = GameLogic.GameState.NOTSTARTED;
 	protected Map gameMap = new Map();
 	
@@ -41,11 +43,8 @@ public abstract class Client {
 		if(!tryConnect(args[0],port)){
 			System.out.println("Failed to connect to "+args[0]+" : "+args[1]);
 			return;
-		}else{
-			System.out.println("Successfully connected!");
 		}
 		send("<GETID></GETID>");
-		updateLobbyInfo();
 		//start
 		run();
 	}
@@ -66,6 +65,11 @@ public abstract class Client {
 	 */
 	protected abstract void startGameAction();
 	
+	protected abstract boolean readyToStart();
+	
+	public void disconnect(){
+		send("DISCONNECT");
+	}
 	
 	protected synchronized void processInfo(Element message){
 		for(LobbyPlayer player:lobbyPlayers){
@@ -179,6 +183,12 @@ public abstract class Client {
 	 * @param line The line to process
 	 */
 	protected synchronized void processInput(String line) {
+		if(line.equals("DISCONNECT")){
+			JOptionPane.showMessageDialog(null, "CONNECTION REFUSED");
+			System.exit(0);
+		}else if(line.equals("CONNECT")){
+			connected = true;
+		}
 		Element element = Parser.parse(line);
 		if(element == null){
 			return;
@@ -188,7 +198,6 @@ public abstract class Client {
 		if(tag.equals("ID")){
 			if(element.isInt()){
 				id = element.toInt();
-				clientPlayer.id = id;
 			}else{
 				//try request id again
 				send("<GETID></GETID>");
@@ -203,9 +212,25 @@ public abstract class Client {
 		}else if(tag.equals("MESSAGE")){
 			print(element);
 		}else if(tag.equals("GAMESTART")){
-			gameStarted = true;
-			print(Parser.makeMessage(-1,"Dungeon of DOOM has started"));
-			startGameAction();
+			//waiting heavy operation so its on thread so other stuff is not blocked
+			Thread startGameThread = new Thread(){
+				@Override
+				public void run(){
+					if(clientPlayer.ready == false){
+						JOptionPane.showMessageDialog(null, "Joining exisiting game!");
+					}
+					print(Parser.makeMessage(-1,"Dungeon of DOOM has started"));
+					while(!readyToStart()){
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					startGameAction();					
+				}
+			};
+			startGameThread.start();
 		}else if(tag.equals("OUTPUT")){
 			print(Parser.makeMessage(-1,Parser.convertToMultiLine(value)));
 		}else if(tag.equals("INFO")){
@@ -239,7 +264,9 @@ public abstract class Client {
 		}else{
 			lobbyPlayer.toLobbyPlayer(lobbyPlayers.get(playerID));
 		}
-		clientPlayer = lobbyPlayers.get(id);
+		if(id < lobbyPlayers.size()){
+			clientPlayer = lobbyPlayers.get(id);
+		}
 	}
 	
 	/**
@@ -306,6 +333,5 @@ public abstract class Client {
 		} 
 		return true;
 	}
-	
 	
 }

@@ -29,5 +29,10 @@ public class BotClient extends Client {
 	public void print(Element message) {
 		//message.print(0);
 	}
+
+	@Override
+	protected boolean readyToStart() {
+		return true;
+	}
 	
 }

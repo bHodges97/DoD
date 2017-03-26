@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -11,6 +12,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import javax.swing.JOptionPane;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
+
 
 /**
  * Server that handles all the DOD client connections and gamelogic
@@ -27,11 +37,15 @@ public class DODServer {
 	private List<ServerReadThread> readThreads = new ArrayList<ServerReadThread>();
     private List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
 	private List<Controller> controllers = new ArrayList<Controller>();
-	private  PrintWriter chatlog;
+	private PrintWriter chatlog;
+	private String chatHistory;
 	private Date date = new Date();
 	private DateFormat longDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
 	private DateFormat shortDateFormat = new SimpleDateFormat("HH:mm");
 	private int port = 0;
+	private StyledDocument document = null;
+	private volatile boolean allowConnections = true;
+	private ServerGUI gui;
 	
 	/**
 	 * Main method
@@ -64,7 +78,8 @@ public class DODServer {
     public DODServer(int port){
     	this.port = port;
     	game = new GameLogic();
-    	ServerGUI serverGUI = new ServerGUI(this);
+    	gui = new ServerGUI(this);
+    	document = gui.getDocument();
     	//try make game server
 		try {
 			serverSocket = new ServerSocket(port);
@@ -77,7 +92,8 @@ public class DODServer {
 		try {
 			FileWriter fileWriter = new FileWriter("log.txt",true); 
 		    chatlog = new PrintWriter(new BufferedWriter(fileWriter),true);	
-		    chatlog.println("<"+longDateFormat.format(date)+">"+" NEW GAME");
+		    chatHistory = "<"+longDateFormat.format(date)+">"+" NEW GAME+\n";
+		    chatlog.println(chatHistory);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
@@ -135,9 +151,13 @@ public class DODServer {
      * @param id The client id
      */
     public synchronized void processInput(String input,int id){
+    	if(input.equals("DISCONNECT")){
+    		close(id,"DISCONNECTED");
+    		return;
+    	}
     	Element message = Parser.parse(input);
     	if(message == null){
-    		System.out.println("Invalid Message from" + id);
+    		println("Invalid Message from" + id);
     		return;
     	}
     	if(message.tag.equals("INPUT")){
@@ -145,20 +165,18 @@ public class DODServer {
 			chatlog.print("<"+shortDateFormat.format(date)+">");
 			String log = "["+id+"]"+lobbyPlayers.get(id).name+":"+message.value;
 			chatlog.println(log);
-			System.out.println(log);
+			chatHistory+="<"+shortDateFormat.format(date)+">"+log;
+			println(log);
 			
 			//if its a chat command
 			if(message.value.startsWith("SHOUT ") || message.value.startsWith("WHISPER ")){
 				handleShout(message.value, id);
+				return;
 			}				
     	}
-		//handle lobby commands	
-    	if(game.getGameState() ==  GameLogic.GameState.NOTSTARTED){
-    		handlePreGame(message,id);
-    	//handle game time commands
-    	}else{
-    		handleDuringGame(input,id);
-    	}
+		
+    	handleInput(message,id);
+    	
     }
     
     protected GameLogic getGameLogic(){
@@ -206,34 +224,13 @@ public class DODServer {
 		}
 		return;
     }
-    
-    /**
-     * Handle message during game
-     * @param message The message to process
-     * @param id sender id
-     */
-    private void handleDuringGame(String input,int id) {
-    	Element message = Parser.parse(input);
-    	String tag = message.tag;
-    	String value = message.value;
-    	if(tag.equals("INPUT")){
-    		controllers.get(id).input = (value); 
-    	}else if(tag.equals("OUTPUT") || tag.equals("INFO")){
-    		send(input, id);
-    	}else{
-    		System.out.println("Unrecognised game command");
-			send("<OUTPUT>Unrecognised game command type \"HELP\" for avaliable commands</OUTPUT>",id);
-    		message.print(0);
-    	}
-    }
-    
 
     /**
-     * Handle message durinng lobby
+     * Handle message=
      * @param message The message to process
      * @param id sender id
      */
-	private void handlePreGame(Element message, int id) {
+	private void handleInput(Element message, int id) {
 		String tag = message.tag;
 		String value = message.value;
 		LobbyPlayer player = lobbyPlayers.get(id);
@@ -243,27 +240,31 @@ public class DODServer {
 			message.toLobbyPlayer(player);
 			//just making sure client doesn't get to change their id.
 			player.id = id;
+			informClients();
 		}else if(tag.equals("GETID")){
-			send("<ID>"+id+"</ID>",id);		
-		}else{
-			System.out.println("Unrecognised lobby command");
+			send("<ID>"+id+"</ID>",id);
+			informClients();		
+		}else if(tag.equals("INPUT")){
+    		controllers.get(id).input = (value); 
+    	}else if(tag.equals("OUTPUT") || tag.equals("INFO")){
+    		send(message+"", id);
+    	}else {
+			System.out.println("Unrecognised game command");
 			send("<OUTPUT>Unrecognised game command type \"HELP\" for avaliable commands</OUTPUT>",id);
 			message.print(0);
 			return;
 		}
-		
-		informClients();
 	}
 	
 	/**
 	 * Update clients on connected player
 	 */
     private void informClients() {
-    	System.out.println();
-    	System.out.println(lobbyPlayers.size()+" players currently connected:");
+    	println("");
+    	println(lobbyPlayers.size()+" players currently connected:");
     	String msg = "<LOBBY>";
     	for(LobbyPlayer player:lobbyPlayers){
-    		System.out.println("---"+player.toString());
+    		println("---"+player.toString());
     		msg+=player.getInfo();
     	}   	
 		sendToAll(msg+"</LOBBY>");
@@ -292,24 +293,12 @@ public class DODServer {
 		}
 		//convert each connected player to a gamelogic player
 		for(LobbyPlayer lobbyPlayer : lobbyPlayers){
-			if(lobbyPlayer == null || !lobbyPlayer.connected || !lobbyPlayer.ready){
-				System.out.println("this is not good");
-				continue;
-			}
-			Player player = lobbyPlayer.toPlayer();
-			game.addPlayer(player);
-			player.gameLogic = game;
-			int id = player.id;
-			if(lobbyPlayer.isBot){
-				player.controller = new ControllerBot(this,id,player);
-			}else{
-				player.controller = new ControllerHuman(this,id,player);
-			}
-			controllers.add(player.controller);
+			addPlayerToGame(lobbyPlayer);
 		}
 		//starting game
-		System.out.println("Game has begun, notifying all players.");
+		println("Game has begun, notifying all players.");
 		sendToAll("<GAMESTART></GAMESTART>");
+		gui.allowConnections(false);
 		new Thread("Game Logic Thread"){
 			@Override
 			public void run(){
@@ -322,28 +311,33 @@ public class DODServer {
 	 * Accept client connections
 	 */
     private void acceptConnections(){
-    	System.out.println("Looking for connections");
-    	while(game.getGameState() == GameLogic.GameState.NOTSTARTED){
+    	println("Looking for connections");
+    	while(true){
 			try{
 				Socket clientSocket = serverSocket.accept();
-				if(game.getGameState() != GameLogic.GameState.NOTSTARTED){
-					System.out.println("Slow way of closing a socket");
+				if(!allowConnections){
+					println("A client tried to join");
+					clientSocket.getOutputStream().write("DISCONNECT".getBytes());
 					clientSocket.close();
-					break;
+				}else{
+					//set up lobbyplayer for client
+					LobbyPlayer player = new LobbyPlayer(connectionsCounter);
+					lobbyPlayers.add(player);
+					player.id = connectionsCounter;
+					System.out.println("Client "+connectionsCounter+" connected.");
+					ServerReadThread thread = new ServerReadThread(clientSocket, this, connectionsCounter);
+					thread.start();
+					OutputStream out = clientSocket.getOutputStream();
+					writers.add(new PrintWriter(out));
+					sockets.add(clientSocket);
+					readThreads.add(thread);
+					++connectionsCounter;
+					informClients();
+					if(getGameLogic().getGameState() == GameLogic.GameState.RUNNING){
+						addPlayerToGame(player);
+						send("<GAMESTART></GAMESTART>", player.id);
+					}
 				}
-				//set up lobbyplayer for client
-				LobbyPlayer player = new LobbyPlayer(connectionsCounter);
-				lobbyPlayers.add(player);
-				player.id = connectionsCounter;
-				System.out.println("Client "+connectionsCounter+" connected.");
-				ServerReadThread thread = new ServerReadThread(clientSocket, this, connectionsCounter);
-				thread.start();
-				OutputStream out = clientSocket.getOutputStream();
-				writers.add(new PrintWriter(out));
-				sockets.add(clientSocket);
-				readThreads.add(thread);
-				++connectionsCounter;
-				informClients();
 			}catch(Exception e){
 				e.printStackTrace();
 			}
@@ -353,11 +347,11 @@ public class DODServer {
 	 * Close a socket
 	 * @param id The id to close
 	 */
-	void close(int id){
+	void close(int id,String reason){
 		try {
 			sockets.get(id).close();
 			sockets.set(id,null);
-			System.out.println(id + "lost connection");
+			println(id +" disconnected: " + reason);
 			lobbyPlayers.get(id).connected = false;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -372,11 +366,72 @@ public class DODServer {
 	}
 
 	public void saveLogTo(File saveFile) {
-		// TODO Auto-generated method stub
+		try{
+			if(!saveFile.exists()){
+				saveFile.createNewFile();
+			}
+			PrintWriter write = new PrintWriter(saveFile);
+			write.print(chatHistory);
+			write.flush();
+			write.close();
+		}catch(IOException e){
+			JOptionPane.showMessageDialog(null, "File save failed");
+		}
 		
 	}
 
 	public int getPort() {
 		return port; 
+	}
+	
+	/**
+	 * Print string to console
+	 * @param string The string to print
+	 * @param color The color to print as
+	 */
+	public void println(String string,Color color)    {	
+		if(document == null){
+			System.out.println("Styled Document is not loaded!");
+			return;
+		}
+		StyleContext styleContext = StyleContext.getDefaultStyleContext();
+	    AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY,StyleConstants.Foreground, color);
+		try {
+			document.insertString(document.getLength(), string+"\n", attributeSet);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+		System.out.println(string);
+        
+    }
+	
+	public void println(String string){
+		println(string,Color.BLACK);
+	}
+
+	public void allowConnections(boolean allowConnections) {
+		this.allowConnections = allowConnections;
+		if(allowConnections){
+			println("Looking for connections...");
+		}else{
+			println("Stopped looking for connections.");
+		}
+	}
+	
+	private void addPlayerToGame(LobbyPlayer lobbyPlayer){
+		if(lobbyPlayer == null || !lobbyPlayer.connected ){
+			println("Player not connected? -tryStartGame() DODSERVER");
+			return;
+		}
+		Player player = lobbyPlayer.toPlayer();
+		player.gameLogic = game;
+		int id = player.id;
+		if(lobbyPlayer.isBot){
+			player.controller = new ControllerBot(this,id,player);
+		}else{
+			player.controller = new ControllerHuman(this,id,player);
+		}
+		controllers.add(player.controller);	
+		game.addPlayer(player);
 	}
 }

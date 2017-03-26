@@ -189,5 +189,13 @@ public class Element implements Messageable{
 		return null;
 	}
 	
+	@Override
+	public String toString(){
+		String text = "";
+		for(Element child:children){
+			text+=child;
+		}
+		return "<"+tag+">"+value+text+"</"+tag+">";
+	}
 	
 }

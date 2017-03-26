@@ -88,9 +88,9 @@ public class PanelServer extends JPanel {
 			}
 		}
 		g2d.setFont(standardFont);
-		g2d.setColor(new Color(255, 255, 255, 100));
+		g2d.setColor(new Color(0, 0, 0, 100));
 		g2d.fillRect(0, HEIGHT-90, 200, 60);
-		g2d.setColor(Color.black);
+		g2d.setColor(Color.WHITE);
 		Position highLightedPos = new Position((cursorX-offsetX)/64,(cursorY-offsetY)/64);
 		Tile highlightedTile = map.getTile(highLightedPos);
 		Player highLightedPlayer = gameLogic.getPlayerAt(highLightedPos);

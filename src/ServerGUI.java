@@ -7,7 +7,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -19,6 +21,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.text.StyledDocument;
 
 public class ServerGUI extends JFrame{
 	private static String ACTION_SAVE = "save", ACTION_ADD_GOLD = "gold", ACTION_MOVE_PLAYER = "move", ACTION_EDIT_TILE = "edit", ACTION_KILL_PLAYER = "kill";
@@ -42,6 +45,7 @@ public class ServerGUI extends JFrame{
 		addComponents();
 		addListeners();
 		textPane.setPreferredSize(new Dimension(400, 200));
+		textPane.setAutoscrolls(true);
 		setTitle("DODServer");
 		//setPreferredSize(new Dimension(576,700));
 		setResizable(false);
@@ -54,24 +58,34 @@ public class ServerGUI extends JFrame{
 	private void addComponents(){
 		JPanel panelNorth = new JPanel(new BorderLayout());
 		JPanel panelSouth = new JPanel(new BorderLayout());
+		JPanel consolePanel = new JPanel(new BorderLayout());
 		JScrollPane textPaneScroll = new JScrollPane(textPane,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		add(panelNorth,BorderLayout.NORTH);
 		add(panelSouth,BorderLayout.SOUTH);
 		panelNorth.add(panelServer,BorderLayout.CENTER);
-		panelSouth.add(textPaneScroll,BorderLayout.CENTER);
+		panelSouth.add(consolePanel,BorderLayout.CENTER);
 		JPanel panelSouthWest = new JPanel();
 		JPanel panelSouthEast = new JPanel();
 		panelSouthWest.setLayout(new BoxLayout(panelSouthWest, BoxLayout.Y_AXIS));
-		panelSouthEast.setLayout(new GridLayout(2,0));
+		panelSouthEast.setLayout(new GridLayout(0,1));
 		panelSouth.add(panelSouthWest,BorderLayout.WEST);
 		panelSouth.add(panelSouthEast,BorderLayout.EAST);
-		panelSouth.add(fieldInput,BorderLayout.SOUTH);
-		panelSouth.add(labelServerDesc,BorderLayout.NORTH);
+		consolePanel.add(textPaneScroll,BorderLayout.CENTER);
+		consolePanel.add(fieldInput,BorderLayout.SOUTH);
+		//panelSouth.add(labelServerDesc,BorderLayout.NORTH);
+		JPanel radioPanel = new JPanel(new GridLayout(2,1));
+		radioPanel.setBorder(BorderFactory.createEtchedBorder());
+		radioPanel.add(buttonConnectOff);
+		radioPanel.add(buttonConnectOn);
+		panelSouthEast.add(radioPanel);
+		panelSouthEast.add(checkBoxShowMap);
 		panelSouthEast.add(buttonMovePlayer);
 		panelSouthEast.add(buttonSave);
 		panelSouthEast.add(buttonSpawnGold);
-		panelSouthEast.add(checkBoxShowMap);
 		
+		ButtonGroup group = new ButtonGroup();
+		group.add(buttonConnectOff);
+		group.add(buttonConnectOn);
 	}
 	
 	private void addListeners(){
@@ -86,7 +100,7 @@ public class ServerGUI extends JFrame{
 			public void actionPerformed(ActionEvent e) {
 				String command = e.getActionCommand();
 				if(command.equals(ACTION_SAVE)){
-					if(fileChooser.showOpenDialog(ServerGUI.this) == JFileChooser.APPROVE_OPTION){
+					if(fileChooser.showSaveDialog(ServerGUI.this) == JFileChooser.APPROVE_OPTION){
 						File saveFile = fileChooser.getSelectedFile();
 						server.saveLogTo(saveFile);
 					}
@@ -122,12 +136,30 @@ public class ServerGUI extends JFrame{
 				
 			}
 		};
+		ItemListener connectionListener = new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				server.allowConnections(buttonConnectOn.isSelected());
+				
+			}
+		};
+		buttonConnectOn.setSelected(true);
+		buttonConnectOff.addItemListener(connectionListener);
+		buttonConnectOn.addItemListener(connectionListener);
 		buttonMovePlayer.addActionListener(buttonActionListener);
 		buttonMovePlayer.setActionCommand(ACTION_MOVE_PLAYER);
 		buttonSave.addActionListener(buttonActionListener);
 		buttonSave.setActionCommand(ACTION_SAVE);
 		buttonSpawnGold.addActionListener(buttonActionListener);
 		buttonSpawnGold.setActionCommand(ACTION_ADD_GOLD);
+		fieldInput.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				server.println(fieldInput.getText());
+				server.sendToAll("<OUTPUT>"+fieldInput.getText()+"</OUTPUT>");
+				fieldInput.setText("");
+			}
+		});
 	}
 	
 	protected void showMap(){
@@ -148,10 +180,23 @@ public class ServerGUI extends JFrame{
 				return new Position(x,y);
 			}catch (NumberFormatException e) {
 				JOptionPane.showMessageDialog(ServerGUI.this, "Invalid input.","Error",JOptionPane.ERROR_MESSAGE);
-				e.printStackTrace();
+				//.printStackTrace();
 				return null;
 			}
 		}
 		return null;
+	}
+
+	public StyledDocument getDocument() {
+		return textPane.getStyledDocument();
+	}
+
+	public void allowConnections(boolean allowConnections) {
+		if(buttonConnectOff.isSelected() == allowConnections){
+			buttonConnectOff.setSelected(!allowConnections);
+		}
+		if(buttonConnectOn.isSelected() != allowConnections){
+			buttonConnectOn.setSelected(allowConnections);
+		}
 	}
 }

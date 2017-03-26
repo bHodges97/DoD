@@ -86,6 +86,12 @@ public class GameLogic {
 		player.position  = new Position(emptyTiles.get(randomNum).pos);
 		player.state = PlayerState.PLAYING;
 		players.add(player);
+		
+		if(gameState == GameLogic.GameState.RUNNING){
+			Thread thread = new Thread(new PlayerLogicThread(player,this));
+			thread.start();
+			threads.add(thread);
+		}		
 	}
 	
 	/**
@@ -111,7 +117,7 @@ public class GameLogic {
     protected synchronized String move(Player currentPlayer,char direction) {
     	Position playerPos = currentPlayer.position;
     	Position playerNewPos = playerPos.getAdjacentTile(direction);
-    	if(playerNewPos == null || !map.getTile(playerNewPos).isPassable() ){
+    	if(playerNewPos == null || map.getTile(playerPos) == null || !map.getTile(playerNewPos).isPassable() ){
     		return "Fail";
     	}else if(currentPlayer.state != PlayerState.PLAYING){
     		return "Fail";

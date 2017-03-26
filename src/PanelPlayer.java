@@ -217,7 +217,7 @@ public class PanelPlayer extends JPanel{
 		//draw lives count
 		int lives = clientPlayer.state == PlayerState.DEAD? 0 : 1;
 		g2d.drawImage(Sprite.getSprite(3, 6),x,y,TILESIZE/2,TILESIZE/2,null);
-		g2d.drawString(" "+ lives+"/1", x + TILESIZE/2, y + TILESIZE/2-8);//TODO:
+		g2d.drawString(" "+ lives+"/1", x + TILESIZE/2, y + TILESIZE/2-8);
 		
 		if(clientPlayer.state == PlayerState.DEAD){
 			g2d.setColor(Color.orange);

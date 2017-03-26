@@ -63,6 +63,14 @@ public class HumanClient extends Client{
 	}
 	
 	@Override
+	protected boolean readyToStart() {
+		if(lobbygui == null || gamegui == null || document == null){
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
 	protected void startGameAction() {
 		lobbygui.setEnabled(false);
 		lobbygui.dispose();
@@ -94,6 +102,8 @@ public class HumanClient extends Client{
 					break;
 				}
 			}
+		}else{
+			color = Color.gray;
 		}
 		if(to >= 0){
 			//output different messages based on player id

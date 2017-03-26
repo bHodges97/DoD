@@ -35,7 +35,7 @@ public class ServerReadThread extends Thread{
 				server.processInput(line,id);
 			}
 		} catch(SocketException e){
-			server.close(id);
+			server.close(id,"LOST CONNECTION");
 			return;
 		}catch (IOException e) {
 			e.printStackTrace();
