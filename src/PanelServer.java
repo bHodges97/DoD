@@ -82,8 +82,10 @@ public class PanelServer extends JPanel {
 		imageHeight = image.getHeight(null);
 		g2d.drawImage(image, offsetX, offsetY, null);
 		for(Player player:gameLogic.getPlayers()){
-			Position pos = Position.multiply(player.position, TILESIZE);
-			g2d.drawImage(player.getImage(2), pos.x + offsetX,  pos.y + offsetY, null);
+			if(player.isInGame()){
+				Position pos = Position.multiply(player.position, TILESIZE);
+				g2d.drawImage(player.getImage(2), pos.x + offsetX,  pos.y + offsetY, null);
+			}
 		}
 		g2d.setFont(standardFont);
 		g2d.setColor(new Color(255, 255, 255, 100));

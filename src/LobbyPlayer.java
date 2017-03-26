@@ -17,6 +17,7 @@ public class LobbyPlayer implements Messageable{
 	public boolean updated = false;
 	public Inventory inventory = new Inventory();
 	public Position orientation = new Position(1,0);
+	public PlayerState state = PlayerState.PLAYING;
 	
 	public LobbyPlayer(int connectionsCounter) {
 		name = "Player "+connectionsCounter;
@@ -41,6 +42,7 @@ public class LobbyPlayer implements Messageable{
 		if(color != null){
 			player.color = color;
 		}
+		player.state = this.state;
 		player.id = id;
 		return player;
 	}

@@ -16,7 +16,7 @@ public abstract class Client {
 	
 	
 	protected List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
-	protected LobbyPlayer clientPlayer = new LobbyPlayer(0);	
+	protected LobbyPlayer clientPlayer;	
 	private int port = -1;
 	private boolean clientReady = false;
 	private PrintWriter writer;
@@ -71,6 +71,7 @@ public abstract class Client {
 		for(LobbyPlayer player:lobbyPlayers){
 			player.updated = false;
 		}
+		Set<Position> updated = new HashSet<Position>();
 		for(Element info:message.children){
 			if(info.tag.equals("TILES")){
 				//process map info
@@ -85,6 +86,8 @@ public abstract class Client {
 				Player player = info.toPlayer();
 				LobbyPlayer lobbyPlayer = lobbyPlayers.get(player.id);
 				lobbyPlayer.actualPos.set(Position.multiply(player.position, 64));
+				lobbyPlayer.state = player.state;
+				lobbyPlayer.inventory = player.inventory;
 				if(!lobbyPlayer.visible){
 					lobbyPlayer.screenPos.set(lobbyPlayer.actualPos);
 				}
@@ -92,8 +95,28 @@ public abstract class Client {
 				lobbyPlayer.updated = true;
 			}else if(info.tag.equals("GAMESTATE")){
 				gameState = GameLogic.GameState.valueOf(info.value);
+			}else if(info.tag.equals("DROPPEDITEMS")){
+				DroppedItems item = info.toDroppedItems();
+				if(!gameMap.isTileEmpty(item.position)){
+					gameMap.removeItemsAt(item.position);
+				}
+				gameMap.addDroppedItems(item);
+				updated.add(item.position);
+			}else if(info.tag.equals("GOLD")){
+				gameMap.setGoldRequired(info.toInt());
 			}
 		}
+		Set<DroppedItems> deleteList = new HashSet<DroppedItems>();
+		outer:
+		for(DroppedItems item:gameMap.getDroppedItems()){
+			for(Position pos:updated){
+				if(item.position.equalsto(pos)){
+					continue outer;
+				}
+			}
+			deleteList.add(item);
+		}
+		gameMap.getDroppedItems().removeAll(deleteList);
 		for(LobbyPlayer player:lobbyPlayers){
 			if(player.updated == false){
 				player.visible = false;
@@ -208,17 +231,15 @@ public abstract class Client {
 			lobbyPlayer.print(0);
 			return;
 		}
-		//check if player is already stored, otherwise add to list
-		for(LobbyPlayer known:lobbyPlayers){
-			if(known.id == playerID){
-				lobbyPlayer.toLobbyPlayer(known);
-				return;
-			}
+		if(lobbyPlayers.size() <= playerID){
+			LobbyPlayer player = new LobbyPlayer(playerID);
+			print(Parser.makeMessage(-1,"Player "+player.id+" joined.("+lobbyPlayers.size()+")"));
+			lobbyPlayers.add(player);
+			lobbyPlayer.toLobbyPlayer(player);
+		}else{
+			lobbyPlayer.toLobbyPlayer(lobbyPlayers.get(playerID));
 		}
-		LobbyPlayer player = new LobbyPlayer(playerID);
-		lobbyPlayers.add(player);
-		lobbyPlayer.toLobbyPlayer(player);
-		print(Parser.makeMessage(-1,"Player "+player.id+" joined."));
+		clientPlayer = lobbyPlayers.get(id);
 	}
 	
 	/**

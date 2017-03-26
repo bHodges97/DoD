@@ -69,7 +69,7 @@ public class ControllerBot extends Controller{
 	@Override
 	public void sendInfo(String message) {
 		super.sendInfo(message);
-		Element messageElement = Parser.parse(message);
+		Element messageElement = Parser.parse("<INFO>"+message+"</INFO>");
 		for(Element info:messageElement.children){
 			if(info.tag.equals("TILES")){
 				//process map info

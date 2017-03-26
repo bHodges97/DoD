@@ -370,7 +370,7 @@ public class Map implements Displayable{
 
 		for(DroppedItems item: droppedItems){
 			Position pos = Position.multiply(item.position, tileSize);
-			g2d.drawImage(item.inventory.getImage(0),pos.x ,pos.y,null);
+			g2d.drawImage(item.inventory.getImage(0),pos.x +tileSize/4 ,pos.y + tileSize/4,tileSize/2,tileSize/2,null);
 		}
 		for(Position wall : wallSet){
 			drawWallEdge(g2d, wall,tileSize);
@@ -412,7 +412,10 @@ public class Map implements Displayable{
 		}		
 	}
 
-
+	public List<Tile> getTiles(){
+		return tileList;
+	}
+	
 	@Override
 	public char getDisplayChar() {
 		return 0;
@@ -422,5 +425,10 @@ public class Map implements Displayable{
 	@Override
 	public Image getImage(int param) {
 		return image;
+	}
+
+
+	public void setGoldRequired(int count) {
+		this.goldRequired =count;
 	}
 }

@@ -25,6 +25,9 @@ public class BotPlayer extends Player{
 
 	@Override
 	public Image getImage(int type) {
+		 if(state == PlayerState.ESCAPED || state == PlayerState.DEAD){
+			return Sprite.getSprite(4, 9);
+		}
 		return Sprite.getSprite(type,0);
 	}
 

@@ -20,7 +20,12 @@ public class Inventory implements Messageable,Displayable{
 	 * @param itemStack To add to inventory
 	 */
 	public void addItemStack(ItemStack itemStack) {
-		itemStacks.add(itemStack);
+		ItemStack existing = getItemStack(itemStack.getName());
+		if(existing == null){
+			itemStacks.add(itemStack);
+		}else{
+			existing.count = itemStack.count;
+		}
 	}
 
 	/**
@@ -61,6 +66,7 @@ public class Inventory implements Messageable,Displayable{
 	 */
 	public int getItemCount(String name) {
 		if(getItemStack(name) == null){
+			System.out.println("not found "+name);
 			return 0;
 		}
 		return getItemStack(name).count;
@@ -72,7 +78,7 @@ public class Inventory implements Messageable,Displayable{
 	 */
 	public ItemStack getItemStack(String name) {
 		for(ItemStack stack:itemStacks){
-			if(stack.getName() == name){
+			if(stack.getName().equals(name)){
 				return stack;
 			}
 		}

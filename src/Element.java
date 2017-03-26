@@ -1,6 +1,7 @@
 
 
 import java.awt.Color;
+import java.awt.Image;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -142,8 +143,27 @@ public class Element implements Messageable{
 		player.id = id;
 		player.position = pos;
 		player.state = PlayerState.valueOf(getChild("PLAYERSTATE").value);
-		
+		player.inventory = getChild("INVENTORY").toInventory();
 		return player;
+	}
+	
+	public DroppedItems toDroppedItems(){
+
+		Position pos = getChild("POSITION").toPosition();
+		Inventory inv = getChild("INVENTORY").toInventory();
+		return new DroppedItems(inv, pos);
+	}
+	
+	public Inventory toInventory(){
+		Inventory inventory = new Inventory();
+		for(Element child:children){
+			inventory.addItemStack(child.toItemStack());
+		}
+		return inventory;
+	}
+	
+	public ItemStack toItemStack(){
+		return new ItemStack(Item.createItem(getChild("ITEM").getChild("NAME").value), getChild("COUNT").toInt());
 	}
 	
 	@Override

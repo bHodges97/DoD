@@ -27,6 +27,9 @@ public class HumanPlayer extends Player{
 
 	@Override
 	public Image getImage(int param) {
+		 if(state == PlayerState.ESCAPED || state == PlayerState.DEAD){
+			return Sprite.getSprite(4, 9);
+		}
 		return Sprite.getSprite(param,1);
 	}
 }

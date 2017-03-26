@@ -4,6 +4,13 @@
  */
 public abstract class Item implements Messageable,Displayable{
 
+	public static Item createItem(String name){
+		if(name.equals(new ItemGold().getName())){
+			return new ItemGold();
+		}
+		return null;
+	}
+	
 	@Override
 	public String getInfo() {
 		return "<ITEM><NAME>"+getName()+"</NAME></ITEM>";

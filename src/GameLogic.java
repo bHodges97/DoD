@@ -53,16 +53,16 @@ public class GameLogic {
 			thread.start();
 			threads.add(thread);
 		}		
-		
+		informPlayers();		
 		while(gameState != GameState.STOPPED){
-			if(players.isEmpty()){
-				break;
-			}
 			informPlayers();
 			try {
 				Thread.sleep(1000l);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+			}
+			if(players.isEmpty()){
+				break;
 			}
 		}
 		System.out.println("Game ended. Server is shutting down");
@@ -232,6 +232,7 @@ public class GameLogic {
 				}
 			}
 			info+="</TILES>";
+			info+="<GOLD>"+map.getGoldRequired()+"</GOLD>";
 			for(DroppedItems dropped:map.getDroppedItems()){
 				if(PathFinder.estimateDistance(player.position,dropped.position) <= 4){
 					info+=dropped.getInfo();
@@ -256,7 +257,7 @@ public class GameLogic {
 	 */
     protected void kill(Player player){
     	player.state = PlayerState.DEAD;
-    	if(player.inventory.isEmpty()){
+    	if(!player.inventory.isEmpty()){
     		DroppedItems dropped = new DroppedItems(player.inventory,player.position);
     		map.addDroppedItems(dropped);
     	}

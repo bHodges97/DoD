@@ -2,7 +2,7 @@ import java.awt.Image;
 
 public class ItemStack implements Messageable,Displayable{
 	private Item item;
-	public int count;
+	public int count = 0;
 	public ItemStack(Item item){
 		this.item = item;
 	}
