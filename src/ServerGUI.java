@@ -30,12 +30,12 @@ public class ServerGUI extends JFrame{
 	private final JTextPane textPane = new JTextPane();;
 	private final JRadioButton buttonConnectOn = new JRadioButton("Allow new connections");
 	private final JRadioButton buttonConnectOff = new JRadioButton("Block new connections");
-	private final JCheckBox checkBoxShowMap = new JCheckBox("Show map");
+	private final JCheckBox checkBoxShowMap = new JCheckBox("<html>Show map<br>(you can drag the map)</html>");
 	private final JButton buttonMovePlayer = new JButton("Move Player");
 	private final JButton buttonSpawnGold = new JButton("Spawn Gold");
+	private final JButton buttonKillPlayer = new JButton("Kill Player");
 	private final JButton buttonSave = new JButton("Save Log");
 	private final JTextField fieldInput = new JTextField(30);
-	private final JLabel labelServerDesc = new JLabel("IP: PORT:");
 	private final JFileChooser fileChooser = new JFileChooser();
 	
 	
@@ -83,6 +83,7 @@ public class ServerGUI extends JFrame{
 		panelSouthEast.add(buttonMovePlayer);
 		panelSouthEast.add(buttonSave);
 		panelSouthEast.add(buttonSpawnGold);
+		panelSouthEast.add(buttonKillPlayer);
 		
 		ButtonGroup group = new ButtonGroup();
 		group.add(buttonConnectOff);
@@ -132,7 +133,9 @@ public class ServerGUI extends JFrame{
 				}else if(command.equals(ACTION_EDIT_TILE)){
 					
 				}else if(command.equals(ACTION_KILL_PLAYER)){
-					
+					if(selectedPlayer != null){
+						server.getGameLogic().kill(selectedPlayer, "Server action");
+					}
 				}
 				
 			}
@@ -151,6 +154,8 @@ public class ServerGUI extends JFrame{
 		buttonSave.setActionCommand(ACTION_SAVE);
 		buttonSpawnGold.addActionListener(buttonActionListener);
 		buttonSpawnGold.setActionCommand(ACTION_ADD_GOLD);
+		buttonKillPlayer.addActionListener(buttonActionListener);
+		buttonKillPlayer.setActionCommand(ACTION_KILL_PLAYER);
 		fieldInput.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

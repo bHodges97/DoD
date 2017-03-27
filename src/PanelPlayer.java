@@ -87,8 +87,6 @@ public class PanelPlayer extends JPanel{
 			}
 			return;
 		}
-		//TODO:
-		//g2d.setFont(defaultFont);
 		height+=g2d.getFontMetrics().getHeight();
 		centerX = width/2-TILESIZE/2;
 		centerY = height/2-TILESIZE/2;
@@ -96,20 +94,22 @@ public class PanelPlayer extends JPanel{
 		drawBackground(g2d);//draw background
 		drawDecals(g2d);
 		drawPlayers(g2d);//draw player sprites
-		drawDebug(g2d);
 		drawUI(g2d);
-
-		
+		//drawDebug(g2d);		
 	}
 	
 
-
+	/**
+	 * Update the display positons for the player
+	 */
 	protected void updatePlayerPositions() {
 		for(LobbyPlayer player:lobbyPlayers){
 			if(player.visible){
 				if(!player.actualPos.equalsto(player.screenPos)){
 					Position dif = Position.subtract(player.actualPos,player.screenPos);
 					if(dif.magnitude() > 3 * TILESIZE || (dif.magnitude() < 5)){
+						//if the difference between actual location and drawn position is too large
+						//teleport player to correct location
 						player.screenPos.set(player.actualPos);
 					}else{
 						dif = dif.normalise();
@@ -123,6 +123,10 @@ public class PanelPlayer extends JPanel{
 		
 	}
 	
+	/**
+	 * Draw debug view
+	 * @param g2d
+	 */
 	private void drawDebug(Graphics2D g2d){
 		for(int i = 0;i < lobbyPlayers.size();++i){
 			LobbyPlayer player = lobbyPlayers.get(i);
@@ -130,7 +134,10 @@ public class PanelPlayer extends JPanel{
 		}		
 	}
 	
-	
+	/**
+	 * Draw decals
+	 * @param g2d  graphics
+	 */
 	private void drawDecals(Graphics2D g2d){
 		for(LobbyPlayer player:lobbyPlayers){
 			if(player.state == PlayerState.DEAD){
@@ -202,13 +209,14 @@ public class PanelPlayer extends JPanel{
 			g2d.setFont(defaultFont.deriveFont(32f));
 			int textwidth = g2d.getFontMetrics().stringWidth("♪YOU WIN♪");
 			g2d.drawString("♪YOU WIN♪", (WIDTH - textwidth )/2,centerY);
+			g2d.setFont(defaultFont);
 		}else if(clientPlayer.state == PlayerState.DEAD){
 			g2d.setColor(Color.red);
 			g2d.setFont(defaultFont.deriveFont(32f));
 			int textwidth = g2d.getFontMetrics().stringWidth("GAME OVER");
 			g2d.drawString("GAME OVER", (WIDTH - textwidth )/2,centerY);
+			g2d.setFont(defaultFont);
 		}
-
 		int x = 0;
 		int y = HEIGHT-TILESIZE -TILESIZE/2;
 		g2d.setColor(Color.white);

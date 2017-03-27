@@ -30,7 +30,7 @@ import javax.swing.text.StyledDocument;
 /**
  * The main gui in which DOD is rendered on
  */
-public class GameGUI extends JFrame{
+public class PlayerGUI extends JFrame{
 	private JTextPane console = new JTextPane();
 	private JScrollPane scrollArea;
 	private PanelPlayer paintPanel;
@@ -45,17 +45,20 @@ public class GameGUI extends JFrame{
 	private JButton buttonSouth = new JButton("MOVE S");
 	private JButton buttonWest = new JButton("MOVE W");
 	private JButton buttonEast = new JButton("MOVE E");
+	private JButton buttonSettings = new JButton("Settings");
+	private JButton buttonChat = new JButton("Chat");
 	private String guiInput = null;
 	private boolean allowInputs = false;
-	
+	private Client client;
 	
 	/**
 	 * Initialise a new frame
 	 * @param title The title text of the frame
 	 * @param visible true if the frame should be visible
 	 */
-	public GameGUI(String title,boolean visible,Client client){
+	public PlayerGUI(String title,boolean visible,Client client){
 		super(title);
+		this.client = client;
 		paintPanel = new PanelPlayer(client);
 		scrollArea = new JScrollPane(this.console);
 		console.setFont(new Font("monospaced", Font.PLAIN, 12));
@@ -119,6 +122,8 @@ public class GameGUI extends JFrame{
 		buttonSouth.setIcon(	new ImageIcon(Sprite.getSprite(2, 7)));
 		buttonWest.setIcon(		new ImageIcon(Sprite.getSprite(3, 7)));
 		buttonEast.setIcon(		new ImageIcon(Sprite.getSprite(0, 7)));
+		buttonChat.setIcon(		new ImageIcon(Sprite.getSprite(1, 5)));
+		buttonSettings.setIcon( new ImageIcon(Sprite.getSprite(4, 6)));
 	}
 	
 	/**
@@ -144,11 +149,11 @@ public class GameGUI extends JFrame{
 		GridBagConstraints c = new GridBagConstraints();
 		c.gridx = 0;
 		c.gridy = 0;
-		buttonsPanel.add(buttonLook,c);
+		buttonsPanel.add(buttonSettings,c);
 		c = new GridBagConstraints();
 		c.gridx = 0;
 		c.gridy = 1;
-		buttonsPanel.add(buttonHello, c);
+		buttonsPanel.add(buttonChat, c);
 		c = new GridBagConstraints();
 		c.gridx = 0;
 		c.gridy = 2;
@@ -169,6 +174,14 @@ public class GameGUI extends JFrame{
 		c.gridx = 1;
 		c.gridy = 1;
 		buttonsPanel.add(buttonWest, c);
+		c = new GridBagConstraints();
+		c.gridx = 3;
+		c.gridy = 0;
+		buttonsPanel.add(buttonLook, c);
+		c = new GridBagConstraints();
+		c.gridx = 3;
+		c.gridy = 2;
+		buttonsPanel.add(buttonHello, c);
 		c = new GridBagConstraints();
 		c.gridx = 3;
 		c.gridy = 1;
@@ -289,6 +302,11 @@ public class GameGUI extends JFrame{
 					guiInput = "MOVE W";
 				}else if(e.getSource()==buttonEast){
 					guiInput = "MOVE E";
+				}else if(e.getSource()==buttonSettings){
+					EditPlayerGUI gui = new EditPlayerGUI(client.clientPlayer, false);
+					client.send(""+client.clientPlayer);
+				}else if(e.getSource()==buttonChat){
+					
 				}
 			}			
 		};

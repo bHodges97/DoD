@@ -25,11 +25,13 @@ public class GameLogic {
 	private List<Player> players = new ArrayList<Player>();
 	private List<Thread> threads = new ArrayList<Thread>();
 	private GameState gameState = GameState.NOTSTARTED;
+	private DODServer server;
 	
-	public GameLogic(){
+	public GameLogic(DODServer server){
 		map = new Map();
+		this.server = server;
 		if(!map.tryReadMap("example_map.txt")){
-			System.out.println("map load failed: exiting");
+			server.println("map load failed: exiting",Color.red);
 			System.exit(1);
 		}
 	}
@@ -57,7 +59,7 @@ public class GameLogic {
 		while(gameState != GameState.STOPPED){
 			informPlayers();
 			try {
-				Thread.sleep(1000l);
+				Thread.sleep(100l);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -65,7 +67,7 @@ public class GameLogic {
 				break;
 			}
 		}
-		System.out.println("Game ended. Server is shutting down");
+		server.println("Game ended. Server is shutting down");
 		System.exit(0);
 		
 	}
@@ -262,6 +264,10 @@ public class GameLogic {
 	 * @param player
 	 */
     protected void kill(Player player, String reason){
+    	if(player.state == PlayerState.DEAD){
+    		server.println("Warning "+player.id+" is already dead!:" + reason,Color.red);
+    		return;
+    	}    	
     	player.state = PlayerState.DEAD;
     	if(!player.inventory.isEmpty()){
     		DroppedItems dropped = new DroppedItems(player.inventory,player.position);

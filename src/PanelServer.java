@@ -22,12 +22,16 @@ public class PanelServer extends JPanel {
 	private int cursorX = 0, cursorY = 0;
 	private Position selected = new Position(0,0);
 	private Player selectedPlayer =  null;
-	private static int WIDTH = 576;
+	private static int WIDTH = 876;
 	private static int HEIGHT = 448;
 	private int portNum = 0;
-	private int imageWidth = 0, imageHeight =0;
 	private Font standardFont,largeFont;
 	
+	
+	/**
+	 * The panel for painting map and player info
+	 * @param server
+	 */
 	public PanelServer(DODServer server){
 		this.server = server;
 		portNum = server.getPort();
@@ -35,8 +39,8 @@ public class PanelServer extends JPanel {
 		this.setFocusable(true);
 		addMotionListeners();
 		standardFont = getFont();
-		largeFont = standardFont.deriveFont(30f);
-
+		largeFont = standardFont.deriveFont(16f);
+		//start repaint thread
 		Runnable runnable = new Runnable(){		
 			@Override
 			public void run() {
@@ -62,6 +66,7 @@ public class PanelServer extends JPanel {
 		Graphics2D g2d = (Graphics2D)g;
 		GameLogic gameLogic = server.getGameLogic();
 		if(!showMap){
+			//draw connected players info
 			g2d.setFont(largeFont);
 			g2d.drawString("Map hidden", 0, 40);
 			g2d.drawString("Server hosted on port: "+portNum, 0, 80);
@@ -71,6 +76,7 @@ public class PanelServer extends JPanel {
 			}
 			return;
 		}
+		//else draw map
 		Map map = gameLogic.getMap();
 		if(map==null || map.getMapWidth() == 0){
 			//don't draw until game is properly loaded
@@ -78,8 +84,6 @@ public class PanelServer extends JPanel {
 			return;
 		}
 		Image image = map.getImage(0);
-		imageWidth = image.getWidth(null);
-		imageHeight = image.getHeight(null);
 		g2d.drawImage(image, offsetX, offsetY, null);
 		for(Player player:gameLogic.getPlayers()){
 			if(player.isInGame()){
@@ -87,6 +91,8 @@ public class PanelServer extends JPanel {
 				g2d.drawImage(player.getImage(2), pos.x + offsetX,  pos.y + offsetY, null);
 			}
 		}
+		
+		//drawing misc info
 		g2d.setFont(standardFont);
 		g2d.setColor(new Color(0, 0, 0, 100));
 		g2d.fillRect(0, HEIGHT-90, 200, 60);
@@ -104,6 +110,10 @@ public class PanelServer extends JPanel {
 		g2d.drawString("Selected player: " + selectedPlayer, 0 , HEIGHT - 40);
 	}
 	
+	/**
+	 * Toggle whether to show map or not
+	 * @param state
+	 */
 	public synchronized void showMap(boolean state){
 		offsetX = 0;
 		offsetY = 0;
@@ -112,24 +122,43 @@ public class PanelServer extends JPanel {
 		System.out.println("Showing map");
 	}
 	
+	/**
+	 * @return selected position
+	 */
 	public Position getSelected(){
 		return selected;
 	}
 	
+	/**
+	 * @return selected player
+	 */
 	public Player getSelectedPlayer(){
 		return selectedPlayer;
 	}
 	
+	/**
+	 * Select the tile at the given position
+	 * @param x Position on screen in x pixels.
+	 * @param y Position on screen in y pixels
+	 */
 	private synchronized void selectTile(int x, int y){
 		selected = new Position((x - offsetX) / TILESIZE,(y - offsetY) / TILESIZE);
 		selectedPlayer = server.getGameLogic().getPlayerAt(selected);
 	}
 	
-	private synchronized void setOrigin(int x, int y){
+	/**
+	 * Set the offset of the map image
+	 * @param x offset in x
+	 * @param y off set in y
+	 */
+	private synchronized void setOffset(int x, int y){
 		this.offsetX = x - clickX;
 		this.offsetY = y - clickY ;
 	}
 	
+	/**
+	 * Add mouse listeners to the panel
+	 */
 	private void addMotionListeners(){
 		this.addMouseListener(new MouseListener() {
 			@Override
@@ -138,6 +167,7 @@ public class PanelServer extends JPanel {
 			
 			@Override
 			public void mousePressed(MouseEvent e) {
+				//for tracking where the user clicks
 				clickX = e.getX()  - offsetX;
 				clickY = e.getY() - offsetY;
 			}
@@ -166,8 +196,9 @@ public class PanelServer extends JPanel {
 			
 			@Override
 			public void mouseDragged(MouseEvent e) {
+				//for dragging map
 				if(showMap && e.getX() < getWidth() && e.getY() < getHeight() && e.getX() > 0 && e.getY() > 0){
-					setOrigin(e.getX(),e.getY());
+					setOffset(e.getX(),e.getY());
 				}
 			}
 		});

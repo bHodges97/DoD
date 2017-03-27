@@ -200,6 +200,7 @@ public abstract class Client {
 		if(tag.equals("ID")){
 			if(element.isInt()){
 				id = element.toInt();
+				updateLobbyInfo();
 			}else{
 				//try request id again
 				send("<GETID></GETID>");

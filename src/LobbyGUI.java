@@ -5,8 +5,10 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.print.Book;
 import java.util.HashMap;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JFrame;
@@ -25,7 +27,7 @@ import javax.swing.text.StyledDocument;
  *
  */
 public class LobbyGUI extends JFrame{
-	private JPanel connectionsPanel = new JPanel(new GridLayout(0,1,0,0));
+	private JPanel connectionsPanel = new JPanel();
 	private JScrollPane scrollPane = new JScrollPane(connectionsPanel,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 	private JPanel controls = new JPanel(new FlowLayout());
 	private JTextPane chatPane = new JTextPane();
@@ -44,6 +46,7 @@ public class LobbyGUI extends JFrame{
 	 * @param client
 	 */
 	public LobbyGUI(Client client){
+		connectionsPanel.setLayout(new BoxLayout(connectionsPanel, BoxLayout.Y_AXIS));
 		this.client = client;
 		setTitle("Dungeon of Doom: Game Lobby");
 		JPanel southPanel = new JPanel(new BorderLayout());
@@ -93,8 +96,10 @@ public class LobbyGUI extends JFrame{
 			if(playerToLabelMap.containsKey(player)){
 				playerToLabelMap.get(player).setText(player.toString());
 			}else{
-				JLabel label = new JLabel(player.toString());
+				JLabel label = new JLabel();
 				connectionsPanel.add(label);
+				//bizarre bug where label is blank unless the text is set after being added
+				label.setText(player.toString());
 				playerToLabelMap.put(player, label);
 			}
 		}

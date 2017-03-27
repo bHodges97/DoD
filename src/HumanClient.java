@@ -16,7 +16,7 @@ import javax.swing.text.StyledDocument;
 public class HumanClient extends Client{
 	
 	private LobbyGUI lobbygui;
-	private GameGUI gamegui;
+	private PlayerGUI gamegui;
 	private StyledDocument document;
 	
 	public static void main(String[] args) {
@@ -33,11 +33,10 @@ public class HumanClient extends Client{
 		lobbygui = new LobbyGUI(this);
 		document = lobbygui.getStyledDucment();
 		lobbygui.setStyledDocument(document);
-		gamegui = new GameGUI("DUNGEON OF DOOM",false,this);
+		gamegui = new PlayerGUI("DUNGEON OF DOOM",false,this);
 		gamegui.setStyledDocument(document);
 		println("Dungeon of Doom chat room", Color.gray);
 		println("Type HELP for list of commands", Color.gray);
-		lobbygui.updateInfo();
 		WindowListener exitListener = new WindowAdapter() {
 			@Override
             public void windowClosing(WindowEvent e) {
@@ -47,6 +46,8 @@ public class HumanClient extends Client{
 		};
 		gamegui.addWindowListener(exitListener);
 		lobbygui.addWindowListener(exitListener);
+		System.out.println("Initilaised"+lobbyPlayers.size());
+		lobbygui.updateInfo();
 		
 		//Read inputs from console and gui
 		BufferedReader buffer= new BufferedReader(new InputStreamReader(System.in));
