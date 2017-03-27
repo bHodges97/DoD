@@ -316,7 +316,7 @@ public class DODServer {
 			try{
 				Socket clientSocket = serverSocket.accept();
 				if(!allowConnections){
-					println("A client tried to join");
+					println("A client tried to connect when not listening");
 					clientSocket.getOutputStream().write("DISCONNECT".getBytes());
 					clientSocket.close();
 				}else{
@@ -348,21 +348,21 @@ public class DODServer {
 	 * @param id The id to close
 	 */
 	void close(int id,String reason){
+		String message = id +"("+lobbyPlayers.get(id).name+") disconnected: " + reason;
 		try {
+			if(sockets.get(id)==null){
+				//already disconnected
+				return;
+			}
 			sockets.get(id).close();
 			sockets.set(id,null);
-			println(id +" disconnected: " + reason);
+			println(message);
 			lobbyPlayers.get(id).connected = false;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		for(Socket socket:sockets){
-			if(socket != null){
-				return;
-			}
-		}
-		//no clients
-		System.exit(0);
+		sendToAll("<OUTPUT>"+message+"</OUTPUT>");
+		sendToAll("<DISCONNECT>"+id+"</DISCONNECT>");
 	}
 
 	public void saveLogTo(File saveFile) {

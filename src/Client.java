@@ -108,6 +108,8 @@ public abstract class Client {
 				updated.add(item.position);
 			}else if(info.tag.equals("GOLD")){
 				gameMap.setGoldRequired(info.toInt());
+			}else if(info.tag.equals("DISCONNECT")){
+				lobbyPlayers.get(info.toInt()).connected = false;
 			}
 		}
 		Set<DroppedItems> deleteList = new HashSet<DroppedItems>();
@@ -258,7 +260,7 @@ public abstract class Client {
 		}
 		if(lobbyPlayers.size() <= playerID){
 			LobbyPlayer player = new LobbyPlayer(playerID);
-			print(Parser.makeMessage(-1,"Player "+player.id+" joined.("+lobbyPlayers.size()+")"));
+			print(Parser.makeMessage(-1,"New player joined.("+lobbyPlayers.size()+")"));
 			lobbyPlayers.add(player);
 			lobbyPlayer.toLobbyPlayer(player);
 		}else{

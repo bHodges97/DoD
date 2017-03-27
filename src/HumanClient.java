@@ -1,4 +1,7 @@
 import java.awt.Color;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,6 +38,15 @@ public class HumanClient extends Client{
 		println("Dungeon of Doom chat room", Color.gray);
 		println("Type HELP for list of commands", Color.gray);
 		lobbygui.updateInfo();
+		WindowListener exitListener = new WindowAdapter() {
+			@Override
+            public void windowClosing(WindowEvent e) {
+                disconnect();
+                System.exit(0);
+            }
+		};
+		gamegui.addWindowListener(exitListener);
+		lobbygui.addWindowListener(exitListener);
 		
 		//Read inputs from console and gui
 		BufferedReader buffer= new BufferedReader(new InputStreamReader(System.in));
@@ -114,7 +126,7 @@ public class HumanClient extends Client{
 					if(from == id){
 						output+= "You whispered to "+toName+":"+content;
 					}else{
-						output+= fromName + " whispered to you:"+content;
+						output+= fromName + " whispered:"+content;
 					}
 					break;
 				}
@@ -167,5 +179,7 @@ public class HumanClient extends Client{
 		}
         
     }
+	
+	
 	
 }

@@ -336,7 +336,7 @@ public class Map implements Displayable{
 	 * Draw the map onto a buffered image
 	 * @return The map as a buffered image
 	 */
-	public void repaint(int tileSize,int frame){
+	public synchronized void repaint(int tileSize,int frame){
 		Set<Position> wallSet = new HashSet<Position>();
 		int imageWidth = tileSize * getMapWidth();
 		int imageHeight = tileSize * getMapHeight();
@@ -431,4 +431,5 @@ public class Map implements Displayable{
 	public void setGoldRequired(int count) {
 		this.goldRequired =count;
 	}
+
 }

@@ -77,8 +77,9 @@ public class ServerGUI extends JFrame{
 		radioPanel.setBorder(BorderFactory.createEtchedBorder());
 		radioPanel.add(buttonConnectOff);
 		radioPanel.add(buttonConnectOn);
-		panelSouthEast.add(radioPanel);
+		panelSouthEast.setBorder(BorderFactory.createEtchedBorder());
 		panelSouthEast.add(checkBoxShowMap);
+		panelSouthEast.add(radioPanel);
 		panelSouthEast.add(buttonMovePlayer);
 		panelSouthEast.add(buttonSave);
 		panelSouthEast.add(buttonSpawnGold);
@@ -139,13 +140,11 @@ public class ServerGUI extends JFrame{
 		ItemListener connectionListener = new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				server.allowConnections(buttonConnectOn.isSelected());
-				
+				server.allowConnections(!buttonConnectOff.isSelected());
 			}
 		};
 		buttonConnectOn.setSelected(true);
 		buttonConnectOff.addItemListener(connectionListener);
-		buttonConnectOn.addItemListener(connectionListener);
 		buttonMovePlayer.addActionListener(buttonActionListener);
 		buttonMovePlayer.setActionCommand(ACTION_MOVE_PLAYER);
 		buttonSave.addActionListener(buttonActionListener);
@@ -194,9 +193,6 @@ public class ServerGUI extends JFrame{
 	public void allowConnections(boolean allowConnections) {
 		if(buttonConnectOff.isSelected() == allowConnections){
 			buttonConnectOff.setSelected(!allowConnections);
-		}
-		if(buttonConnectOn.isSelected() != allowConnections){
-			buttonConnectOn.setSelected(allowConnections);
 		}
 	}
 }

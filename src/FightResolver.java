@@ -102,7 +102,7 @@ public class FightResolver {
 			System.out.println(i+" "+ winner+" "+playerActions[0] +" , "+playerActions[1]);
 		}
 		if(winner > -1){
-			players[1-winner].lostCombat();
+			players[1-winner].lostCombat(players[winner]);
 			players[winner].controller.sendOutput("You've beaten "+players[1-winner].name+"!");
 		}else{
 			messageAllPlayers("It was a tie!");

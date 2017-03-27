@@ -127,7 +127,7 @@ public class GameLogic {
     		if(player.isImmortal() || player.fightResolver != null){
     			return "FAIL";
     		}else if(currentPlayer.isImmortal()){
-    			kill(player);
+    			kill(player,"killed by "+currentPlayer.name);
     		}else{
     			player.fightResolver = new FightResolver(currentPlayer, player);
     			currentPlayer.fightResolver = player.fightResolver;
@@ -261,14 +261,14 @@ public class GameLogic {
 	 * Make player dead
 	 * @param player
 	 */
-    protected void kill(Player player){
+    protected void kill(Player player, String reason){
     	player.state = PlayerState.DEAD;
     	if(!player.inventory.isEmpty()){
     		DroppedItems dropped = new DroppedItems(player.inventory,player.position);
     		map.addDroppedItems(dropped);
     	}
     	player.inventory.empty();
-    	player.controller.sendOutput("You have died!");
+    	player.controller.sendOutput("You have died!"+"("+reason+")");
 		informPlayers("Player "+player.id+ " has died");
 		informPlayers();
     }

@@ -133,8 +133,8 @@ abstract class Player implements Messageable,Displayable{
 	/**
 	 * For losing a fight
 	 */
-	public void lostCombat() {
-		gameLogic.kill(this);
+	public void lostCombat(Player otherPlayer) {
+		gameLogic.kill(this,"killed by " +otherPlayer.name);
 	}
 	
 	@Override

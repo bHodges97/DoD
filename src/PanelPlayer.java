@@ -56,7 +56,8 @@ public class PanelPlayer extends JPanel{
 		this.lobbyPlayers = client.lobbyPlayers;
 		this.clientPlayer = client.clientPlayer;
 		this.cameraPos = clientPlayer.screenPos;
-		drawOverlay(WIDTH, HEIGHT);
+		//had an odd bug where drawn height is around 10px too short
+		drawOverlay(WIDTH, HEIGHT+TILESIZE);
 		Thread repaintThread = new Thread(makeRunnable(),"repainter");
 		repaintThread.start();
 	}
