@@ -30,7 +30,7 @@ import javax.swing.text.StyledDocument;
 /**
  * The main gui in which DOD is rendered on
  */
-public class PlayerGUI extends JFrame{
+public class HumanClientGUI extends JFrame{
 	private JTextPane console = new JTextPane();
 	private JScrollPane scrollArea;
 	private PanelPlayer paintPanel;
@@ -51,12 +51,17 @@ public class PlayerGUI extends JFrame{
 	private boolean allowInputs = false;
 	private Client client;
 	
+	
+	public static void main(String[] args) {
+		HumanClient client = new HumanClient(args);		
+	}
+	
 	/**
 	 * Initialise a new frame
 	 * @param title The title text of the frame
 	 * @param visible true if the frame should be visible
 	 */
-	public PlayerGUI(String title,boolean visible,Client client){
+	public HumanClientGUI(String title,boolean visible,Client client){
 		super(title);
 		this.client = client;
 		paintPanel = new PanelPlayer(client);
@@ -72,7 +77,7 @@ public class PlayerGUI extends JFrame{
 		inputField.addActionListener(getActionListener());
 		console.setAutoscrolls(true);
 		console.setEditable(false);
-		((DefaultCaret)console.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);;
+		((DefaultCaret)console.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		pack();
 		allowInputs(true);
 		setVisible(false);
@@ -303,8 +308,9 @@ public class PlayerGUI extends JFrame{
 				}else if(e.getSource()==buttonEast){
 					guiInput = "MOVE E";
 				}else if(e.getSource()==buttonSettings){
-					EditPlayerGUI gui = new EditPlayerGUI(client.clientPlayer, false);
-					client.send(""+client.clientPlayer);
+					EditPlayerGUI gui = new EditPlayerGUI(HumanClientGUI.this,client.clientPlayer, false);
+					client.send("<LOBBYPLAYER><COLOR>"+gui.getRGB()+"</COLOR></LOBBYPLAYER>");
+					client.send("<LOBBYPLAYER><NAME>"+Parser.sanitise(gui.name)+"</NAME></LOBBYPLAYER>");
 				}else if(e.getSource()==buttonChat){
 					
 				}

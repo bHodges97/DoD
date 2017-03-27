@@ -6,6 +6,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
@@ -16,15 +18,16 @@ import javax.swing.text.StyledDocument;
 public class HumanClient extends Client{
 	
 	private LobbyGUI lobbygui;
-	private PlayerGUI gamegui;
+	private HumanClientGUI gamegui;
 	private StyledDocument document;
 	
-	public static void main(String[] args) {
-		HumanClient client = new HumanClient(args);		
-	}
+	
 	
 	public HumanClient(String[] args){
-		super(args);
+		if(validateArgs(args) && tryConnect(args[0],port)){
+			System.out.println("Successfully connected!");
+		}
+		run();
 	}
 	
 	@Override
@@ -33,8 +36,21 @@ public class HumanClient extends Client{
 		lobbygui = new LobbyGUI(this);
 		document = lobbygui.getStyledDucment();
 		lobbygui.setStyledDocument(document);
-		gamegui = new PlayerGUI("DUNGEON OF DOOM",false,this);
+		gamegui = new HumanClientGUI("DUNGEON OF DOOM",false,this);
 		gamegui.setStyledDocument(document);
+		
+		
+		
+		//get a conenction
+		while(socket == null || !socket.isConnected()){
+			String[] address = getIP();
+			if(!tryConnect(address[0],Integer.valueOf(address[1]))){
+				JOptionPane.showMessageDialog(lobbygui, "Connection refused");
+			}
+		}
+		
+		
+		
 		println("Dungeon of Doom chat room", Color.gray);
 		println("Type HELP for list of commands", Color.gray);
 		WindowListener exitListener = new WindowAdapter() {
@@ -46,7 +62,7 @@ public class HumanClient extends Client{
 		};
 		gamegui.addWindowListener(exitListener);
 		lobbygui.addWindowListener(exitListener);
-		System.out.println("Initilaised"+lobbyPlayers.size());
+		send("<GETID></GETID>");		
 		lobbygui.updateInfo();
 		
 		//Read inputs from console and gui
@@ -181,6 +197,20 @@ public class HumanClient extends Client{
         
     }
 	
+	private String[] getIP(){
+		JTextField fieldIP = new JTextField(10), fieldPORT = new JTextField(10);
+		Object[] message = {
+		    "IP:", fieldIP,
+		    "Port:", fieldPORT
+		};
+		int option = JOptionPane.showConfirmDialog(lobbygui,message , "Connect to a server", JOptionPane.OK_CANCEL_OPTION);
+		if(option == JOptionPane.OK_OPTION){
+			return new String[]{fieldIP.getText(),fieldPORT.getText()};
+		}else{
+			System.exit(0);
+			return null;//-_-
+		}
+	}
 	
 	
 }

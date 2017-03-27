@@ -21,10 +21,13 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.StyledDocument;
 
-public class ServerGUI extends JFrame{
-	private static String ACTION_SAVE = "save", ACTION_ADD_GOLD = "gold", ACTION_MOVE_PLAYER = "move", ACTION_EDIT_TILE = "edit", ACTION_KILL_PLAYER = "kill";
+
+
+public class DODServerGUI extends JFrame{
+	private static String ACTION_SAVE = "save", ACTION_ADD_GOLD = "gold", ACTION_MOVE_PLAYER = "move", ACTION_EDIT_TILE = "edit", ACTION_EDIT_PLAYER = "play";
 	private PanelServer panelServer;
 	private final DODServer server;
 	private final JTextPane textPane = new JTextPane();;
@@ -33,13 +36,28 @@ public class ServerGUI extends JFrame{
 	private final JCheckBox checkBoxShowMap = new JCheckBox("<html>Show map<br>(you can drag the map)</html>");
 	private final JButton buttonMovePlayer = new JButton("Move Player");
 	private final JButton buttonSpawnGold = new JButton("Spawn Gold");
-	private final JButton buttonKillPlayer = new JButton("Kill Player");
+	private final JButton buttonSettings = new JButton("Edit Player");
 	private final JButton buttonSave = new JButton("Save Log");
 	private final JTextField fieldInput = new JTextField(30);
 	private final JFileChooser fileChooser = new JFileChooser();
 	
+	public static void main(String[] args) {
+		int port = -1;
+		if(args.length == 1){
+			try{
+			port = Integer.valueOf(args[0]);
+			if(port > 65535 || port < 0){
+				throw new NumberFormatException();
+			}
+			}catch(NumberFormatException e){
+				System.out.println(args[0]+" is not a valid port number!");
+				System.exit(1);
+			}
+		}
+		DODServer server = new DODServer(port); 
+	}
 	
-	public ServerGUI(DODServer server){
+	public DODServerGUI(DODServer server){
 		this.server = server;
 		panelServer = new PanelServer(server);
 		addComponents();
@@ -60,6 +78,7 @@ public class ServerGUI extends JFrame{
 		JPanel panelSouth = new JPanel(new BorderLayout());
 		JPanel consolePanel = new JPanel(new BorderLayout());
 		JScrollPane textPaneScroll = new JScrollPane(textPane,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		((DefaultCaret)textPane.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		add(panelNorth,BorderLayout.NORTH);
 		add(panelSouth,BorderLayout.SOUTH);
 		panelNorth.add(panelServer,BorderLayout.CENTER);
@@ -83,7 +102,7 @@ public class ServerGUI extends JFrame{
 		panelSouthEast.add(buttonMovePlayer);
 		panelSouthEast.add(buttonSave);
 		panelSouthEast.add(buttonSpawnGold);
-		panelSouthEast.add(buttonKillPlayer);
+		panelSouthEast.add(buttonSettings);
 		
 		ButtonGroup group = new ButtonGroup();
 		group.add(buttonConnectOff);
@@ -102,7 +121,7 @@ public class ServerGUI extends JFrame{
 			public void actionPerformed(ActionEvent e) {
 				String command = e.getActionCommand();
 				if(command.equals(ACTION_SAVE)){
-					if(fileChooser.showSaveDialog(ServerGUI.this) == JFileChooser.APPROVE_OPTION){
+					if(fileChooser.showSaveDialog(DODServerGUI.this) == JFileChooser.APPROVE_OPTION){
 						File saveFile = fileChooser.getSelectedFile();
 						server.saveLogTo(saveFile);
 					}
@@ -117,7 +136,7 @@ public class ServerGUI extends JFrame{
 							server.getGameLogic().movePlayer(selectedPlayer,selectedTile);
 						}
 					}else{
-						JOptionPane.showMessageDialog(ServerGUI.this, "No player selected!", "Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(DODServerGUI.this, "No player selected!", "Error", JOptionPane.ERROR_MESSAGE);
 					}					
 				}else if(command.equals(ACTION_ADD_GOLD)){
 					String count  = JOptionPane.showInputDialog("Input gold count to add to " + selectedTile);
@@ -128,13 +147,26 @@ public class ServerGUI extends JFrame{
 						}
 						server.getGameLogic().addGold(c,selectedTile);
 					}catch(NumberFormatException e2){
-						JOptionPane.showMessageDialog(ServerGUI.this, "Not a valid number", "Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(DODServerGUI.this, "Not a valid number", "Error", JOptionPane.ERROR_MESSAGE);
 					}
 				}else if(command.equals(ACTION_EDIT_TILE)){
 					
-				}else if(command.equals(ACTION_KILL_PLAYER)){
+				}else if(command.equals(ACTION_EDIT_PLAYER)){
 					if(selectedPlayer != null){
-						server.getGameLogic().kill(selectedPlayer, "Server action");
+						LobbyPlayer player = server.getLobbyPlayers().get(selectedPlayer.id);
+						EditPlayerGUI dialog = new EditPlayerGUI(DODServerGUI.this, player, true);
+						player.name = Parser.sanitise(dialog.name);
+						player.color = dialog.color;
+						server.informClients();
+						if(dialog.kill){
+							server.getGameLogic().kill(selectedPlayer, "Server command");
+						}
+						if(dialog.goldCount != -1){
+							selectedPlayer.inventory.getItemStack("Gold").count = dialog.goldCount;
+						}
+						if(dialog.disconnect){
+							server.close(selectedPlayer.id, "Kicked");
+						}
 					}
 				}
 				
@@ -154,8 +186,8 @@ public class ServerGUI extends JFrame{
 		buttonSave.setActionCommand(ACTION_SAVE);
 		buttonSpawnGold.addActionListener(buttonActionListener);
 		buttonSpawnGold.setActionCommand(ACTION_ADD_GOLD);
-		buttonKillPlayer.addActionListener(buttonActionListener);
-		buttonKillPlayer.setActionCommand(ACTION_KILL_PLAYER);
+		buttonSettings.addActionListener(buttonActionListener);
+		buttonSettings.setActionCommand(ACTION_EDIT_PLAYER);
 		fieldInput.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -176,14 +208,14 @@ public class ServerGUI extends JFrame{
 		    "x coordinate:", fieldX,
 		    "y coordinate:", fieldY
 		};
-		int option = JOptionPane.showConfirmDialog(ServerGUI.this,message , "Input a position", JOptionPane.OK_OPTION);
+		int option = JOptionPane.showConfirmDialog(DODServerGUI.this,message , "Input a position", JOptionPane.OK_OPTION);
 		if(option == JOptionPane.OK_OPTION){
 			try{
 				int x = Integer.parseInt(fieldX.getText());
 				int y = Integer.parseInt(fieldY.getText());
 				return new Position(x,y);
 			}catch (NumberFormatException e) {
-				JOptionPane.showMessageDialog(ServerGUI.this, "Invalid input.","Error",JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(DODServerGUI.this, "Invalid input.","Error",JOptionPane.ERROR_MESSAGE);
 				//.printStackTrace();
 				return null;
 			}

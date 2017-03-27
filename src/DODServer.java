@@ -22,6 +22,7 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
 
+
 /**
  * Server that handles all the DOD client connections and gamelogic
  *
@@ -45,49 +46,34 @@ public class DODServer {
 	private DateFormat longDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
 	private DateFormat shortDateFormat = new SimpleDateFormat("HH:mm");
 	private StyledDocument document = null;
-	private ServerGUI gui;
+	private DODServerGUI gui;
 	
 	/**
 	 * Main method
 	 * @param args port number
 	 */
     public static void main(String[] args) {
-    	
-    	args = new String[]{"41583"};
-    	int port = 0;
-    	if(args.length == 1){
-    		try{
-    		port = Integer.valueOf(args[0]);
-    		if(port > 65535 || port < 0){
-    			throw new NumberFormatException();
-    		}
-    		}catch(NumberFormatException e){
-    			System.out.println(args[0]+" is not a valid port number!");
-    			System.exit(1);
-    		}
-    	}else{
-    		System.out.println("Please specify a port number. Defaulting.");
-    	}
-    	DODServer server = new DODServer(port);	
+    	DODServer server = new DODServer(-1);	
     }
     
     /**
      * Constructor Make a new DODServer
      * @param port The port number to host it on
      */
-    public DODServer(int port){
-    	this.port = port;
-    	game = new GameLogic(this);
-    	gui = new ServerGUI(this);
-    	document = gui.getDocument();
+    public DODServer(int givenPort){
     	//try make game server
-		try {
-			serverSocket = new ServerSocket(port);
-			System.out.println("Server hosted on port:"+serverSocket.getLocalPort());
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
+    	game = new GameLogic(this);
+    	gui = new DODServerGUI(this);
+    	document = gui.getDocument();
+    	
+    	this.port = givenPort;
+    	if(!validatePort(port)){
+			selectPort();
+    	}
+		while(!hostServer()){
+			selectPort();
 		}
+		
 		//try make log file
 		try {
 			FileWriter fileWriter = new FileWriter("log.txt",true); 
@@ -138,6 +124,54 @@ public class DODServer {
 	 */
 	public int getPort() {
 		return port; 
+	}
+	
+	/**
+	 * @return true if server hosted sucessfully
+	 */
+	public boolean hostServer(){
+		try {
+			serverSocket = new ServerSocket(port);
+			System.out.println("Server hosted on port:"+serverSocket.getLocalPort());
+		} catch (IOException | IllegalArgumentException e) {
+			JOptionPane.showMessageDialog(gui, "Failed to start on "+port+":\n"+e.getMessage(), "error", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Select a port number
+	 */
+	public void selectPort(){
+		while(true){
+    		String input = JOptionPane.showInputDialog(gui, "Enter port number:(0 for auto)","41583");
+    		if(input == null || input.isEmpty()){
+    			System.exit(0);
+    		}
+    		try{
+        		port = Integer.valueOf(input);
+        		if(!validatePort(port)){
+        			throw new NumberFormatException();
+        		}
+        	}catch(NumberFormatException e){
+        		JOptionPane.showMessageDialog(gui, "Invalid port number");
+        		continue;
+        	}
+    		break;
+		}
+	}
+	
+	
+	public boolean validatePort(int port){
+		try{
+    		if(port > 65535 || port < 0){
+    			throw new NumberFormatException();
+    		}
+    	}catch(NumberFormatException e){
+    		return false;
+    	}
+		return true;
 	}
     
     /**
@@ -259,7 +293,7 @@ public class DODServer {
 		}else if(tag.equals("GETID")){
 			send("<ID>"+id+"</ID>",id);
 			informClients();		
-		}else if(tag.equals("INPUT")){
+		}else if(tag.equals("INPUT") && game.getGameState() != GameLogic.GameState.NOTSTARTED){
     		controllers.get(id).input = (value); 
     	}else if(tag.equals("OUTPUT") || tag.equals("INFO")){
     		send(message+"", id);
@@ -274,7 +308,7 @@ public class DODServer {
 	/**
 	 * Update clients on connected player
 	 */
-    private void informClients() {
+    protected void informClients() {
     	println("");
     	println(lobbyPlayers.size()+" players currently connected:");
     	String msg = "<LOBBY>";

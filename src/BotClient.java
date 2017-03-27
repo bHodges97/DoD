@@ -6,11 +6,19 @@
 public class BotClient extends Client {	
 	
 	public static void main(String[] args) {
+		args = new String[]{"localhost","41583"};//TODO; delete me
 		BotClient client = new BotClient(args);
 	}
 	
 	public BotClient(String[] args){
-		super(args);
+		if(validateArgs(args) && tryConnect(args[0],port)){
+			System.out.println("Successfully connected!");
+		}else{
+			System.out.println("Connection failed, exisiting");
+			return;
+		}
+		send("<GETID></GETID>");
+		run();
 	}
 
 	@Override

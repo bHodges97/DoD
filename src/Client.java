@@ -19,35 +19,15 @@ public abstract class Client {
 	
 	protected List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
 	protected LobbyPlayer clientPlayer = new LobbyPlayer(0);	
-	private int port = -1;
-	private boolean clientReady = false;
-	private PrintWriter writer;
-	private Socket socket;
-	protected int id;
-	private volatile boolean connected = false;
+	protected int port = -1;
 	protected volatile GameLogic.GameState gameState = GameLogic.GameState.NOTSTARTED;
 	protected Map gameMap = new Map();
+	protected int id;
+	private boolean clientReady = false;
+	private PrintWriter writer;
+	protected Socket socket;
 	
-	
-	/**
-	 * Constructor
-	 * @param args Command line arguments to process
-	 */
-	public Client(String[] args){
-		args = new String[]{"localhost","41583"};
-		//check if parameters are valid
-		if(!validateArgs(args)){
-			return;
-		}
-		//check if connections can be made.
-		if(!tryConnect(args[0],port)){
-			System.out.println("Failed to connect to "+args[0]+" : "+args[1]);
-			return;
-		}
-		send("<GETID></GETID>");
-		//start
-		run();
-	}
+
 	
 	/**
 	 * Start the client processes.
@@ -75,7 +55,6 @@ public abstract class Client {
 		for(LobbyPlayer player:lobbyPlayers){
 			player.updated = false;
 		}
-		Set<Position> updated = new HashSet<Position>();
 		for(Element info:message.children){
 			if(info.tag.equals("TILES")){
 				//process map info
@@ -85,6 +64,10 @@ public abstract class Client {
 						gameMap.addTile(tile.getDisplayChar(),tile.pos.x,tile.pos.y);	
 					}
 				}
+			}else if(info.tag.equals("HEIGHT")){
+				gameMap.setHeight(info.toInt());
+			}else if(info.tag.equals("WIDTH")){
+				gameMap.setWidth(info.toInt());
 			}else if(info.tag.equals("PLAYER")){
 				//process player info
 				Player player = info.toPlayer();
@@ -99,30 +82,19 @@ public abstract class Client {
 				lobbyPlayer.updated = true;
 			}else if(info.tag.equals("GAMESTATE")){
 				gameState = GameLogic.GameState.valueOf(info.value);
-			}else if(info.tag.equals("DROPPEDITEMS")){
-				DroppedItems item = info.toDroppedItems();
-				if(!gameMap.isTileEmpty(item.position)){
-					gameMap.removeItemsAt(item.position);
+			}else if(info.tag.equals("DROPPED")){
+				Set<DroppedItems> dropped = new HashSet<DroppedItems>();
+				for(Element child:info.children){
+					DroppedItems item = child.toDroppedItems();
+					dropped.add(item);
 				}
-				gameMap.addDroppedItems(item);
-				updated.add(item.position);
+			gameMap.setDroppedItems(dropped);
 			}else if(info.tag.equals("GOLD")){
 				gameMap.setGoldRequired(info.toInt());
 			}else if(info.tag.equals("DISCONNECT")){
 				lobbyPlayers.get(info.toInt()).connected = false;
 			}
 		}
-		Set<DroppedItems> deleteList = new HashSet<DroppedItems>();
-		outer:
-		for(DroppedItems item:gameMap.getDroppedItems()){
-			for(Position pos:updated){
-				if(item.position.equalsto(pos)){
-					continue outer;
-				}
-			}
-			deleteList.add(item);
-		}
-		gameMap.getDroppedItems().removeAll(deleteList);
 		for(LobbyPlayer player:lobbyPlayers){
 			if(player.updated == false){
 				player.visible = false;
@@ -165,7 +137,6 @@ public abstract class Client {
 			}
 			
 		}else{
-			System.out.println("Expected parameters: hostname portnumber");
 			return false;
 		}
 		return true;
@@ -188,8 +159,6 @@ public abstract class Client {
 		if(line.equals("DISCONNECT")){
 			JOptionPane.showMessageDialog(null, "CONNECTION REFUSED");
 			System.exit(0);
-		}else if(line.equals("CONNECT")){
-			connected = true;
 		}
 		Element element = Parser.parse(line);
 		if(element == null){
@@ -305,7 +274,7 @@ public abstract class Client {
 		}else if(input.startsWith("NAME")){
 			send("<LOBBYPLAYER><NAME>"+Parser.sanitise(input.split("NAME ")[1])+"</NAME></LOBBYPLAYER>");
 		}else if(input.startsWith("QUIT")){
-			send("<EXIT></EXIT>");
+			send("DISCONNECT");
 			System.exit(0);
 		}else if(input.equals("HELP")){
 			processInput(Parser.makeHelpMessage());
@@ -321,7 +290,7 @@ public abstract class Client {
 	 * @param portNumber The port number to connect to
 	 * @return <b>true</b> if connection is successful
 	 */
-	private boolean tryConnect(String hostName, int portNumber){
+	protected boolean tryConnect(String hostName, int portNumber){
 		try {
 			socket = new Socket(hostName,portNumber);
 			if(!socket.isConnected()){
@@ -331,7 +300,7 @@ public abstract class Client {
 			readThread.start();
 			writer = new PrintWriter(socket.getOutputStream());
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 			return false;
 		} 
 		return true;

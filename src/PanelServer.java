@@ -83,8 +83,8 @@ public class PanelServer extends JPanel {
 			g2d.drawString("Game is loading. Please wait", 0, 20);
 			return;
 		}
-		Image image = map.getImage(0);
-		g2d.drawImage(image, offsetX, offsetY, null);
+		g2d.drawImage(map.getImage(0), offsetX, offsetY, null);
+		g2d.drawImage(map.getImage(1), offsetX, offsetY, null);
 		for(Player player:gameLogic.getPlayers()){
 			if(player.isInGame()){
 				Position pos = Position.multiply(player.position, TILESIZE);

@@ -32,9 +32,7 @@ public class PanelPlayer extends JPanel{
 	private int tileFrame = 0;
 	private int centerX,centerY;
 	private Font defaultFont;	
-	private List<LobbyPlayer> lobbyPlayers = new ArrayList<LobbyPlayer>();
-	private LobbyPlayer clientPlayer = new LobbyPlayer(0);	
-	private Position cameraPos,center;
+	private Position center;
 	private Client client;
 	
 	
@@ -53,9 +51,6 @@ public class PanelPlayer extends JPanel{
 		}
 		this.client = client;
 		this.map = client.gameMap;
-		this.lobbyPlayers = client.lobbyPlayers;
-		this.clientPlayer = client.clientPlayer;
-		this.cameraPos = clientPlayer.screenPos;
 		//had an odd bug where drawn height is around 10px too short
 		drawOverlay(WIDTH, HEIGHT+TILESIZE);
 		Thread repaintThread = new Thread(makeRunnable(),"repainter");
@@ -79,10 +74,10 @@ public class PanelPlayer extends JPanel{
 		}else if(client.gameState == GameLogic.GameState.NOTSTARTED){
 			g2d.drawString("Waiting for game to start", 0, 20);
 			return;
-		}else if(clientPlayer.visible == false){
+		}else if(client.clientPlayer.visible == false){
 			g2d.drawString("WAITING FOR PLAYER TO LOAD",0,20);
-			for(int i = 0;i < lobbyPlayers.size();++i){
-				LobbyPlayer player = lobbyPlayers.get(i);
+			for(int i = 0;i < client.lobbyPlayers.size();++i){
+				LobbyPlayer player = client.lobbyPlayers.get(i);
 				g2d.drawString(player.id+"|"+player.visible+","+player.actualPos+","+player.screenPos+","+player.orientation,0,40 + i *20);			
 			}
 			return;
@@ -93,6 +88,7 @@ public class PanelPlayer extends JPanel{
 		center = new Position(centerX,centerY);
 		drawBackground(g2d);//draw background
 		drawDecals(g2d);
+		drawItems(g2d);
 		drawPlayers(g2d);//draw player sprites
 		drawUI(g2d);
 		//drawDebug(g2d);		
@@ -103,7 +99,7 @@ public class PanelPlayer extends JPanel{
 	 * Update the display positons for the player
 	 */
 	protected void updatePlayerPositions() {
-		for(LobbyPlayer player:lobbyPlayers){
+		for(LobbyPlayer player:client.lobbyPlayers){
 			if(player.visible){
 				if(!player.actualPos.equalsto(player.screenPos)){
 					Position dif = Position.subtract(player.actualPos,player.screenPos);
@@ -128,10 +124,13 @@ public class PanelPlayer extends JPanel{
 	 * @param g2d
 	 */
 	private void drawDebug(Graphics2D g2d){
-		for(int i = 0;i < lobbyPlayers.size();++i){
-			LobbyPlayer player = lobbyPlayers.get(i);
+		g2d.setFont(defaultFont);
+		int i = 0;
+		for(i = 0;i < client.lobbyPlayers.size();++i){
+			LobbyPlayer player = client.lobbyPlayers.get(i);
 			g2d.drawString(player.id+"|"+player.visible+","+player.actualPos+","+player.screenPos+","+player.orientation,0,20 + i *20);			
-		}		
+		}	
+		g2d.drawString(map.getMapWidth() + " , "+map.getMapHeight(),0,40 + i *20);	
 	}
 	
 	/**
@@ -139,13 +138,13 @@ public class PanelPlayer extends JPanel{
 	 * @param g2d  graphics
 	 */
 	private void drawDecals(Graphics2D g2d){
-		for(LobbyPlayer player:lobbyPlayers){
+		for(LobbyPlayer player:client.lobbyPlayers){
 			if(player.state == PlayerState.DEAD){
 				Image image = Sprite.getSprite(0, 9);
-				if(player == clientPlayer){
+				if(player == client.clientPlayer){
 					g2d.drawImage(image,center.x,center.y,null);
 				}else if(player.toPlayer().state == PlayerState.DEAD){
-					Position posDif = Position.subtract(cameraPos, player.screenPos);
+					Position posDif = Position.subtract(client.clientPlayer.screenPos, player.screenPos);
 					g2d.drawImage(image,center.x - posDif.x,center.y - posDif.y,null);
 				}
 			}			
@@ -157,7 +156,7 @@ public class PanelPlayer extends JPanel{
 	 * @param g2d The graphics object to draw onto.
 	 */
 	private void drawPlayers(Graphics2D g2d){
-		for(LobbyPlayer player:lobbyPlayers){
+		for(LobbyPlayer player:client.lobbyPlayers){
 			int param = tileFrame%5;
 			if(player.isBot){
 				if(player.orientation.x > 0){
@@ -171,10 +170,10 @@ public class PanelPlayer extends JPanel{
 				}
 			}
 			Image image = player.toPlayer().getImage(param);
-			if(player == clientPlayer){
+			if(player == client.clientPlayer){
 				g2d.drawImage(image,center.x,center.y,null);
 			}else if(player.visible){
-				Position posDif = Position.subtract(cameraPos, player.screenPos);
+				Position posDif = Position.subtract(client.clientPlayer.screenPos, player.screenPos);
 				g2d.drawImage(image,center.x - posDif.x,center.y - posDif.y,null);
 			}
 		}	
@@ -185,9 +184,19 @@ public class PanelPlayer extends JPanel{
 	 * @param g2d The graphics to draw onto.
 	 */
 	private void drawBackground(Graphics2D g2d){
-		int x = centerX - cameraPos.x;
-		int y = centerY - cameraPos.y;
+		int x = centerX - client.clientPlayer.screenPos.x;
+		int y = centerY - client.clientPlayer.screenPos.y;
 		g2d.drawImage(map.getImage(0), x, y, null);
+	}
+	
+	/**
+	 * Draw the items
+	 * @param g2d The graphics to draw onto.
+	 */
+	private void drawItems(Graphics2D g2d){
+		int x = centerX - client.clientPlayer.screenPos.x;
+		int y = centerY - client.clientPlayer.screenPos.y;
+		g2d.drawImage(map.getImage(1), x, y, null);
 	}
 	
 	/**
@@ -198,7 +207,7 @@ public class PanelPlayer extends JPanel{
 	 */
 	private void drawUI(Graphics2D g2d){
 		g2d.drawImage(overlay, 0, 0, null);
-		if(clientPlayer.state == PlayerState.ESCAPED){
+		if(client.clientPlayer.state == PlayerState.ESCAPED){
 			Image confetti = Sprite.getSprite(1, 9);
 			for (int y = 0; y < getHeight(); y+=TILESIZE){
 			    for (int x = 0; x < getWidth(); x+=TILESIZE){
@@ -210,7 +219,7 @@ public class PanelPlayer extends JPanel{
 			int textwidth = g2d.getFontMetrics().stringWidth("♪YOU WIN♪");
 			g2d.drawString("♪YOU WIN♪", (WIDTH - textwidth )/2,centerY);
 			g2d.setFont(defaultFont);
-		}else if(clientPlayer.state == PlayerState.DEAD){
+		}else if(client.clientPlayer.state == PlayerState.DEAD){
 			g2d.setColor(Color.red);
 			g2d.setFont(defaultFont.deriveFont(32f));
 			int textwidth = g2d.getFontMetrics().stringWidth("GAME OVER");
@@ -221,14 +230,14 @@ public class PanelPlayer extends JPanel{
 		int y = HEIGHT-TILESIZE -TILESIZE/2;
 		g2d.setColor(Color.white);
 		g2d.drawImage(new ItemGold().getImage(0),x,y,TILESIZE/2,TILESIZE/2, null);//draw gold count
-		g2d.drawString(" "+clientPlayer.inventory.getItemCount("Gold") + "/" + map.getGoldRequired(), x + TILESIZE/2, y + TILESIZE/2-8);
+		g2d.drawString(" "+client.clientPlayer.inventory.getItemCount("Gold") + "/" + map.getGoldRequired(), x + TILESIZE/2, y + TILESIZE/2-8);
 		y+=TILESIZE/2 + 3;
 		//draw lives count
-		int lives = clientPlayer.state == PlayerState.DEAD? 0 : 1;
+		int lives = client.clientPlayer.state == PlayerState.DEAD? 0 : 1;
 		g2d.drawImage(Sprite.getSprite(3, 6),x,y,TILESIZE/2,TILESIZE/2,null);
 		g2d.drawString(" "+ lives+"/1", x + TILESIZE/2, y + TILESIZE/2-8);
 		
-		if(clientPlayer.state == PlayerState.DEAD){
+		if(client.clientPlayer.state == PlayerState.DEAD){
 			g2d.setColor(Color.orange);
 			g2d.setFont(defaultFont.deriveFont(25f));
 			int twidth = g2d.getFontMetrics().stringWidth("YOU ARE DEAD");//player death
@@ -256,7 +265,7 @@ public class PanelPlayer extends JPanel{
 		int tileWidth = 5;
 		int maskDiameter = tileWidth * TILESIZE+10;
 		int maskRadius = maskDiameter/2;
-		float ratio = ((float)255/(float)maskRadius) * 0.9f;
+		float ratio = ((float)255/(float)maskRadius) * 0.8f;
 		for(int x = 0;x < width;++x){
 			for(int y = 0;y < height;++y){
 				int dist = (int) Point2D.distance(x, y, width/2,height/2);

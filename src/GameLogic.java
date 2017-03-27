@@ -76,7 +76,7 @@ public class GameLogic {
 	 * Add a player to the game
 	 * @param player Player to add to the game.
 	 */
-	protected void addPlayer(Player player){ 
+	protected synchronized void addPlayer(Player player){ 
 		player.setGameLogic(this);
 		Random rand = new Random(System.currentTimeMillis());
 		Set<Position> usedPositions = new HashSet<Position>();
@@ -88,7 +88,6 @@ public class GameLogic {
 		player.position  = new Position(emptyTiles.get(randomNum).pos);
 		player.state = PlayerState.PLAYING;
 		players.add(player);
-		
 		if(gameState == GameLogic.GameState.RUNNING){
 			Thread thread = new Thread(new PlayerLogicThread(player,this));
 			thread.start();
@@ -230,6 +229,7 @@ public class GameLogic {
 					info+=otherPlayer.getInfo(); 
 				}
 			}
+			info += "<WIDTH>"+map.getMapWidth()+"</WIDTH><HEIGHT>"+map.getMapHeight()+"</HEIGHT>";
 			info += "<TILES>";
 			for(int y = -width ;y <= width;++y){
 				for(int x = -width;x <= width;++x){
@@ -241,11 +241,13 @@ public class GameLogic {
 			}
 			info+="</TILES>";
 			info+="<GOLD>"+map.getGoldRequired()+"</GOLD>";
+			info+="<DROPPED>";
 			for(DroppedItems dropped:map.getDroppedItems()){
 				if(PathFinder.estimateDistance(player.position,dropped.position) <= 4){
 					info+=dropped.getInfo();
 				}
 			}
+			info+="</DROPPED>";
 			info+=gameState.getInfo();
 			player.controller.sendInfo(info);		
 		}	
@@ -273,7 +275,7 @@ public class GameLogic {
     		DroppedItems dropped = new DroppedItems(player.inventory,player.position);
     		map.addDroppedItems(dropped);
     	}
-    	player.inventory.empty();
+    	player.inventory = new Inventory();
     	player.controller.sendOutput("You have died!"+"("+reason+")");
 		informPlayers("Player "+player.id+ " has died");
 		informPlayers();

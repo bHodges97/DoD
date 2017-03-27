@@ -22,7 +22,7 @@ public class Map implements Displayable{
 	private Set<DroppedItems> droppedItems = new  HashSet<DroppedItems>();
 	private int width = 0,height = 0;
 	private int minx = 0,miny = 0;
-	private BufferedImage image;
+	private BufferedImage image,itemImage;
 	
 	public Map(){
 		tileList = new ArrayList<Tile>();
@@ -57,6 +57,20 @@ public class Map implements Displayable{
      */
     protected int getMapWidth() {
         return width;
+    }
+    
+    /**
+     * Set width
+     */
+    protected void setWidth(int width){
+    	this.width = width;
+    }
+    
+    /**
+     * Set height
+     */
+    protected void setHeight(int height){
+    	this.height = height;
     }
     
     /**
@@ -333,6 +347,14 @@ public class Map implements Displayable{
 	}
 	
 	/**
+	 * @param dropped The item to add to droppedItems
+	 */
+	public void setDroppedItems(Set<DroppedItems> dropped) {
+		this.droppedItems = dropped;
+		
+	}
+	
+	/**
 	 * Draw the map onto a buffered image
 	 * @return The map as a buffered image
 	 */
@@ -348,34 +370,41 @@ public class Map implements Displayable{
 		Image[] floor = Sprite.getRow(2,4);
 		g2d.setColor(Color.black);
 		
-		for(int y = 0;y < getMapHeight();++y){
-			for(int x = 0;x < getMapWidth();++x){
-				Tile tile = getTile(new Position(x,y));
-				//g2d.drawImage(floor[0],x*tileSize, y*tileSize, null);	
-				if(tile == null){	
-					g2d.drawImage(Sprite.getDefaultImg(),x*tileSize, y*tileSize, null);	
-					continue;
-				}else{
-					Image images = tile.getImage(frame);
-					if(tile.getHeight() > 0){
-						g2d.drawImage(floor[0],  x*tileSize, y*tileSize, null);
+		try{
+			for(int y = 0;y < getMapHeight();++y){
+				for(int x = 0;x < getMapWidth();++x){
+					Tile tile = getTile(new Position(x,y));
+					//g2d.drawImage(floor[0],x*tileSize, y*tileSize, null);	
+					if(tile == null){	
+						g2d.drawImage(Sprite.getDefaultImg(),x*tileSize, y*tileSize, null);	
+						continue;
+					}else{
+						Image images = tile.getImage(frame);
+						if(tile.getHeight() > 0){
+							g2d.drawImage(floor[0],  x*tileSize, y*tileSize, null);
+						}
+						g2d.drawImage(images,  x*tileSize, y*tileSize, null);//then tile other sprites on top
+						if(tile.getHeight() > 0.5){
+							wallSet.add(new Position(x,y));
+						}
 					}
-					g2d.drawImage(images,  x*tileSize, y*tileSize, null);//then tile other sprites on top
-					if(tile.getHeight() > 0.5){
-						wallSet.add(new Position(x,y));
-					}
-				}
-			}			
+				}			
+			}
+			BufferedImage itemsImage = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
+			Graphics2D itemsGraphics = (Graphics2D)itemsImage.getGraphics();
+			for(DroppedItems item: droppedItems){
+				Position pos = Position.multiply(item.position, tileSize);
+				itemsGraphics.drawImage(item.inventory.getImage(0),pos.x +tileSize/4 ,pos.y + tileSize/4,tileSize/2,tileSize/2,null);
+				
+			}
+			for(Position wall : wallSet){
+				drawWallEdge(g2d, wall,tileSize);
+			}
+			this.image = image;
+			this.itemImage = itemsImage;
+		}catch(Exception e){
+			System.err.println(e.getCause());
 		}
-
-		for(DroppedItems item: droppedItems){
-			Position pos = Position.multiply(item.position, tileSize);
-			g2d.drawImage(item.inventory.getImage(0),pos.x +tileSize/4 ,pos.y + tileSize/4,tileSize/2,tileSize/2,null);
-		}
-		for(Position wall : wallSet){
-			drawWallEdge(g2d, wall,tileSize);
-		}
-		this.image = image;
 	}
 	/**
 	 * Draw the wall shadows
@@ -424,7 +453,7 @@ public class Map implements Displayable{
 
 	@Override
 	public Image getImage(int param) {
-		return image;
+		return param == 0?image:itemImage;
 	}
 
 
